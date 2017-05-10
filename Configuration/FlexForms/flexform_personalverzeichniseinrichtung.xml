@@ -1,0 +1,24 @@
+<T3DataStructure>
+    <sheets>
+        <sDEF>
+            <ROOT>
+                <TCEforms>
+                    <sheetTitle>Optionen</sheetTitle>
+                </TCEforms>
+                <type>array</type>
+                <el>
+                    <settings.showinstitute>
+                        <TCEforms>
+                            <label>Angezeigte Einrichtungen</label>
+                                <!--<onChange>reload</onChange>-->
+                                <config>
+                                    <type>select</type>
+                                    <itemsProcFunc>tx_studipol_helper->institutesPersonell</itemsProcFunc>
+                                </config>
+                        </TCEforms>
+                    </settings.showinstitute>
+                </el>
+            </ROOT>
+        </sDEF>
+    </sheets>
+</T3DataStructure>

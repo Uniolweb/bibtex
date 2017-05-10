@@ -1,0 +1,14 @@
+plugin.tx_btex {
+	view {
+		# cat=plugin.tx_btex/file; type=string; label=Path to template root (FE)
+		templateRootPath = EXT:btex/Resources/Private/Templates/
+		# cat=plugin.tx_btex/file; type=string; label=Path to template partials (FE)
+		partialRootPath = EXT:btex/Resources/Private/Partials/
+		# cat=plugin.tx_btex/file; type=string; label=Path to template layouts (FE)
+		layoutRootPath = EXT:btex/Resources/Private/Layouts/
+	}
+	persistence {
+		# cat=plugin.tx_btex//a; type=int+; label=Default storage PID
+		storagePid = 
+	}
+}

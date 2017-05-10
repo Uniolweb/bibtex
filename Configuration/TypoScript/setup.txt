@@ -1,0 +1,30 @@
+plugin.tx_btex {
+	view {
+		# templateRootPath = {$plugin.tx_btex.view.templateRootPath}
+		templateRootPath = EXT:btex/Resources/Private/Templates/
+		# partialRootPath = {$plugin.tx_btex.view.partialRootPath}
+		# layoutRootPath = {$plugin.tx_btex.view.layoutRootPath}
+	}
+	persistence {
+		storagePid = {$plugin.tx_btex.persistence.storagePid}
+	}
+}
+plugin.tx_btex._CSS_DEFAULT_STYLE (
+	input.f3-form-error {
+		background-color:#FF9F9F;
+		border: 1px #FF0000 solid;
+	}
+
+	.tx-btex table {
+		border-collapse:separate;
+		border-spacing:10px;
+	}
+
+	.tx-btex table th {
+		font-weight:bold;
+	}
+
+	.tx-btex table td {
+		vertical-align:top;
+	}
+)

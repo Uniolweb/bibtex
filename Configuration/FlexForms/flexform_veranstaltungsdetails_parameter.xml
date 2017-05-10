@@ -1,0 +1,23 @@
+<T3DataStructure>
+    <sheets>
+        <sDEF>
+            <ROOT>
+                <TCEforms>
+                    <sheetTitle>Optionen</sheetTitle>
+                </TCEforms>
+                <type>array</type>
+                <el>
+					<settings.template>
+                        <TCEforms>
+                            <label>Verwendetes Layout</label>
+                                <config>
+                                    <type>select</type>
+                                    <itemsProcFunc>tx_studipol_helper->coursedetailsLayouts</itemsProcFunc>
+                                </config>
+                        </TCEforms>
+                    </settings.template>
+                </el>
+            </ROOT>
+        </sDEF>
+    </sheets>
+</T3DataStructure>
