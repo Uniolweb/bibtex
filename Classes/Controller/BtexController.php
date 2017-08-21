@@ -2,11 +2,24 @@
 
 namespace Uniol\Btex\Controller;
 
-class BtexController extends GeneralActionController
+class BtexController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
+
+    private $logger;
+
+    public function initializeAction()
+    {
+        $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+
+
+        $this->logger->error("showAction");
+    }
+
     public function showAction()
     {
         $sOlBibtexLang = $GLOBALS['TSFE']->tmpl->setup['page.']['config.']['language'] != 'de' ? '&lang=en' : '' ;
+
+        $this->logger->debug("sOlBibtexLang=$sOlBibtexLang");
         
         $sOlBibtexSort = isset($_GET['sort'])?$_GET['sort']:$this->settings['sort'];
         $aOlBibtexPars = array();
@@ -30,9 +43,13 @@ class BtexController extends GeneralActionController
         }
         $sOlBibtexPars = count($aOlBibtexPars)?'&'.implode('&', $aOlBibtexPars):'' ;
 
-        $olBibtexContent = file_get_contents("http://php51.uni-oldenburg.de/www/bib2html_pr/einzel.php?bibtex="
+        $url = "http://php51.uni-oldenburg.de/www/bib2html_pr/einzel.php?bibtex="
             . $this->settings['link']
-            . $sOlBibtexPars.$sOlBibtexLang);
+            . $sOlBibtexPars.$sOlBibtexLang;
+
+        $olBibtexContent = file_get_contents($url);
+
+        $this->logger->debug("BtexController: url=$url");
 
         $uriBuilder = clone($this->uriBuilder);
         $url = $uriBuilder->buildFrontendUri();
