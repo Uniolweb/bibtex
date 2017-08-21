@@ -1,5 +1,8 @@
 <?php
-class tx_bibtex_helper {
+
+namespace Uniol\Btex\Helper;
+
+class BibtexHelper{
 
 	function sortOptions($config) {
 		$options = array();

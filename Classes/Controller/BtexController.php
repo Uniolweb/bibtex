@@ -1,5 +1,8 @@
 <?php
-class Tx_Btex_Controller_BtexController extends Tx_Extbase_MVC_Controller_ActionController
+
+namespace Uniol\Btex\Controller;
+
+class BtexController extends GeneralActionController
 {
     public function showAction()
     {
