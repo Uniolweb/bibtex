@@ -115,8 +115,8 @@
                                         <numIndex index="1">manual</numIndex>
                                     </numIndex>
                                     <numIndex index="8" type="array">
-                                        <numIndex index="0">masterthesis</numIndex>
-                                        <numIndex index="1">masterthesis</numIndex>
+                                        <numIndex index="0">mastersthesis</numIndex>
+                                        <numIndex index="1">mastersthesis</numIndex>
                                     </numIndex>
                                     <numIndex index="9" type="array">
                                         <numIndex index="0">misc</numIndex>
@@ -185,8 +185,8 @@
                                         <numIndex index="1">manual</numIndex>
                                     </numIndex>
                                     <numIndex index="8" type="array">
-                                        <numIndex index="0">masterthesis</numIndex>
-                                        <numIndex index="1">masterthesis</numIndex>
+                                        <numIndex index="0">mastersthesis</numIndex>
+                                        <numIndex index="1">mastersthesis</numIndex>
                                     </numIndex>
                                     <numIndex index="9" type="array">
                                         <numIndex index="0">misc</numIndex>
