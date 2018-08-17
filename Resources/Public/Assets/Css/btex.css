@@ -1,0 +1,18 @@
+div.bibtex {
+    display: none;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    padding: 5px
+}
+
+.bibtexcontainer {
+    border: 1px solid #ccc;
+    padding: .5em
+}
+
+
+.bibtex > code {
+    color: black;
+    font-family: monospace;
+    background-color: transparent;
+}

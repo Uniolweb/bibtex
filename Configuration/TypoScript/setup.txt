@@ -28,3 +28,6 @@ plugin.tx_btex._CSS_DEFAULT_STYLE (
 		vertical-align:top;
 	}
 )
+
+page.includeCSS.btex = EXT:btex/Resources/Public/Assets/Css/btex.css
+page.includeJSFooter.btex = EXT:btex/Resources/Public/Assets/JavaScript/btex.js
