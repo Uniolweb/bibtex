@@ -43,7 +43,8 @@ class BtexController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         }
         $sOlBibtexPars = count($aOlBibtexPars)?'&'.implode('&', $aOlBibtexPars):'' ;
 
-        $url = "http://php51.uni-oldenburg.de/www/bib2html_pr/einzel.php?bibtex="
+        //$url = "http://php51.uni-oldenburg.de/www/bib2html_pr/einzel.php?bibtex="
+	$url = "http://php51.uni-oldenburg.de/www/bib2html/einzel.php?bibtex=" // VB 2018-09-11 Provisorium
             . $this->settings['link']
             . $sOlBibtexPars.$sOlBibtexLang;
 
