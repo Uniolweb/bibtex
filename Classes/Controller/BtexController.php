@@ -40,24 +40,41 @@ class BtexController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
         }
         $sOlBibtexPars = count($aOlBibtexPars)?'&'.implode('&', $aOlBibtexPars):'' ;
 
-        $url = "http://php51.uni-oldenburg.de/www/bib2html_pr/einzel.php?bibtex="
-            . $this->settings['link']
-            . $sOlBibtexPars.$sOlBibtexLang;
+        $bibtexUrl = $this->settings['link'];
+        $olBibtexContent = '';
 
-        $olBibtexContent = file_get_contents($url);
+        // check if URL / file exists
+        try {
+            $content = file_get_contents($bibtexUrl, false, null, 0, 10);
+        } catch (\Exception $e) {
+            $this->logger->error('Error on opening URL '  . $bibtexUrl . ': ' . $e->getMessage());
+            $content = false;
+        }
+        if ($content === false) {
+            $olBibtexContent = 'Bibtex file does not exist.';
+        } else if (strlen($content) === 0) {
+            $olBibtexContent = 'Bibtex file is empty.';
+            $this->logger->error('Error on opening URL ' . $bibtexUrl . ': Bibtex file is empty');
+        } else {
+            $url = "http://php51.uni-oldenburg.de/www/bib2html_pr/einzel.php?bibtex="
+                . $bibtexUrl
+                . $sOlBibtexPars . $sOlBibtexLang;
 
-        $this->logger->debug("BtexController: url=$url");
+            $olBibtexContent = file_get_contents($url);
 
-        $uriBuilder = clone($this->uriBuilder);
-        $url = $uriBuilder->buildFrontendUri();
-        $olBibtexContent = str_replace('href="?sort', 'href="'.$url.'?sort', $olBibtexContent);
-        $olBibtexContent = str_replace('<a href="?">', '<a href="'.$url.'">', $olBibtexContent);
-        if (!$sOlBibtexLang) {
-            $olBibtexContent = str_replace(
-                'Go to document',
-                'Dokument aufrufen',
-                $olBibtexContent
-            );
+            $this->logger->debug("BtexController: url=$url");
+
+            $uriBuilder = clone($this->uriBuilder);
+            $url = $uriBuilder->buildFrontendUri();
+            $olBibtexContent = str_replace('href="?sort', 'href="' . $url . '?sort', $olBibtexContent);
+            $olBibtexContent = str_replace('<a href="?">', '<a href="' . $url . '">', $olBibtexContent);
+            if (!$sOlBibtexLang) {
+                $olBibtexContent = str_replace(
+                    'Go to document',
+                    'Dokument aufrufen',
+                    $olBibtexContent
+                );
+            }
         }
 
         $this->view->assign('output', $olBibtexContent);
