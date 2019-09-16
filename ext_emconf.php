@@ -11,7 +11,7 @@
  ***************************************************************/
 
 $EM_CONF[$_EXTKEY] = array(
-    'title' => 'BibtexExtension',
+    'title' => 'BibtexExtension (Uniol: Anpassungen f. TYPO3 9.5.9)',
     'description' => '',
     'category' => 'plugin',
     'author' => '',
@@ -27,7 +27,7 @@ $EM_CONF[$_EXTKEY] = array(
     'modify_tables' => '',
     'clearCacheOnLoad' => 0,
     'lockType' => '',
-    'version' => '1.0.2',
+    'version' => '9.5.9-dev',
     'constraints' => [
         'depends' => [
             'cms' => '',
