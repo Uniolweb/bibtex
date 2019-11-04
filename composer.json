@@ -1,0 +1,18 @@
+{
+  "name": "uniol/btex",
+  "description": "btex extension",
+  "type": "typo3-cms-extension",
+  "keywords": [
+    "TYPO3",
+    "btex"
+  ],
+  "require": {
+    "php": "~7.2.0",
+    "typo3/cms-core": "^9.5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Uniol\\Btex\\": "Classes/"
+    }
+  }
+}
