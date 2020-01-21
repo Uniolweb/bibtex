@@ -4,7 +4,6 @@ namespace Uniol\Btex\Helper;
 
 class BibtexHelper
 {
-
     public function sortOptions($config)
     {
         $options = array();
