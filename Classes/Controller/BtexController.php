@@ -2,6 +2,9 @@
 
 namespace Uniol\Btex\Controller;
 
+use TYPO3\CMS\Core\Log\LogManager;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 class BtexController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
 
@@ -9,7 +12,7 @@ class BtexController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 
     public function initializeAction()
     {
-        $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
     }
 
     public function showAction()
