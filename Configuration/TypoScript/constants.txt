@@ -11,4 +11,9 @@ plugin.tx_btex {
 		# cat=plugin.tx_btex//a; type=int+; label=Default storage PID
 		storagePid = 
 	}
+
+	settings {
+		# cat=plugin.tx_btex//a; type=string; label=URL for external btex service
+		urlBibtexService = http://php51.uni-oldenburg.de/www/bib2html_pr/einzel.php?bibtex=
+	}
 }

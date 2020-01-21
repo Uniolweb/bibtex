@@ -8,6 +8,11 @@ plugin.tx_btex {
 	persistence {
 		storagePid = {$plugin.tx_btex.persistence.storagePid}
 	}
+
+	settings {
+		urlBibtexService = {$plugin.tx_btex.settings.urlBibtexService}
+	}
+
 }
 plugin.tx_btex._CSS_DEFAULT_STYLE (
 	input.f3-form-error {
