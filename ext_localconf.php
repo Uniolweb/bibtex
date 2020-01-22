@@ -1,6 +1,6 @@
 <?php
 if (!defined('TYPO3_MODE')) {
-	die ('Access denied.');
+    die ('Access denied.');
 }
 
 $extkey = "bibtex";
@@ -11,17 +11,19 @@ $extensionName = strtolower(\TYPO3\CMS\Core\Utility\GeneralUtility::underscoredT
 
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
     $extname,
-	'Bibtex',
-	array(
-		'Btex' => 'show',
-		
-	),
-	// non-cacheable actions
-	array(
-		'Btex' => 'show',
-		
-	)
+    'Bibtex',
+    [
+        'Btex' => 'show',
+
+    ],
+    // non-cacheable actions
+    [
+//        'Btex' => 'show'
+    ]
 );
 
+// caching framework
 
-?>
+if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bibtex_bibtexcache'])) {
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bibtex_bibtexcache'] = [];
+}

@@ -16,3 +16,17 @@ div.bibtex {
     font-family: monospace;
     background-color: transparent;
 }
+
+/**
+ * form
+ */
+form.bibtex-form fieldset.bibtex-fieldset {
+    border: none;
+}
+
+form.bibtex-form fieldset.bibtex-fieldset input.bibtex-form-radio {
+    margin-left: 1em;
+    margin-right: 0.2em;
+}
+
+

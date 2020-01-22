@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" data="2015-10-15T16-28-09" product-name="zsb">
+        <header/>
+        <body>
+            <trans-unit id="sort" xml:space="preserve">
+                <source>Sort by</source>
+                <target>Sortierung</target>
+            </trans-unit>
+            <trans-unit id="sort.bibtexEntryType" xml:space="preserve">
+                <source>Type of publication</source>
+                <target>Art der Publikation</target>
+            </trans-unit>
+            <trans-unit id="sort.author" xml:space="preserve">
+                <source>Author</source>
+                <target>Autor</target>
+            </trans-unit>
+            <trans-unit id="sort.year" xml:space="preserve">
+                <source>Year</source>
+                <target>Jahr</target>
+            </trans-unit>
+            <trans-unit id="sort.none" xml:space="preserve">
+                <source>(default)</source>
+                <target>(ohne)</target>
+            </trans-unit>
+            <trans-unit id="settings.bibtexUrl" xml:space="preserve">
+                <source>URL (of bibtex file)*</source>
+                <target>URL (der Bibtex-Datei)*</target>
+            </trans-unit>
+            <trans-unit id="settings.allow" xml:space="preserve">
+                <source>Only display these (Allow)</source>
+                <target>Nur diese anzeigen (Allow)</target>
+            </trans-unit>
+            <trans-unit id="settings.deny" xml:space="preserve">
+                <source>Do not display (Deny)</source>
+                <target>Nicht anzeigen (Deny)</target>
+            </trans-unit>
+            <trans-unit id="settings.allow.all" xml:space="preserve">
+                <source>- show all -</source>
+                <target>- alle anzeigen -</target>
+            </trans-unit>
+            <trans-unit id="settings.deny.all" xml:space="preserve">
+                <source>- hide none -</source>
+                <target>- keine ausblenden -</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

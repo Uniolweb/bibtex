@@ -1,0 +1,55 @@
+Documentation of the availiable variables:
+
+{year} = Year of publication
+{type} = BibTeX entry type e.g. 'book', 'article', etc.
+{pdf} = Creates a download link from the 'url' field of the BibTeX entry
+{key} = BibTeX key
+{entry} = BibTeX entry formated as a citation in UNi Oldenburg specific format
+{bibtex} =  Whole BibTeX entry
+
+// These are rather AG TWiSt specific formats but probably of more general interest
+{twist_title} = Title with link to the address in the 'doi' field
+{twist_entry} = {entry} but without the title (but with linebreak instead)
+{twist_pdf} = Download link to the 'url' field
+
+
+Example:
+
+Input:
+
+@Article{Rinn2012,
+  Title   = {Stochastic method for in-situ damage analysis},
+  Author  = {Rinn, P. and Hei{\ss}elmann, H. and W{\"a}chter, M. and Peinke, J.},
+  Journal = {The European Physical Journal B},
+  Year    = {2012},
+  Pages   = {1--5},
+  Volume  = {86},
+  Doi     = {10.1140/epjb/e2012-30472-8},
+  Url     = {http://arxiv.org/pdf/1202.0124v3},
+  ISSN    = {1434-6028},
+  Issue   = {1}
+}
+
+
+Output:
+
+{year} = 2012
+{type} = article
+{pdf} = | <a href="http://arxiv.org/pdf/1202.0124v3" title="Dokument aufrufen"><img src="http://www.uni-oldenburg.de/www/bib2html/bib2html/external.png" alt="Dokument aufrufen" height="10" width="10"> Dokument aufrufen</a>
+{key} = Rinn2012
+{entry} = P. Rinn, H. Heißelmann, M. Wächter, und J. Peinke, "Stochastic method for in-situ damage analysis," <em>The European Physical Journal B</em>, vol. 86, pp. 1-5, 2012.
+{bibtex} = @Article{Rinn2012, Title = {Stochastic method for in-situ damage analysis}, <br>
+ &nbsp; Author = {Rinn, P. and Hei{\ss}elmann, H. and W{\"a}chter, M. and Peinke, J.}, <br>
+ &nbsp; Journal = {The European Physical Journal B}, <br>
+ &nbsp; Year = {2012}, <br>
+ &nbsp; Pages = {1--5}, <br>
+ &nbsp; Volume = {86}, <br>
+ &nbsp; Doi = {10.1140/epjb/e2012-30472-8}, <br>
+ &nbsp; Url = {http://arxiv.org/pdf/1202.0124v3}, <br>
+ &nbsp; ISSN = {1434-6028}, <br>
+ &nbsp; Issue = {1}
+}
+{twist_title} = <a href="http://dx.doi.org/10.1140/epjb/e2012-30472-8">Stochastic method for in-situ damage analysis</a>
+{twist_entry} = P. Rinn, H. Heißelmann, M. Wächter, und J. Peinke<br> <em>The European Physical Journal B</em>, vol. 86, pp. 1-5, 2012.
+{twist_pdf} = [<a href="http://arxiv.org/pdf/1202.0124v3">PDF</a>]
+

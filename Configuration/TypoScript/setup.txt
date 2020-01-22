@@ -7,7 +7,7 @@ plugin.tx_bibtex {
 	}
 
 	settings {
-		urlBibtexService = {$plugin.tx_bibtex.settings.urlBibtexService}
+
 	}
 
 }

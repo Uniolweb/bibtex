@@ -10,54 +10,40 @@
                     <!-- URL of Bibtex file -->
                     <settings.link>
                         <TCEforms>
-                            <label>HTTP Link</label>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.bibtexUrlHTTP URL*</label>
                             <config>
                                 <type>input</type>
                                 <size>64</size>
                                 <max>128</max>
-                                <eval>trim</eval>
+                                <eval>trim,required</eval>
                             </config>
                         </TCEforms>
                     </settings.link>
-                    <settings.template>
-                        <TCEforms>
-                            <label>HTTP Template-Datei (optional)</label>
-                            <config>
-                                <type>input</type>
-                                <size>64</size>
-                                <max>128</max>
-                                <eval>trim</eval>
-                            </config>
-                        </TCEforms>
-                    </settings.template>
-                    <settings.key>
-                        <TCEforms>
-                            <label>Key</label>
-                            <config>
-                                <type>input</type>
-                                <size>64</size>
-                                <max>128</max>
-                                <eval>trim</eval>
-                            </config>
-                        </TCEforms>
-                    </settings.key>
+
+
                     <settings.sort>
                         <TCEforms>
-                            <label>Sort</label>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort</label>
                             <config>
                                 <type>select</type>
-                                <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->sortOptions</itemsProcFunc>
+                                <!--
+                                    <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->sortOptions</itemsProcFunc>
+                                    -->
                                 <items>
                                     <numIndex index="0" type="array">
-                                        <numIndex index="0">bibtexEntryType</numIndex>
-                                        <numIndex index="1">bibtexEntryType</numIndex>
+                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.none</numIndex>
+                                        <numIndex index="1">none</numIndex>
                                     </numIndex>
                                     <numIndex index="1" type="array">
-                                        <numIndex index="0">author</numIndex>
-                                        <numIndex index="1">author</numIndex>
+                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.bibtexEntryType</numIndex>
+                                        <numIndex index="1">bibtexEntryType</numIndex>
                                     </numIndex>
                                     <numIndex index="2" type="array">
-                                        <numIndex index="0">year</numIndex>
+                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.author</numIndex>
+                                        <numIndex index="1">author</numIndex>
+                                    </numIndex>
+                                    <numIndex index="3" type="array">
+                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.year</numIndex>
                                         <numIndex index="1">year</numIndex>
                                     </numIndex>    
                                 </items>
@@ -65,77 +51,78 @@
                                 <multiple>0</multiple>
                                 <maxitems>1</maxitems>
                                 <renderMode>singlebox</renderMode>
+                                <default>none</default>
                             </config>
                         </TCEforms>
                     </settings.sort>
-                    <settings.sortfixed>
-                        <TCEforms>
-                            <label>Kopfleiste mit Sortiermöglichkeiten ausblenden</label>
-                            <config>
-                                <type>check</type>
-                            </config>
-                        </TCEforms>
-                    </settings.sortfixed>
+
+
                     <settings.allow>
                         <TCEforms>
-                            <label>Allow</label>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.allow</label>
                             <config>
                                 <type>select</type>
+                                <!--
                                 <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->allowOptions</itemsProcFunc>
+                                -->
                                 <items type="array">
                                     <numIndex index="0" type="array">
+                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.allow.all</numIndex>
+                                        <numIndex index="1"></numIndex>
+                                    </numIndex>
+                                    <numIndex index="1" type="array">
                                         <numIndex index="0">article</numIndex>
                                         <numIndex index="1">article</numIndex>
                                     </numIndex>
-                                    <numIndex index="1" type="array">
+                                    <numIndex index="2" type="array">
                                         <numIndex index="0">book</numIndex>
                                         <numIndex index="1">book</numIndex>
                                     </numIndex>
-                                    <numIndex index="2" type="array">
+                                    <numIndex index="3" type="array">
                                         <numIndex index="0">booklet</numIndex>
                                         <numIndex index="1">booklet</numIndex>
                                     </numIndex>
-                                    <numIndex index="3" type="array">
+                                    <numIndex index="4" type="array">
                                         <numIndex index="0">conference</numIndex>
                                         <numIndex index="1">conference</numIndex>
                                     </numIndex>
-                                    <numIndex index="4" type="array">
+                                    <numIndex index="5" type="array">
                                         <numIndex index="0">inbook</numIndex>
                                         <numIndex index="1">inbook</numIndex>
                                     </numIndex>
-                                    <numIndex index="5" type="array">
+                                    <numIndex index="6" type="array">
                                         <numIndex index="0">incollection</numIndex>
                                         <numIndex index="1">incollection</numIndex>
                                     </numIndex>
-                                    <numIndex index="6" type="array">
+                                    <numIndex index="7" type="array">
                                         <numIndex index="0">inproceedings</numIndex>
                                         <numIndex index="1">inproceedings</numIndex>
                                     </numIndex>
-                                    <numIndex index="7" type="array">
+                                    <numIndex index="8" type="array">
                                         <numIndex index="0">manual</numIndex>
                                         <numIndex index="1">manual</numIndex>
                                     </numIndex>
-                                    <numIndex index="8" type="array">
+                                    <numIndex index="9" type="array">
                                         <numIndex index="0">mastersthesis</numIndex>
                                         <numIndex index="1">mastersthesis</numIndex>
                                     </numIndex>
-                                    <numIndex index="9" type="array">
+                                    <numIndex index="10" type="array">
                                         <numIndex index="0">misc</numIndex>
                                         <numIndex index="1">misc</numIndex>
                                     </numIndex>
-                                    <numIndex index="10" type="array">
+                                    <numIndex index="11" type="array">
                                         <numIndex index="0">phdthesis</numIndex>
                                         <numIndex index="1">phdthesis</numIndex>
                                     </numIndex>          
-                                    <numIndex index="11" type="array">
+                                    <numIndex index="12" type="array">
                                         <numIndex index="0">proceedings</numIndex>
                                         <numIndex index="1">proceedings</numIndex>
                                     </numIndex> 
-                                    <numIndex index="12" type="array">
+                                    <numIndex index="13" type="array">
                                         <numIndex index="0">techreport</numIndex>
                                         <numIndex index="1">techreport</numIndex>
                                     </numIndex>
-                                    <numIndex index="13" type="array">
+                                    <numIndex index="14" type="array">
                                         <numIndex index="0">unpublished</numIndex>
                                         <numIndex index="1">unpublished</numIndex>
                                     </numIndex>
@@ -146,66 +133,73 @@
                             </config>
                         </TCEforms>
                     </settings.allow>
+
                     <settings.deny>
                         <TCEforms>
-                            <label>Deny</label>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.deny</label>
                             <config>
                                 <type>select</type>
+                                <!--
                                 <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->denyOptions</itemsProcFunc>
+                                -->
                                 <items type="array">
                                     <numIndex index="0" type="array">
+                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.deny.all</numIndex>
+                                        <numIndex index="1"></numIndex>
+                                    </numIndex>
+                                    <numIndex index="1" type="array">
                                         <numIndex index="0">article</numIndex>
                                         <numIndex index="1">article</numIndex>
                                     </numIndex>
-                                    <numIndex index="1" type="array">
+                                    <numIndex index="2" type="array">
                                         <numIndex index="0">book</numIndex>
                                         <numIndex index="1">book</numIndex>
                                     </numIndex>
-                                    <numIndex index="2" type="array">
+                                    <numIndex index="3" type="array">
                                         <numIndex index="0">booklet</numIndex>
                                         <numIndex index="1">booklet</numIndex>
                                     </numIndex>
-                                    <numIndex index="3" type="array">
+                                    <numIndex index="4" type="array">
                                         <numIndex index="0">conference</numIndex>
                                         <numIndex index="1">conference</numIndex>
                                     </numIndex>
-                                    <numIndex index="4" type="array">
+                                    <numIndex index="5" type="array">
                                         <numIndex index="0">inbook</numIndex>
                                         <numIndex index="1">inbook</numIndex>
                                     </numIndex>
-                                    <numIndex index="5" type="array">
+                                    <numIndex index="6" type="array">
                                         <numIndex index="0">incollection</numIndex>
                                         <numIndex index="1">incollection</numIndex>
                                     </numIndex>
-                                    <numIndex index="6" type="array">
+                                    <numIndex index="7" type="array">
                                         <numIndex index="0">inproceedings</numIndex>
                                         <numIndex index="1">inproceedings</numIndex>
                                     </numIndex>
-                                    <numIndex index="7" type="array">
+                                    <numIndex index="8" type="array">
                                         <numIndex index="0">manual</numIndex>
                                         <numIndex index="1">manual</numIndex>
                                     </numIndex>
-                                    <numIndex index="8" type="array">
+                                    <numIndex index="9" type="array">
                                         <numIndex index="0">mastersthesis</numIndex>
                                         <numIndex index="1">mastersthesis</numIndex>
                                     </numIndex>
-                                    <numIndex index="9" type="array">
+                                    <numIndex index="10" type="array">
                                         <numIndex index="0">misc</numIndex>
                                         <numIndex index="1">misc</numIndex>
                                     </numIndex>
-                                    <numIndex index="10" type="array">
+                                    <numIndex index="11" type="array">
                                         <numIndex index="0">phdthesis</numIndex>
                                         <numIndex index="1">phdthesis</numIndex>
                                     </numIndex>          
-                                    <numIndex index="11" type="array">
+                                    <numIndex index="12" type="array">
                                         <numIndex index="0">proceedings</numIndex>
                                         <numIndex index="1">proceedings</numIndex>
                                     </numIndex> 
-                                    <numIndex index="12" type="array">
+                                    <numIndex index="13" type="array">
                                         <numIndex index="0">techreport</numIndex>
                                         <numIndex index="1">techreport</numIndex>
                                     </numIndex>
-                                    <numIndex index="13" type="array">
+                                    <numIndex index="14" type="array">
                                         <numIndex index="0">unpublished</numIndex>
                                         <numIndex index="1">unpublished</numIndex>
                                     </numIndex>
@@ -216,6 +210,44 @@
                             </config>
                         </TCEforms>
                     </settings.deny>
+
+
+                    <settings.template>
+                        <TCEforms>
+                            <label>Template-Datei (optional, nicht empfohlen)</label>
+                            <config>
+                                <type>input</type>
+                                <size>64</size>
+                                <max>128</max>
+                                <eval>trim</eval>
+                            </config>
+                        </TCEforms>
+                    </settings.template>
+
+                    <!--
+                    <settings.key>
+                        <TCEforms>
+                            <label>Key (optional, wird zur Zeit nicht unterstützt)</label>
+                            <config>
+                                <type>input</type>
+                                <size>64</size>
+                                <max>128</max>
+                                <eval>trim</eval>
+                            </config>
+                        </TCEforms>
+                    </settings.key>
+
+                    <settings.sortfixed>
+                        <TCEforms>
+                            <label>Kopfleiste mit Sortiermöglichkeiten ausblenden (optional, wird zur Zeit immer ausgeblendet)</label>
+                            <config>
+                                <type>check</type>
+                                <default>1</default>
+                            </config>
+                        </TCEforms>
+                    </settings.sortfixed>
+                    -->
+
                 </el>
             </ROOT>
         </sDEF>

@@ -1,19 +1,18 @@
 plugin.tx_bibtex {
 	view {
-		# cat=plugin.tx_btex/file; type=string; label=Path to template root (FE)
-		templateRootPath = EXT:btex/Resources/Private/Templates/
-		# cat=plugin.tx_btex/file; type=string; label=Path to template partials (FE)
-		partialRootPath = EXT:btex/Resources/Private/Partials/
-		# cat=plugin.tx_btex/file; type=string; label=Path to template layouts (FE)
-		layoutRootPath = EXT:btex/Resources/Private/Layouts/
+		# cat=plugin.tx_bibtex; type=string; label=Path to template root (FE)
+		templateRootPath = EXT:bibtex/Resources/Private/Templates/
+		# cat=plugin.tx_bibtex; type=string; label=Path to template partials (FE)
+		partialRootPath = EXT:bibtex/Resources/Private/Partials/
+		# cat=plugin.tx_bibtex; type=string; label=Path to template layouts (FE)
+		layoutRootPath = EXT:bibtex/Resources/Private/Layouts/
 	}
 	persistence {
-		# cat=plugin.tx_btex//a; type=int+; label=Default storage PID
+		# cat=plugin.tx_bibtex; type=int+; label=Default storage PID
 		storagePid = 
 	}
 
 	settings {
-		# cat=plugin.tx_btex//a; type=string; label=URL for external btex service
-		urlBibtexService = http://php51.uni-oldenburg.de/www/bib2html_pr/einzel.php?bibtex=
+
 	}
 }

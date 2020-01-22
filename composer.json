@@ -1,10 +1,10 @@
 {
-  "name": "uniol/btex",
-  "description": "btex extension",
+  "name": "uniolit/bibtex",
+  "description": "bibtex extension",
   "type": "typo3-cms-extension",
   "keywords": [
     "TYPO3",
-    "btex"
+    "bibtex"
   ],
   "require": {
     "php": "~7.2.0",
