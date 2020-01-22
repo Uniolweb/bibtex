@@ -1,6 +1,6 @@
 <?php
 
-namespace Uniol\Btex\Helper;
+namespace Uniolit\Bibtex\Helper;
 
 class BibtexHelper
 {

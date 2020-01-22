@@ -3,9 +3,9 @@ if (!defined('TYPO3_MODE')) {
 	die ('Access denied.');
 }
 
-$extkey = "btex";
-$vendorname = 'Uniol';
-$extname = "$vendorname . $extkey";
+$extkey = "bibtex";
+$vendorname = 'Uniolit';
+$extname = "$vendorname.$extkey";
 $extensionName = strtolower(\TYPO3\CMS\Core\Utility\GeneralUtility::underscoredToUpperCamelCase($extkey));
 
 

@@ -1,20 +1,17 @@
-plugin.tx_btex {
+plugin.tx_bibtex {
 	view {
-		# templateRootPath = {$plugin.tx_btex.view.templateRootPath}
-		templateRootPath = EXT:btex/Resources/Private/Templates/
-		# partialRootPath = {$plugin.tx_btex.view.partialRootPath}
-		# layoutRootPath = {$plugin.tx_btex.view.layoutRootPath}
+		templateRootPath = EXT:bibtex/Resources/Private/Templates/
 	}
 	persistence {
-		storagePid = {$plugin.tx_btex.persistence.storagePid}
+		storagePid = {$plugin.tx_bibtex.persistence.storagePid}
 	}
 
 	settings {
-		urlBibtexService = {$plugin.tx_btex.settings.urlBibtexService}
+		urlBibtexService = {$plugin.tx_bibtex.settings.urlBibtexService}
 	}
 
 }
-plugin.tx_btex._CSS_DEFAULT_STYLE (
+plugin.tx_bibtex._CSS_DEFAULT_STYLE (
 	input.f3-form-error {
 		background-color:#FF9F9F;
 		border: 1px #FF0000 solid;
@@ -34,5 +31,5 @@ plugin.tx_btex._CSS_DEFAULT_STYLE (
 	}
 )
 
-page.includeCSS.btex = EXT:btex/Resources/Public/Assets/Css/btex.css
-page.includeJSFooter.btex = EXT:btex/Resources/Public/Assets/JavaScript/btex.js
+page.includeCSS.bibtex = EXT:bibtex/Resources/Public/Assets/Css/btex.css
+page.includeJSFooter.bibtex = EXT:bibtex/Resources/Public/Assets/JavaScript/btex.js

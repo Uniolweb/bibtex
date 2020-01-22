@@ -1,6 +1,6 @@
 <?php
 
-namespace Uniol\Btex\Controller;
+namespace Uniolit\Bibtex\Controller;
 
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;

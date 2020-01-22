@@ -46,7 +46,7 @@
                             <label>Sort</label>
                             <config>
                                 <type>select</type>
-                                <itemsProcFunc>Uniol\Btex\Helper\BibtexHelper->sortOptions</itemsProcFunc>
+                                <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->sortOptions</itemsProcFunc>
                                 <items>
                                     <numIndex index="0" type="array">
                                         <numIndex index="0">bibtexEntryType</numIndex>
@@ -81,7 +81,7 @@
                             <label>Allow</label>
                             <config>
                                 <type>select</type>
-                                <itemsProcFunc>Uniol\Btex\Helper\BibtexHelper->allowOptions</itemsProcFunc>
+                                <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->allowOptions</itemsProcFunc>
                                 <items type="array">
                                     <numIndex index="0" type="array">
                                         <numIndex index="0">article</numIndex>
@@ -151,7 +151,7 @@
                             <label>Deny</label>
                             <config>
                                 <type>select</type>
-                                <itemsProcFunc>Uniol\Btex\Helper\BibtexHelper->denyOptions</itemsProcFunc>
+                                <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->denyOptions</itemsProcFunc>
                                 <items type="array">
                                     <numIndex index="0" type="array">
                                         <numIndex index="0">article</numIndex>
