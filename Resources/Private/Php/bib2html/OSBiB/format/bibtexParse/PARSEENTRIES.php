@@ -394,7 +394,8 @@ class PARSEENTRIES
         // 22/08/2004 Mark Grimshaw - stopped useless looping.
         // removeDelimit and expandMacro have NO effect if !$this->fieldExtract
         if ($this->removeDelimit || $this->expandMacro && $this->fieldExtract) {
-            for ($i = 0; $i < count($this->entries); $i++) {
+            $count = count($this->entries);
+            for ($i = 0; $i < $count; $i++) {
                 foreach ($this->entries[$i] as $key => $value)
                     // 02/05/2005 G. Gardey don't expand macro for bibtexCitation
                     // and bibtexEntryType
