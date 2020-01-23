@@ -10,7 +10,7 @@
                     <!-- URL of Bibtex file -->
                     <settings.link>
                         <TCEforms>
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.bibtexUrlHTTP URL*</label>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.bibtexUrl</label>
                             <config>
                                 <type>input</type>
                                 <size>64</size>
