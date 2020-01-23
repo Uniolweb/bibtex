@@ -432,7 +432,10 @@ class PARSEENTRIES
                 foreach ($this->strings as $key => $value) {
                     // 09/March/2005 - Mark Grimshaw - sometimes $key is empty - not sure why
                     if (!$delimitersExist) {
-                        $string = eregi_replace($key, $value, $string);
+                        // Sybille Peters: eregi_replace was removed
+                        //$string = eregi_replace($key, $value, $string);
+                        //$string = preg_replace('/' . $key . '/', $value, $string);
+                        $string = str_replace( $key, $value, $string);
                     }
                     // 22/08/2004 Mark Grimshaw - make sure a '#' surrounded by any number of spaces is replaced by just one space.
                     // 30/04/2005 Mark Grimshaw - ensure entries such as journal = {{Journal of } # JRNL23} are properly parsed
@@ -449,8 +452,11 @@ class PARSEENTRIES
             if (!empty($this->userStrings)) {
                 // 24/08/2004 G.Gardey replace user defined strings macro
                 foreach ($this->userStrings as $key => $value) {
-                    $string = eregi_replace($key, $value, $string);
-                    $string = preg_replace("/\s*#\s*/", " ", $string);
+                    // Sybille Peters: eregi_replace was removed
+                    //$string = eregi_replace($key, $value, $string);
+                    //$string = preg_replace('/' . $key . '/', $value, $string);
+                    $string = str_replace( $key, $value, $string);
+                    $string = preg_replace("/\s*#\s*/", ' ', $string);
                 }
             }
         }
