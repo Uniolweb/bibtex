@@ -47,11 +47,13 @@
                                         <numIndex index="1">year</numIndex>
                                     </numIndex>    
                                 </items>
+                                <!--
                                 <size>10</size>
                                 <multiple>0</multiple>
                                 <maxitems>1</maxitems>
                                 <renderMode>singlebox</renderMode>
                                 <default>none</default>
+                                -->
                             </config>
                         </TCEforms>
                     </settings.sort>
