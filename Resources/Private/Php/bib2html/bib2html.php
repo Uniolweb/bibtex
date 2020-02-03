@@ -61,6 +61,18 @@ function bib2htmlProcess(
 
     echo '<!-- Style bib2htmlProcess: ' . $style . $lang . ' -->';
 
+    // hack to convert to UTF-8
+    // 2020-02-03
+    // todo: ... cleanup
+    $enc = '% Encoding: ISO-8859-1';
+    $encLen = strlen($enc);
+    if (strpos($data, $enc) === 0) {
+        $data = substr($data, $encLen, strlen($data)-$encLen);
+        $data = utf8_encode($data);
+    }
+    // end hack
+
+
     // parse the content of bib string and generate associative array with valid entries
     $parse = NEW PARSEENTRIES();
     $parse->expandMacro = true;
