@@ -19,7 +19,7 @@
  ********************************/
 class PARSEXML
 {
-    function PARSEXML()
+    public function __construct()
     {
     }
 

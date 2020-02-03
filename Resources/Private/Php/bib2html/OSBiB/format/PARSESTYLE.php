@@ -15,7 +15,7 @@ http://bibliophile.sourceforge.net
 ********************************/
 class PARSESTYLE
 {
-	function PARSESTYLE()
+	public function __construct()
 	{
 	}
 // parse input into array

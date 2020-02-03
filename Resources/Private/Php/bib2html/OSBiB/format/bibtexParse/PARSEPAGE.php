@@ -15,8 +15,8 @@ http://bibliophile.sourceforge.net*/
 *****/
 class PARSEPAGE
 {
-// Constructor
-	function PARSEPAGE()
+
+	public function __construct()
 	{
 	}
 // Create page arrays from bibtex input.

@@ -102,7 +102,7 @@ http://bibliophile.sourceforge.net
  **********************/
 class PARSEENTRIES
 {
-    //function PARSEENTRIES()
+
     function __construct()
     {
         $this->preamble = $this->strings = $this->entries = array();

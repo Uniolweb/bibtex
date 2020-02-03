@@ -26,8 +26,8 @@ sirfragalot@users.sourceforge.net
 *****/
 class BIBSTYLE
 {
-// Constructor
-	function BIBSTYLE($db, $output)
+
+	public function __construct($db, $output)
 	{
 		$this->db = $db;
 		include_once("core/session/SESSION.php");
