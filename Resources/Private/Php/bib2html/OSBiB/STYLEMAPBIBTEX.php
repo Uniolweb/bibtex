@@ -162,15 +162,16 @@ class STYLEMAPBIBTEX
          *
          * If you do not conform to this, OSBib XML style definition sheets you produce will not be compatible with other systems.
          */
-// Three Generic fallback types used when there's no style definition for one of the resources below.
-// Generic Book type - no collection data, like a book
+        // Three Generic fallback types used when there's no style definition for one of the resources below.
+        // Generic Book type - no collection data, like a book
         $this->genericBook = $this->basic;
         $this->genericBook['creator1'] = 'creator';
         $this->genericBook['creator2'] = 'editor';
         $this->genericBook['publisher'] = 'publisherName';
         $this->genericBook['address'] = 'publisherLocation';
         $this->genericBook['ISBN'] = 'ID';
-// Generic Article type - in a collection like an article
+
+        // Generic Article type - in a collection like an article
         $this->genericArticle = $this->basic;
         $this->genericArticle['creator1'] = 'creator';
         $this->genericArticle['creator2'] = 'editor';
@@ -180,7 +181,8 @@ class STYLEMAPBIBTEX
         $this->genericArticle['date'] = 'date';
         $this->genericArticle['pages'] = 'pages';
         $this->genericArticle['ISBN'] = 'ID';
-// Generic Miscellaneous type - whatever is best not put in the above two fall back types....?
+
+        // Generic Miscellaneous type - whatever is best not put in the above two fall back types....?
         $this->genericMisc = $this->basic;
         $this->genericMisc['creator1'] = 'creator';
         $this->genericMisc['publisher'] = 'publisherName';
@@ -189,8 +191,8 @@ class STYLEMAPBIBTEX
         $this->genericMisc['date'] = 'date';
         $this->genericMisc['ISBN'] = 'ID';
 
-// Resource specific mappings. The order here is the display order when editing/creating styles.
-// BOOK
+        // Resource specific mappings. The order here is the display order when editing/creating styles.
+        // BOOK
         $this->book = $this->basic;
         $this->book['creator1'] = 'author';
         $this->book['creator2'] = 'editor';
@@ -207,12 +209,14 @@ class STYLEMAPBIBTEX
         $this->book['publisher'] = 'publisherName';
         $this->book['address'] = 'publisherLocation';
         $this->book['ISBN'] = 'ISBN';
-// BOOK ARTICLE/CHAPTER
+
+        // BOOK ARTICLE/CHAPTER
         $this->book_article = $this->book;
         $this->book_article['booktitle'] = 'book';
         $this->book_article[] = 'shortBook';
         $this->book_article['pages'] = 'pages';
-// JOURNAL ARTICLE
+
+        // JOURNAL ARTICLE
         $this->journal_article = $this->basic;
         $this->journal_article['creator1'] = 'author';
         $this->journal_article['volume'] = 'volume';
@@ -221,7 +225,8 @@ class STYLEMAPBIBTEX
         $this->journal_article[] = 'shortJournal';
         $this->journal_article['pages'] = 'pages';
         $this->journal_article['ISSN'] = 'ISSN';
-// NEWSPAPER ARTICLE
+
+        // NEWSPAPER ARTICLE
         $this->newspaper_article = $this->basic;
         $this->newspaper_article['year'] = 'issueYear'; // override publicationYear
         $this->newspaper_article['date'] = 'issueDate';
@@ -232,7 +237,8 @@ class STYLEMAPBIBTEX
         $this->newspaper_article['address'] = 'city';
         $this->newspaper_article['pages'] = 'pages';
         $this->newspaper_article['ISSN'] = 'ISSN';
-// MAGAZINE ARTICLE
+
+        // MAGAZINE ARTICLE
         $this->magazine_article = $this->basic;
         $this->magazine_article['year'] = 'issueYear'; // override publicationYear
         $this->magazine_article['date'] = 'issueDate';
@@ -245,7 +251,8 @@ class STYLEMAPBIBTEX
         $this->magazine_article['number'] = 'number';
         $this->magazine_article['pages'] = 'pages';
         $this->magazine_article['ISSN'] = 'ISSN';
-// PROCEEDINGS ARTICLE
+
+        // PROCEEDINGS ARTICLE
         $this->proceedings_article = $this->basic;
         $this->proceedings_article['creator1'] = 'author';
         $this->proceedings_article['booktitle'] = 'conference';
@@ -253,17 +260,27 @@ class STYLEMAPBIBTEX
         $this->proceedings_article['organization'] = 'conferenceOrganiser';
         $this->proceedings_article['address'] = 'conferenceLocation';
         $this->proceedings_article['date'] = 'conferenceDate';
-// overwrite publicationYear
+
+        // electronic
+        // added 2020-02-02 Sybille Peters
+        $this->electronic = $this->basic;
+        $this->proceedings_article['creator1'] = 'author';
+
+
+        // overwrite publicationYear
         $this->proceedings_article['year'] = 'conferenceYear';
         $this->proceedings_article['pages'] = 'pages';
         $this->proceedings_article['ISBN'] = 'ISSN';
-// THESIS
+
+        // THESIS
         $this->thesis = $this->basic;
-// overwrite publicationYear
+
+        // overwrite publicationYear
         $this->thesis['year'] = 'awardYear';
         $this->thesis['creator1'] = 'author';
         $this->thesis[] = 'label'; // 'thesis', 'dissertation'
-// 'type' is special and used in BIBFORMAT.php
+
+        // 'type' is special and used in BIBFORMAT.php
         $this->thesis['type'] = 'type'; // 'Master's', 'PhD', 'Doctoral', 'Diploma' etc.
         $this->thesis['institution'] = 'institution';
         $this->thesis['address'] = 'institutionLocation';
@@ -275,7 +292,8 @@ class STYLEMAPBIBTEX
         $this->thesis[] = 'abstractYear';
         $this->thesis['pages'] = 'pages';
         $this->thesis['ISBN'] = 'ID';
-// WEB ARTICLE
+
+        // WEB ARTICLE
         $this->web_article = $this->basic;
         $this->web_article['creator1'] = 'author';
         $this->web_article['journal'] = 'journal';
@@ -287,14 +305,16 @@ class STYLEMAPBIBTEX
         $this->web_article['date'] = 'accessDate';
         $this->web_article[] = 'accessYear';
         $this->web_article['ISBN'] = 'ID';
-// MISCELLANEOUS
+
+        // MISCELLANEOUS
         $this->miscellaneous = $this->basic;
         $this->miscellaneous['creator1'] = 'creator';
         $this->miscellaneous['type'] = 'medium';
         $this->miscellaneous['publisher'] = 'publisherName';
         $this->miscellaneous['address'] = 'publisherLocation';
         $this->miscellaneous['ISBN'] = 'ID';
-// REPORT/DOCUMENTATION
+
+        // REPORT/DOCUMENTATION
         $this->report = $this->basic;
         $this->report['creator1'] = 'author';
         $this->report['type'] = 'type';
@@ -306,7 +326,8 @@ class STYLEMAPBIBTEX
         $this->report['year'] = 'reportYear'; // override
         $this->report['pages'] = 'pages';
         $this->report['ISSN'] = 'ISSN';
-// PROCEEDINGS (complete set of)
+
+        // PROCEEDINGS (complete set of)
         $this->proceedings = $this->basic;
         $this->proceedings['creator2'] = 'editor';
         $this->proceedings['organization'] = 'conferenceOrganiser';
@@ -314,7 +335,8 @@ class STYLEMAPBIBTEX
         $this->proceedings['date'] = 'conferenceDate';
         $this->proceedings['year'] = 'conferenceYear'; // override
         $this->proceedings['ISBN'] = 'ISSN';
-// UNPUBLISHED WORK
+
+        // UNPUBLISHED WORK
         $this->unpublished = $this->basic;
         $this->unpublished['year'] = 'year'; // Override
         $this->unpublished['creator1'] = 'author';
@@ -322,7 +344,8 @@ class STYLEMAPBIBTEX
         $this->unpublished['institution'] = 'institution';
         $this->unpublished['address'] = 'institutionLocation';
         $this->unpublished['ISBN'] = 'ID';
-// CONFERENCE PAPER
+
+        // CONFERENCE PAPER
         $this->conference_paper = $this->basic;
         $this->conference_paper['creator1'] = 'author';
         $this->conference_paper['publisherName'] = 'publisherName';
@@ -333,7 +356,7 @@ class STYLEMAPBIBTEX
          * The following not used by BibTeX.  They are ignored as per $this->types above.
          ***********************/
 
-// FILM
+        // FILM
         $this->film = $this->basic;
         $this->film['creator1'] = 'director';
         $this->film['creator2'] = 'producer';
@@ -341,7 +364,8 @@ class STYLEMAPBIBTEX
         $this->film['runningTime'] = 'runningTime';
         $this->film['publisherName'] = 'distributor';
         $this->film['isbn'] = 'ID';
-// BROADCAST
+
+        // BROADCAST
         $this->broadcast = $this->basic;
         $this->broadcast['creator1'] = 'director';
         $this->broadcast['creator2'] = 'producer';
@@ -351,7 +375,8 @@ class STYLEMAPBIBTEX
         $this->broadcast['publisherName'] = 'channel';
         $this->broadcast['publisherLocation'] = 'channelLocation';
         $this->broadcast['isbn'] = 'ID';
-// SOFTWARE
+
+        // SOFTWARE
         $this->software = $this->basic;
         $this->software['creator1'] = 'author';
         $this->software['field2'] = 'type';
@@ -359,14 +384,16 @@ class STYLEMAPBIBTEX
         $this->software['publisherName'] = 'publisherName';
         $this->software['publisherLocation'] = 'publisherLocation';
         $this->software['isbn'] = 'ID';
-// ARTWORK
+
+        // ARTWORK
         $this->artwork = $this->basic;
         $this->artwork['creator1'] = 'artist';
         $this->artwork['field2'] = 'medium';
         $this->artwork['publisherName'] = 'publisherName';
         $this->artwork['publisherLocation'] = 'publisherLocation';
         $this->artwork['isbn'] = 'ID';
-// AUDIOVISUAL
+
+        // AUDIOVISUAL
         $this->audiovisual = $this->basic;
         $this->audiovisual['creator1'] = 'author';
         $this->audiovisual['creator2'] = 'performer';
@@ -381,7 +408,8 @@ class STYLEMAPBIBTEX
         $this->audiovisual['publisherLocation'] = 'publisherLocation';
         $this->audiovisual['field2'] = 'medium';
         $this->audiovisual['isbn'] = 'ID';
-// (LEGAL) CASE
+
+        // (LEGAL) CASE
         $this->case = $this->basic;
         $this->case['field1'] = 'reporter';
         $this->case['creator3'] = 'counsel';
@@ -390,7 +418,8 @@ class STYLEMAPBIBTEX
         $this->case['year1'] = 'caseDecidedYear'; // override
         $this->case['publisherName'] = 'court';
         $this->case['isbn'] = 'ISBN';
-// LEGAL RULING/REGULATION
+
+        // LEGAL RULING/REGULATION
         $this->legal_ruling = $this->basic;
         $this->legal_ruling['creator1'] = 'author';
         $this->legal_ruling['field1'] = 'section';
@@ -403,7 +432,8 @@ class STYLEMAPBIBTEX
         $this->legal_ruling['publisherLocation'] = 'publisherLocation';
         $this->legal_ruling['pages'] = 'pages';
         $this->legal_ruling['isbn'] = 'ISBN';
-// (PARLIAMENTARY) BILL
+
+        // (PARLIAMENTARY) BILL
         $this->bill = $this->basic;
         $this->bill['field2'] = 'code';
         $this->bill['field3'] = 'codeVolume';
@@ -415,12 +445,14 @@ class STYLEMAPBIBTEX
         $this->bill['publisherLocation'] = 'publisherLocation';
         $this->bill['pages'] = 'pages';
         $this->bill['isbn'] = 'ID';
-// CLASSICAL WORK
+
+        // CLASSICAL WORK
         $this->classical = $this->basic;
         $this->classical['creator1'] = 'attributedTo';
         $this->classical['field4'] = 'volume';
         $this->classical['isbn'] = 'ISBN';
-// GOVERNMENT REPORT/DOCUMENTATION
+
+        // GOVERNMENT REPORT/DOCUMENTATION
         $this->government_report = $this->basic;
         $this->government_report['creator1'] = 'author';
         $this->government_report['field2'] = 'department';
@@ -431,7 +463,8 @@ class STYLEMAPBIBTEX
         $this->government_report['publisherName'] = 'publisherName';
         $this->government_report['pages'] = 'pages';
         $this->government_report['isbn'] = 'ISSN';
-// GOVERNMENT/LEGAL HEARING
+
+        // GOVERNMENT/LEGAL HEARING
         $this->hearing = $this->basic;
         $this->hearing['field1'] = 'committee';
         $this->hearing['field2'] = 'legislativeBody';
@@ -444,7 +477,8 @@ class STYLEMAPBIBTEX
         $this->hearing['publisherLocation'] = 'publisherLocation';
         $this->hearing['pages'] = 'pages';
         $this->hearing['isbn'] = 'ISSN';
-// ONLINE DATABASE
+
+        // ONLINE DATABASE
         $this->database = $this->basic;
         $this->database['creator1'] = 'author';
         $this->database['URL'] = 'URL';
@@ -453,7 +487,8 @@ class STYLEMAPBIBTEX
         $this->database['publisherName'] = 'publisherName';
         $this->database['publisherLocation'] = 'publisherLocation';
         $this->database['isbn'] = 'ID';
-// MANUSCRIPT
+
+        // MANUSCRIPT
         $this->manuscript = $this->basic;
         $this->manuscript['creator1'] = 'author';
         $this->manuscript['collectionTitle'] = 'collection';
@@ -464,7 +499,8 @@ class STYLEMAPBIBTEX
         $this->manuscript['year1'] = 'issueYear'; // override
         $this->manuscript['pages'] = 'pages';
         $this->manuscript['isbn'] = 'ISBN';
-// MAP
+
+        // MAP
         $this->map = $this->basic;
         $this->map['creator1'] = 'cartographer';
         $this->map['creator5'] = 'seriesEditor';
@@ -474,7 +510,8 @@ class STYLEMAPBIBTEX
         $this->map['publisherName'] = 'publisherName';
         $this->map['publisherLocation'] = 'publisherLocation';
         $this->map['isbn'] = 'ISBN';
-// CHART
+
+        // CHART
         $this->chart = $this->basic;
         $this->chart['creator1'] = 'creator';
         $this->chart['field1'] = 'fileName';
@@ -486,7 +523,8 @@ class STYLEMAPBIBTEX
         $this->chart['publisherName'] = 'publisherName';
         $this->chart['publisherLocation'] = 'publisherLocation';
         $this->chart['isbn'] = 'ID';
-// STATUTE
+
+        // STATUTE
         $this->statute = $this->basic;
         $this->statute['field2'] = 'code';
         $this->statute['field5'] = 'codeNumber';
@@ -497,7 +535,8 @@ class STYLEMAPBIBTEX
         $this->statute['year1'] = 'statuteYear'; // override
         $this->statute['pages'] = 'pages';
         $this->statute['isbn'] = 'ID';
-// PATENT
+
+        // PATENT
         $this->patent = $this->basic;
         $this->patent['creator1'] = 'inventor';
         $this->patent['creator2'] = 'issuingOrganisation';
@@ -517,7 +556,8 @@ class STYLEMAPBIBTEX
         $this->patent['date'] = 'issueDate';
         $this->patent['year1'] = 'issueYear'; // override
         $this->patent['isbn'] = 'ID';
-// PERSONAL COMMUNICATION
+
+        // PERSONAL COMMUNICATION
         $this->personal = $this->basic;
         $this->personal['creator1'] = 'author';
         $this->personal['creator2'] = 'recipient';
@@ -525,7 +565,8 @@ class STYLEMAPBIBTEX
         $this->personal['date'] = 'date';
         $this->personal['year1'] = 'year'; // override
         $this->personal['isbn'] = 'ID';
-// MUSIC ALBUM
+
+        // MUSIC ALBUM
         $this->music_album = $this->basic;
         $this->music_album['creator1'] = 'performer';
         $this->music_album['creator2'] = 'composer';
@@ -533,7 +574,8 @@ class STYLEMAPBIBTEX
         $this->music_album['field2'] = 'medium';
         $this->music_album['publisherName'] = 'publisherName';
         $this->music_album['isbn'] = 'ID';
-// MUSIC TRACK
+
+        // MUSIC TRACK
         $this->music_track = $this->basic;
         $this->music_track['creator1'] = 'performer';
         $this->music_track['creator2'] = 'composer';
@@ -543,7 +585,8 @@ class STYLEMAPBIBTEX
         $this->music_track['field2'] = 'medium';
         $this->music_track['publisherName'] = 'publisherName';
         $this->music_track['isbn'] = 'ID';
-// MUSIC SCORE
+
+        // MUSIC SCORE
         $this->music_score = $this->basic;
         $this->music_score['creator1'] = 'composer';
         $this->music_score['creator2'] = 'editor';

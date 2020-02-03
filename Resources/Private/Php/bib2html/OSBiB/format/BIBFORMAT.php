@@ -288,7 +288,9 @@ class BIBFORMAT
          */
         if ($this->bibtex) {
             foreach ($row as $field => $value) {
-                if (array_key_exists($field, $this->styleMap->$type) &&
+                if (isset($this->styleMap->$type) &&
+                    is_array($this->styleMap->$type) &&
+                    array_key_exists($field, $this->styleMap->$type) &&
                     !array_key_exists($this->styleMap->{$type}[$field], $this->item)) {
                     $this->addItem($row[$field], $field);
                 }
@@ -400,19 +402,24 @@ class BIBFORMAT
             }
         }
         $this->type = $type;
-        if (array_key_exists('creator1', $row) && $row['creator1'] &&
-            array_key_exists('creator1', $this->styleMap->$type)) {
-            $creators = $parseCreator->parse($row['creator1']);
-            foreach ($creators as $cArray) {
-                $temp[] = array(
-                    'surname' => trim($cArray[2]),
-                    'firstname' => trim($cArray[0]),
-                    'initials' => trim($cArray[1]),
-                    'prefix' => trim($cArray[3]),
-                );
+        if (isset($this->styleMap->$type) && is_array($this->styleMap->$type)) {
+            if (array_key_exists('creator1', $row) && $row['creator1'] &&
+                array_key_exists('creator1', $this->styleMap->$type)) {
+                $creators = $parseCreator->parse($row['creator1']);
+                foreach ($creators as $cArray) {
+                    $temp[] = array(
+                        'surname' => trim($cArray[2]),
+                        'firstname' => trim($cArray[0]),
+                        'initials' => trim($cArray[1]),
+                        'prefix' => trim($cArray[3]),
+                    );
+                }
+                $this->formatNames($temp, 'creator1');
+                unset($temp);
             }
-            $this->formatNames($temp, 'creator1');
-            unset($temp);
+        } else {
+            // todo: handle or log error
+
         }
         if (array_key_exists('creator2', $row) && $row['creator2'] &&
             array_key_exists('creator2', $this->styleMap->$type)) {
@@ -1006,7 +1013,9 @@ class BIBFORMAT
         $delimitRight = preg_quote($delimitRight);
         $match = "/" . $delimitLeft . "/";
         $type = $this->type;
-        if (!array_key_exists('title', $this->styleMap->$type)) {
+        if (isset($this->styleMap->$type)
+            && is_array($this->styleMap->$type)
+            && !array_key_exists('title', $this->styleMap->$type)) {
             $this->item[$this->styleMap->{$type}['title']] = '';
         }
         /**

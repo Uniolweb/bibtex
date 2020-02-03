@@ -38,7 +38,7 @@ class PARSEXML
         $info['name'] = $this->entries[0]['_ELEMENTS'][0]['_ELEMENTS'][0]['_DATA'];
         $info['description'] = $this->entries[0]['_ELEMENTS'][0]['_ELEMENTS'][1]['_DATA'];
         $info['language'] = $this->entries[0]['_ELEMENTS'][0]['_ELEMENTS'][2]['_DATA'];
-// Following added to later versions so need to check in case earlier version is being loaded into the editor.
+        // Following added to later versions so need to check in case earlier version is being loaded into the editor.
         if (array_key_exists(3, $this->entries[0]['_ELEMENTS'][0]['_ELEMENTS'])) {
             $info['version'] = $this->entries[0]['_ELEMENTS'][0]['_ELEMENTS'][3]['_DATA'];
         }
