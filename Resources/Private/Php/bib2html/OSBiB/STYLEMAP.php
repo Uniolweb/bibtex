@@ -16,9 +16,29 @@
  ********************************/
 class STYLEMAP
 {
+
+    /**
+     * Use this type for unknown type
+     *
+     * @var string
+     */
+    const DEFAULT_TYPE = 'genericMisc';
+
+    /**
+     * @var array
+     */
+    protected $types = [];
+
     public function __construct()
     {
         $this->loadMap();
+    }
+
+    public function mapType(string $type) : string
+    {
+        $mappedType = array_search($type, $this->types);
+
+        return $mappedType ?? self::DEFAULT_TYPE;
     }
 
     /**

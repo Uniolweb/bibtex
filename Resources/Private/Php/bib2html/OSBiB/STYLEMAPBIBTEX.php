@@ -32,9 +32,29 @@
  */
 class STYLEMAPBIBTEX
 {
+    /**
+     * Use this type for unknown type
+     *
+     * @var string
+     */
+    const DEFAULT_TYPE = 'genericMisc';
+
+    /**
+     * @var array
+     */
+    protected $types = [];
+
+
     public function __construct()
     {
         $this->loadMap();
+    }
+
+    public function mapType(string $type) : string
+    {
+        $mappedType = array_search($type, $this->types);
+
+        return $mappedType ?? self::DEFAULT_TYPE;
     }
 
     /**
@@ -60,7 +80,7 @@ class STYLEMAPBIBTEX
      *
      * @author Mark Grimshaw
      */
-    function loadMap()
+    protected function loadMap()
     {
         /**
          * What fields are available to the in-text citation template? This array should NOT be changed.
@@ -82,11 +102,11 @@ class STYLEMAPBIBTEX
          * does not have a particular resource type, then you should set the value to FALSE (e.g. 'film' => FALSE,)
          */
         $this->types = array(
-// The generic types must be present and unchanged.  DO NOT CHANGE THE VALUE OF THESE THREE!
+            // The generic types must be present and unchanged.  DO NOT CHANGE THE VALUE OF THESE THREE!
             'genericBook' => 'genericBook',
             'genericArticle' => 'genericArticle',
             'genericMisc' => 'genericMisc',
-// Edit values if necessary
+            // Edit values if necessary
             'book' => 'book',
             'book_article' => 'inbook',
             'journal_article' => 'article',

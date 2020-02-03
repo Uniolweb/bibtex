@@ -22,6 +22,12 @@
  */
 class BIBFORMAT
 {
+
+    /**
+     * @var string
+     */
+    protected $type = '';
+
     /**
      * $dir is the path to STYLEMAP.php etc.
      */
@@ -208,9 +214,9 @@ class BIBFORMAT
     /**
      * Perform pre-processing on the raw SQL array
      *
-     * @param    $type    The resource type
-     * @param    $row    Associate array of raw SQL data
-     * @return    $row    Processed row of raw SQL data
+     * @param  string  $type    The resource type
+     * @param  array  $row    Associate array of raw SQL data
+     * @return  array    Processed row of raw SQL data
      * @version    1
      *
      * @author    Mark Grimshaw
@@ -222,7 +228,8 @@ class BIBFORMAT
          */
         $this->item = array();
         // Map this system's resource type to OSBib's resource type
-        $this->type = array_search($type, $this->styleMap->types);
+        //$this->type = array_search($type, $this->styleMap->types);
+        $this->type = $this->styleMap->mapType($type);
         if ($this->bibtex && array_key_exists('author', $row)) {
             $row['creator1'] = $row['author'];
             unset($row['author']);
