@@ -28,11 +28,16 @@ class BIBFORMAT
      */
     protected $type = '';
 
+    /** @var array  */
+    protected $item;
+
     /**
      * $dir is the path to STYLEMAP.php etc.
      */
     function __construct($dir = false, $bibtex = false, $preview = false)
     {
+        $this->item = [];
+
         //05/05/2005 G.GARDEY: add a last "/" to $stylePath if not present.
         $this->preview = $preview;
         if (!$this->preview) // Not javascript preview
@@ -293,6 +298,9 @@ class BIBFORMAT
         /**
          * Add BibTeX entry to $this->item
          */
+        if (!isset($this->item)) {
+            $this->item = [];
+        }
         if ($this->bibtex) {
             foreach ($row as $field => $value) {
                 if (isset($this->styleMap->$type) &&
