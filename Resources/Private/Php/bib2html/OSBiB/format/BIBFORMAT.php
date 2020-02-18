@@ -469,6 +469,8 @@ class BIBFORMAT
      */
     function map($template = false)
     {
+        $itemArray = [];
+
         /**
          * Output medium:
          * 'html', 'rtf', or 'plain'
@@ -483,6 +485,10 @@ class BIBFORMAT
         $ultimate = '';
         $index = 0;
         $previousFieldExists = $nextFieldExists = true;
+        
+        if (!$this->$type) {
+            $this->$type = [];
+        }
         if ($this->$type && array_key_exists('independent', $this->$type)) {
             $independent = $this->{$type}['independent'];
         }
@@ -645,7 +651,7 @@ class BIBFORMAT
                 }
             }
         }
-        $pString = join('', $itemArray);
+        $pString = implode('', $itemArray);
         /**
          * if last character is punctuation (which it may be with missing fields etc.), and $ultimate is also
          * punctuation, remove last character.
