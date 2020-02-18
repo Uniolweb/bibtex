@@ -483,7 +483,7 @@ class BIBFORMAT
         $ultimate = '';
         $index = 0;
         $previousFieldExists = $nextFieldExists = true;
-        if (array_key_exists('independent', $this->$type)) {
+        if ($this->$type && array_key_exists('independent', $this->$type)) {
             $independent = $this->{$type}['independent'];
         }
         /**
