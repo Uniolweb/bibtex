@@ -1445,6 +1445,10 @@ class BIBFORMAT
         $this->config->bibtex();
 
         // Construction of the transformation filter
+        foreach ($this->config->bibtexMbCh as $key => $value) {
+            $replaceBibtex[] = $key;
+            $matchBibtex[] = preg_quote("/$value/");
+        }
         foreach ($this->config->bibtexSpCh as $key => $value) {
             $replaceBibtex[] = chr($key);
             $matchBibtex[] = preg_quote("/$value/");
@@ -1489,6 +1493,11 @@ class BIBTEXCONFIG
     // BibTeX arrays
     function bibtex()
     {
+        $this->bibtexMbCh = array(
+            '&#x0107;' => "{\'{c}}",
+            '&#x03b1;' => "$\alpha$",
+        );
+
         $this->bibtexSpCh = array(
             // Deal with '{' and '}' first!
             0x007B => "\\textbraceleft",
@@ -1538,7 +1547,6 @@ class BIBTEXCONFIG
             0x00E5 => "{\aa}",
             0x00E6 => "{\ae}",
             0x00E7 => "{\c{c}}",
-            0x0107 => "{\'{c}}",
             0x00E8 => "{\`e}",
             0x00E9 => "{\'e}",
             0x00EA => "{\^e}",
@@ -1602,7 +1610,7 @@ class BIBTEXCONFIG
             0x00E5 => "{\a{a}}",
             0x00E6 => "{\a{e}}",
             0x00E7 => "{\c{c}}",
-            0x0107 => "{\'{c}}",
+//            0x0107 => "{\'{c}}",
             0x00E8 => "{\`{e}}",
             0x00E9 => "{\'{e}}",
             0x00EA => "{\^{e}}",
