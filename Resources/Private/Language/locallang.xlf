@@ -34,34 +34,6 @@
             <trans-unit id="settings.deny.all" xml:space="preserve">
                 <source>- hide none -</source>
             </trans-unit>
-
-            <!-- currently not used ....
-            <trans-unit id="settings.bibtexEntryType.article" xml:space="preserve">
-                <source>article</source>
-            </trans-unit>
-            <trans-unit id="settings.bibtexEntryType.book" xml:space="preserve">
-                <source>book</source>
-            </trans-unit>
-
-            <trans-unit id="settings.bibtexEntryType.conference" xml:space="preserve">
-                <source>book</source>
-            </trans-unit>
-            <trans-unit id="settings.bibtexEntryType.inbook" xml:space="preserve">
-                <source>book</source>
-            </trans-unit>
-            <trans-unit id="settings.bibtexEntryType.incollection" xml:space="preserve">
-                <source>book</source>
-            </trans-unit>
-            <trans-unit id="settings.bibtexEntryType.inproceedings" xml:space="preserve">
-                <source>book</source>
-            </trans-unit>
-            <trans-unit id="settings.bibtexEntryType.manual" xml:space="preserve">
-                <source>book</source>
-            </trans-unit>
-            <trans-unit id="settings.bibtexEntryType.misc" xml:space="preserve">
-                <source>book</source>
-            </trans-unit>
-            -->
         </body>
     </file>
 </xliff>

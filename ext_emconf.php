@@ -1,7 +1,7 @@
 <?php
 
 $EM_CONF[$_EXTKEY] = array(
-    'title' => 'BibtexExtension (Uniol: Anpassungen f. TYPO3 9.5.9)',
+    'title' => 'Bibtex Extension (Uniol: Anpassungen f. TYPO3 9.5.9)',
     'description' => '',
     'category' => 'plugin',
     'author' => '',

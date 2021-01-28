@@ -1,0 +1,29 @@
+# Publikationen tab
+mod.wizards.newContentElement.wizardItems {
+   pub {
+      #after = menu
+      header = LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:ce-wizard.tab.publications.title
+   }
+}
+
+
+# bibtex plugin
+mod.wizards.newContentElement.wizardItems {
+   pub {
+      elements {
+
+         Bibtex {
+           iconIdentifier = bibtex-plugin
+           title = LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:ce-wizard.ce.bibtex.title
+           description =
+           tt_content_defValues {
+               CType = list
+               list_type = bibtex_bibtex
+           }
+         }
+      }
+
+      show := addToList(Bibtex)
+   }
+
+}

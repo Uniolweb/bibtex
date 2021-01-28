@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" data="2015-10-15T16-28-09" product-name="zsb">
+        <header/>
+        <body>
+            <trans-unit id="ce-wizard.tab.publications.title" xml:space="preserve">
+                <source>Publications</source>
+                <target>Publikationen</target>
+            </trans-unit>
+
+            <trans-unit id="ce-wizard.ce.bibtex.title" xml:space="preserve">
+                <source>Bibtex</source>
+                <target>Bibtex</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
