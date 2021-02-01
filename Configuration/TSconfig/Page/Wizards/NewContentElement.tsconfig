@@ -1,15 +1,16 @@
 # Publikationen tab
-mod.wizards.newContentElement.wizardItems {
-   pub {
-      #after = menu
-      header = LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:ce-wizard.tab.publications.title
-   }
-}
+# mod.wizards.newContentElement.wizardItems {
+#   pub {
+#      #after = menu
+#      header = LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:ce-wizard.tab.publications.title
+#   }
+# }
 
 
 # bibtex plugin
 mod.wizards.newContentElement.wizardItems {
-   pub {
+   #pub {
+   plugins {
       elements {
 
          Bibtex {
