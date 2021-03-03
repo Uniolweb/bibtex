@@ -2485,6 +2485,7 @@ class SimpleDisplay  {
     $pred = NULL;
     foreach ($this->entries as $bib) {
       if ($this->changeSection($pred, $bib)) {
+        // @extensionScannerIgnoreLine
         echo $this->sectionHeader($bib);
       }
       // by default, index are in decreasing order
@@ -3844,5 +3845,6 @@ class Dispatcher {
 @include(preg_replace('/\.php$/','.after.php',__FILE__));
 $class = BIBTEXBROWSER_MAIN;// extension point
 $main = new $class();
+// @extensionScannerIgnoreLine
 $main->main();
 ?>

@@ -14,10 +14,11 @@
  * http://bibliophile.sourceforge.net
  ********************************/
 
-/*****
+/**
  * UTF-8 class
- *
- *****/
+ * @extensionScannerIgnoreFile This file contains no TYPO3 specific code
+ *   and should be ignored by the extension scanner.
+ **/
 class UTF8
 {
 

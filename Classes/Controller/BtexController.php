@@ -2,6 +2,8 @@
 
 namespace Uniolit\Bibtex\Controller;
 
+use \Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Core\Environment;
@@ -12,13 +14,9 @@ use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use Uniolit\Bibtex\Domain\Model\BibtexSettings;
 
 
-class BtexController extends ActionController
+class BtexController extends ActionController implements LoggerAwareInterface
 {
-
-    /**
-     * @var Logger
-     */
-    private $logger;
+    use LoggerAwareTrait;
 
     /** @var int */
     private $languageId = 0;
@@ -52,7 +50,6 @@ class BtexController extends ActionController
 
     public function initializeAction()
     {
-        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('bibtex_bibtexcache');
     }
 
@@ -74,21 +71,21 @@ class BtexController extends ActionController
         }
         $this->key = $this->settings['key'] ?? '';
 
+        // @extensionScannerIgnoreLine
         if ($this->settings['allow']) {
+            // @extensionScannerIgnoreLine
             $this->allow = explode(',', $this->settings['allow']);
         } else {
             $this->allow = [];
         }
+
+        // @extensionScannerIgnoreLine
         if ($this->settings['deny']) {
+            // @extensionScannerIgnoreLine
             $this->deny = explode(',', $this->settings['deny']);
         } else {
             $this->deny = [];
         }
-        /*
-        if ($this->settings['template']) {
-            $aOlBibtexPars[] = 'template=' . $this->settings['template'];
-        }
-        */
 
         if ($this->settings['sortfixed'] === "1") {
             $bibtexSettings->setSortFixed(true);
@@ -101,9 +98,11 @@ class BtexController extends ActionController
         $bibtexContent = $this->getBibtexFileContent($this->bibtexUrl);
         if (!$bibtexContent) {
             $convertedContent = 'Bibtex file does not exist.';
+            // @extensionScannerIgnoreLine
             $this->logger->error('bibtex file does not exist:' . $this->bibtexUrl);
         } else if (strlen($bibtexContent) === 0) {
             $convertedContent = 'Bibtex file is empty.';
+            // @extensionScannerIgnoreLine
             $this->logger->error('Error on opening URL ' . $this->bibtexUrl . ': Bibtex file is empty');
         } else {
             $this->logger->debug('Use internal bib2html');
@@ -132,8 +131,8 @@ class BtexController extends ActionController
      */
     protected function isCachable() : bool
     {
-        if ($this->settings['allow']
-            || $this->settings['deny']
+        // @extensionScannerIgnoreLine
+        if ($this->settings['allow'] || $this->settings['deny']
             || $this->settings['template']
             || $this->settings['sort'] !==  BibtexSettings::DEFAULT_SORT) {
             return false;
@@ -203,6 +202,7 @@ class BtexController extends ActionController
         try {
             $content = file_get_contents($bibtexUrl, false, null, 0, 10);
         } catch (\Exception $e) {
+            // @extensionScannerIgnoreLine
             $this->logger->error('Error on opening URL '  . $bibtexUrl . ': ' . $e->getMessage());
             $content = '';
         }

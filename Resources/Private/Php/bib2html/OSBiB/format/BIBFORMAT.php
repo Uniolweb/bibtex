@@ -19,6 +19,9 @@
  *
  * @author    Mark Grimshaw
  * @version    1
+ *
+ * @extensionScannerIgnoreFile This file contains no TYPO3 specific code
+ *   and should be ignored by the extension scanner.
  */
 class BIBFORMAT
 {
