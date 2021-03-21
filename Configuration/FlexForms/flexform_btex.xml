@@ -26,6 +26,7 @@
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort</label>
                             <config>
                                 <type>select</type>
+                                <renderType>selectSingle</renderType>
                                 <!--
                                     <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->sortOptions</itemsProcFunc>
                                     -->
@@ -64,6 +65,7 @@
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.allow</label>
                             <config>
                                 <type>select</type>
+                                <renderType>selectSingle</renderType>
                                 <!--
                                 <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->allowOptions</itemsProcFunc>
                                 -->
@@ -141,6 +143,7 @@
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.deny</label>
                             <config>
                                 <type>select</type>
+                                <renderType>selectSingle</renderType>
                                 <!--
                                 <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->denyOptions</itemsProcFunc>
                                 -->
