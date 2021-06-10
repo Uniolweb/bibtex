@@ -13,7 +13,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Uniolit\\Btex\\": "Classes/"
+      "Uniolit\\Bibtex\\": "Classes/"
     }
   },
   "extra": {
