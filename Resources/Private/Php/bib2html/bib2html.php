@@ -5,7 +5,7 @@
 /*
 Plugin Name: bib2html
 Plugin URI: http://sergioandreozzi.com/wordpress/bib2html
-Description: bib2html enables to add bibtex entries formatted as HTML in wordpress pages and posts. The input data is the bibtex text file and the output is HTML. 
+Description: bib2html enables to add bibtex entries formatted as HTML in wordpress pages and posts. The input data is the bibtex text file and the output is HTML.
 Version: 0.9.3
 Author: Sergio Andreozzi
 Author URI: http://sergioandreozzi.com
@@ -128,7 +128,16 @@ function bib2htmlProcess(
         // get the formatted resource string ready for printing to the web browser
         // the str_replace is used to remove the { } parentheses possibly present in title
         // to enforce uppercase, TODO: check if it can be done only on title
-        $mapped_entry = str_replace(array('{', '}'), '', $bibformat->map());
+        $mapped_entry = $bibformat->map();
+        $mapped_entry = str_replace(['{', '}'], '', $mapped_entry);
+
+        /**
+         * SP 2021-07-08 Fix trailing comma in title
+         * e.g.  "Climate Policies after Paris: Pledge, Trade and Recyle,"
+         * should be:  "Climate Policies after Paris: Pledge, Trade and Recyle"
+         */
+        $mapped_entry = str_replace([',&quot' ], '&quot', $mapped_entry);
+                
         $tpl->newBlock("bibtex_entry");
         $tpl->assign("year", $entry['year']);
         $tpl->assign("type", $entry['bibtexEntryType']);
