@@ -8,7 +8,7 @@ if (!defined('TYPO3_MODE')) {
         'Bibtex',
         'Bibtex',
         [
-            'Btex' => 'show',
+            \Uniolit\Bibtex\Controller\BtexController::class => 'show',
 
         ]
     );
