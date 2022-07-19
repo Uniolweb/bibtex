@@ -1,5 +1,8 @@
-Downloaded from
-https://sourceforge.net/projects/bibliophile/files/OSBiB/OSBiB_3.0/OSBiB_3.0.zip/download
+Downloaded from wordpress plugin:
+* http://sergioandreozzi.com/wordpress/bib2html
+
+Direct source of OSBiB:
+* https://sourceforge.net/projects/bibliophile/files/OSBiB/OSBiB_3.0/OSBiB_3.0.zip/download
 
 Other usages of OSBib in monorepo:
 
