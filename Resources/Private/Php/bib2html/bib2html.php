@@ -137,7 +137,7 @@ function bib2htmlProcess(
          * should be:  "Climate Policies after Paris: Pledge, Trade and Recyle"
          */
         $mapped_entry = str_replace([',&quot' ], '&quot', $mapped_entry);
-                
+
         $tpl->newBlock("bibtex_entry");
         $tpl->assign("year", $entry['year']);
         $tpl->assign("type", $entry['bibtexEntryType']);
@@ -192,8 +192,12 @@ function toDownload($entry, $lang)
         } else {
             $text = 'Go to document';
         }
+        /**
+         * @var $string
+         * @todo make image path configurable
+         */
         $string = " | <a href='" . str_replace('\\', '',
-                $entry['url']) . "' title='" . $text . "'><img src='https://uol.de/www/bib2html/bib2html/external.png' width='10' height='10' alt='" . $text . "' /> " . $text . "</a>";
+                $entry['url']) . "' title='" . $text . "'><img src='https://uol.de/typo3conf/ext/bibtex/Resource/Public/Assets/Icons/bibtex_external.png' width='10' height='10' alt='" . $text . "' /> " . $text . "</a>";
         return $string;
     }
     return '';

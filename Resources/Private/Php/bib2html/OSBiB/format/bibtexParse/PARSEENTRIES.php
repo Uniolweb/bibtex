@@ -1,6 +1,6 @@
 <?php
 /*
-Inspired by an awk BibTeX parser written by Nelson H. F. Beebe over 20 years ago although little of that 
+Inspired by an awk BibTeX parser written by Nelson H. F. Beebe over 20 years ago although little of that
 remains other than a highly edited braceCount().
 
 Released through http://bibliophile.sourceforge.net under the GPL licence.
@@ -322,7 +322,7 @@ class PARSEENTRIES
             $oldString = substr_replace($oldString, '', $pos, strlen($value));
         }
         $rev = strrev(trim($oldString));
-        if ($rev{0} != ',') {
+        if ($rev[0] != ',') {
             $oldString .= ',';
         }
         $keys = preg_split("/=,/", $oldString);
@@ -334,7 +334,7 @@ class PARSEENTRIES
             $value = trim(array_shift($values));
             $rev = strrev($value);
             // remove any dangling ',' left on final field of entry
-            if ($rev{0} == ',') {
+            if ($rev[0] == ',') {
                 $value = rtrim($value, ",");
             }
             if (!$value) {
@@ -471,11 +471,11 @@ class PARSEENTRIES
 // MG 10/06/2005 - Make a note of whether delimiters exist - required in removeDelimitersAndExpand() otherwise, expansion happens everywhere including
 // inside {...} and "..."
         $this->delimitersExist = false;
-        if ($string && ($string{0} == "\"")) {
+        if ($string && ($string[0] == "\"")) {
             $string = substr($string, 1);
             $string = substr($string, 0, -1);
         } else {
-            if ($string && ($string{0} == "{")) {
+            if ($string && ($string[0] == "{")) {
                 if (strlen($string) > 0 && $string[strlen($string) - 1] == "}") {
                     $string = substr($string, 1);
                     $string = substr($string, 0, -1);

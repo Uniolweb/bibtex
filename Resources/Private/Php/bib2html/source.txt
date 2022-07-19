@@ -1,4 +1,11 @@
 Downloaded from
 https://sourceforge.net/projects/bibliophile/files/OSBiB/OSBiB_3.0/OSBiB_3.0.zip/download
 
+Other usages of OSBib in monorepo:
+
+aigaion
+* https://fossies.org/dox/aigaion2.2.b/dir_6c2bc33a1ce543875faa2101b1c6508a.html
+* https://github.com/aigaion/aigaion/tree/master/www/application/include/OSBib
+
+
 2021-03-21
