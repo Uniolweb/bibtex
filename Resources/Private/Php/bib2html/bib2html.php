@@ -197,7 +197,7 @@ function toDownload($entry, $lang)
          * @todo make image path configurable
          */
         $string = " | <a href='" . str_replace('\\', '',
-                $entry['url']) . "' title='" . $text . "'><img src='https://uol.de/typo3conf/ext/bibtex/Resource/Public/Assets/Icons/bibtex_external.png' width='10' height='10' alt='" . $text . "' /> " . $text . "</a>";
+                $entry['url']) . "' title='" . $text . "'><img src='/typo3conf/ext/bibtex/Resources/Public/Assets/Icons/bibtex_external.png' width='10' height='10' alt='" . $text . "' /> " . $text . "</a>";
         return $string;
     }
     return '';
