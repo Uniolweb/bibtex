@@ -11,25 +11,7 @@ plugin.tx_bibtex {
 	}
 
 }
-plugin.tx_bibtex._CSS_DEFAULT_STYLE (
-	input.f3-form-error {
-		background-color:#FF9F9F;
-		border: 1px #FF0000 solid;
-	}
 
-	.tx-btex table {
-		border-collapse:separate;
-		border-spacing:10px;
-	}
-
-	.tx-btex table th {
-		font-weight:bold;
-	}
-
-	.tx-btex table td {
-		vertical-align:top;
-	}
-)
-
-page.includeCSS.bibtex = EXT:bibtex/Resources/Public/Assets/Css/btex.css
-page.includeJSFooter.bibtex = EXT:bibtex/Resources/Public/Assets/JavaScript/btex.js
+# using AssetCollector to add CSS only if plugin on page
+#page.includeCSS.bibtex = EXT:bibtex/Resources/Public/Assets/Css/btex.css
+#page.includeJSFooter.bibtex = EXT:bibtex/Resources/Public/Assets/JavaScript/btex.js

@@ -9,6 +9,7 @@ use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
+use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use Uniolit\Bibtex\Domain\Model\BibtexSettings;
@@ -48,9 +49,33 @@ class BtexController extends ActionController implements LoggerAwareInterface
 
     private $cache;
 
+    /** @var AssetCollector */
+    protected $assetCollector;
+
+    public function __construct(AssetCollector $assetCollector)
+    {
+        $this->assetCollector = $assetCollector;
+    }
+
     public function initializeAction()
     {
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('bibtex_bibtexcache');
+
+
+        // inlude JavaScript in footer
+        $this->assetCollector->addJavaScript(
+            'bibtex.js',
+            'EXT:bibtex/Resources/Public/Assets/JavaScript/btex.js',
+            [],
+            ['priority' => false]
+        );
+        // include CSS in footer
+        $this->assetCollector->addStyleSheet(
+            'bibtex.css',
+            'EXT:bibtex/Resources/Public/Assets/Css/btex.css',
+            [],
+            ['priority' => false]
+        );
     }
 
     /**
