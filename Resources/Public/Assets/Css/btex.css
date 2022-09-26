@@ -1,3 +1,21 @@
+input.f3-form-error {
+    background-color:#FF9F9F;
+    border: 1px #FF0000 solid;
+}
+
+.tx-btex table {
+    border-collapse:separate;
+    border-spacing:10px;
+}
+
+.tx-btex table th {
+    font-weight:bold;
+}
+
+.tx-btex table td {
+    vertical-align:top;
+}
+
 div.bibtex {
     display: none;
     font-size: 12px;
@@ -17,9 +35,6 @@ div.bibtex {
     background-color: transparent;
 }
 
-/**
- * form
- */
 form.bibtex-form fieldset.bibtex-fieldset {
     border: none;
 }
