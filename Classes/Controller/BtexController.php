@@ -112,7 +112,7 @@ class BtexController extends ActionController implements LoggerAwareInterface
             $this->deny = [];
         }
 
-        if ($this->settings['sortfixed'] === "1") {
+        if (($this->settings['sortfixed'] ?? false) === "1") {
             $bibtexSettings->setSortFixed(true);
         }
         // @todo: remove this once changing the sorting is supported
@@ -157,9 +157,10 @@ class BtexController extends ActionController implements LoggerAwareInterface
     protected function isCachable() : bool
     {
         // @extensionScannerIgnoreLine
-        if ($this->settings['allow'] || $this->settings['deny']
-            || $this->settings['template']
-            || $this->settings['sort'] !==  BibtexSettings::DEFAULT_SORT) {
+        if (($this->settings['allow'] ?? false)
+            || ($this->settings['deny'] ?? false)
+            || ($this->settings['template'] ?? false)
+            || ($this->settings['sort'] ?? '') !==  BibtexSettings::DEFAULT_SORT) {
             return false;
         }
         return true;
