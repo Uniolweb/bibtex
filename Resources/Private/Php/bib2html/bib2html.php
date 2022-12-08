@@ -45,13 +45,13 @@ This plug-in has been improved thanks to the suggestons and contributions of
 
 function bib2htmlProcess(
     $data,
-    $filterType,
-    $filter,
-    $sort = false,
-    $lang = '',
-    $sortFixed = false,
-    $template = '',
-    $style = 'uniol'
+    string $filterType = '',
+    string $filter = '',
+    bool $sort = false,
+    string $lang = '',
+    bool $sortFixed = false,
+    string $template = '',
+    string $style = 'uniol'
 ) {
     $OSBiBPath = dirname(__FILE__) . '/OSBiB/';
     // $OSBiBPath = '/var/www/php51.uni-oldenburg.de/htdocs/www/bib2html/OSBiB/';
@@ -102,7 +102,7 @@ function bib2htmlProcess(
     //// Added by C.v.O Uni Oldenburg
     if ($sort) {
         foreach ($entries as $key => $entry) {
-            $sortiere[$sort][$key] = $entry[$sort];
+            $sortiere[$sort][$key] = $entry[$sort] ?? '';
         }
         array_multisort($sortiere[$sort], ($sort == 'year' ? SORT_DESC : SORT_ASC), $entries);
     }
@@ -146,7 +146,7 @@ function bib2htmlProcess(
         $tpl->assign("entry", $mapped_entry);
         $tpl->assign("bibtex", formatBibtex($entry['bibtexEntry']));
         // These are rather AG TWiSt specific formats but probably of more general interest
-        $tpl->assign("twist_title", toTwistTitle($mapped_entry, $resourceType, $entry['doi']));
+        $tpl->assign("twist_title", toTwistTitle($mapped_entry, $resourceType, $entry['doi'] ?? ''));
         $tpl->assign("twist_entry", toTWiStEntry($mapped_entry, $resourceType));
         $tpl->assign("twist_pdf", toTWiStPDF($entry));
     }
@@ -207,7 +207,7 @@ function toDownload($entry, $lang)
 //// Added by Philip Rinn for AG TWiSt, 15. Mai 2014
 
 // Construct a string with the title linked to the url field if existent
-function toTWiStTitle($entry, $type, $doi)
+function toTWiStTitle(string $entry, string $type, string $doi): string
 {
     // Extract the title from the whole entry sting
     if ($type == 'book') {
@@ -288,7 +288,7 @@ function bib2html($myContent, $sort = false, $lang = '', $sortFixed = false, $te
             if ($bib) {
                 if (!empty($bib)) {
                     // if bibtex file identified and opened, then convert to html
-                    $htmlbib = bib2htmlProcess($bib, $bibItems[3], $bibItems[4], $sort, $lang, $sortFixed, $template,
+                    $htmlbib = bib2htmlProcess($bib, $bibItems[3] ?? '', $bibItems[4] ?? '', $sort, $lang, $sortFixed, $template,
                         $style);
                     $myContent = str_replace($bibItems[0], $htmlbib, $myContent);
                 } else {

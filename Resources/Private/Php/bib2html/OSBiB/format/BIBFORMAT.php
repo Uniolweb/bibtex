@@ -250,7 +250,7 @@ class BIBFORMAT
          * Set any author/editor re-ordering for book and book_article type.
          */
         if (!$this->preview && (($type == 'book') || ($type == 'book_article')) &&
-            $row['creator2'] && !$row['creator1'] && $this->style['editorSwitch'] &&
+            ($row['creator2'] ?? false) && !($row['creator1'] ?? false) && ($this->style['editorSwitch'] ?? false) &&
             array_key_exists('author', $this->$type)) {
             $row['creator1'] = $row['creator2'];
             $row['creator2'] = false;
@@ -488,7 +488,7 @@ class BIBFORMAT
         $ultimate = '';
         $index = 0;
         $previousFieldExists = $nextFieldExists = true;
-        
+
         if (!$this->$type) {
             $this->$type = [];
         }
