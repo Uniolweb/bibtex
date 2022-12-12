@@ -2,18 +2,15 @@
 
 namespace Uniolit\Bibtex\Controller;
 
-use \Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Log\Logger;
-use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use Uniolit\Bibtex\Domain\Model\BibtexSettings;
-
 
 class BtexController extends ActionController implements LoggerAwareInterface
 {
@@ -22,30 +19,15 @@ class BtexController extends ActionController implements LoggerAwareInterface
     /** @var int */
     private $languageId = 0;
 
-    /**
-     * @var string
-     */
+    /*
+     * @todo Check if key should be used, is currently not used.
     private $key = '';
-
-    /**
-     * @var array
-     */
-    private $allow = [];
-
-    /**
-     * @var array
-     */
-    private $deny = [];
+    */
 
     /**
      * @var string
      */
     private $bibtexUrl = '';
-
-    /**
-     * @var array
-     */
-    private $urlQueryParams = [];
 
     private $cache;
 
@@ -60,7 +42,6 @@ class BtexController extends ActionController implements LoggerAwareInterface
     public function initializeAction()
     {
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('bibtex_bibtexcache');
-
 
         // inlude JavaScript in footer
         $this->assetCollector->addJavaScript(
@@ -85,7 +66,7 @@ class BtexController extends ActionController implements LoggerAwareInterface
     public function showAction(BibtexSettings $bibtexSettings = null)
     {
         $context = GeneralUtility::makeInstance(Context::class);
-        $this->languageId = (int) ($context->getPropertyFromAspect('language', 'id'));
+        $this->languageId = (int)($context->getPropertyFromAspect('language', 'id'));
 
         if ($bibtexSettings) {
             $sort = $bibtexSettings->getSort();
@@ -94,25 +75,9 @@ class BtexController extends ActionController implements LoggerAwareInterface
             $bibtexSettings = new BibtexSettings();
             $bibtexSettings->setSort($sort);
         }
-        $this->key = $this->settings['key'] ?? '';
+        //$this->key = $this->settings['key'] ?? '';
 
-        // @extensionScannerIgnoreLine
-        if ($this->settings['allow']) {
-            // @extensionScannerIgnoreLine
-            $this->allow = explode(',', $this->settings['allow']);
-        } else {
-            $this->allow = [];
-        }
-
-        // @extensionScannerIgnoreLine
-        if ($this->settings['deny']) {
-            // @extensionScannerIgnoreLine
-            $this->deny = explode(',', $this->settings['deny']);
-        } else {
-            $this->deny = [];
-        }
-
-        if (($this->settings['sortfixed'] ?? false) === "1") {
+        if (($this->settings['sortfixed'] ?? false) === '1') {
             $bibtexSettings->setSortFixed(true);
         }
         // @todo: remove this once changing the sorting is supported
@@ -122,13 +87,10 @@ class BtexController extends ActionController implements LoggerAwareInterface
 
         $bibtexContent = $this->getBibtexFileContent($this->bibtexUrl);
         if (!$bibtexContent) {
-            $convertedContent = 'Bibtex file does not exist.';
+            // todo: localize
+            $convertedContent = 'Bibtex file does not exist or is empty.';
             // @extensionScannerIgnoreLine
-            $this->logger->error('bibtex file does not exist:' . $this->bibtexUrl);
-        } else if (strlen($bibtexContent) === 0) {
-            $convertedContent = 'Bibtex file is empty.';
-            // @extensionScannerIgnoreLine
-            $this->logger->error('Error on opening URL ' . $this->bibtexUrl . ': Bibtex file is empty');
+            $this->logger->error('bibtex file does not exist or is empty:' . $this->bibtexUrl);
         } else {
             $this->logger->debug('Use internal bib2html');
             if ($this->isCachable()) {
@@ -137,7 +99,7 @@ class BtexController extends ActionController implements LoggerAwareInterface
                 $convertedContent = $this->getFromCache($identifier);
                 if (!$convertedContent) {
                     $convertedContent = $this->bibtex2Html($this->bibtexUrl, $bibtexSettings);
-                    $this->setInCache($identifier, $convertedContent, $sort);
+                    $this->setInCache($identifier, $convertedContent);
                 }
             } else {
                 // do not cache
@@ -154,12 +116,12 @@ class BtexController extends ActionController implements LoggerAwareInterface
      *
      * @return bool
      */
-    protected function isCachable() : bool
+    protected function isCachable(): bool
     {
         // @extensionScannerIgnoreLine
         if (($this->settings['allow'] ?? false)
             || ($this->settings['deny'] ?? false)
-            || ($this->settings['template'] ?? false)
+            //|| ($this->settings['template'] ?? false)
             || ($this->settings['sort'] ?? '') !==  BibtexSettings::DEFAULT_SORT) {
             return false;
         }
@@ -174,18 +136,17 @@ class BtexController extends ActionController implements LoggerAwareInterface
         $this->cache->set($identifier, $content, $tags, $lifetime);
     }
 
-    protected function getCacheIdentifier(string $url, string $sort) : string
+    protected function getCacheIdentifier(string $url, string $sort): string
     {
         return md5($url . '?sort=' . $sort . '&lang=' . $this->languageId);
     }
 
     protected function getFromCache(string $identifier)
     {
-
         return $this->cache->get($identifier);
     }
 
-    protected function bibtex2Html(string $bibtexUrl, BibtexSettings $bibtexSettings) : string
+    protected function bibtex2Html(string $bibtexUrl, BibtexSettings $bibtexSettings): string
     {
         $sort = $bibtexSettings->getSort();
         if ($sort === 'none') {
@@ -194,7 +155,8 @@ class BtexController extends ActionController implements LoggerAwareInterface
         $sortfixed = $bibtexSettings->isSortFixed();
 
         // @todo currently not implemented
-        $template = $this->settings['template'] ?? '';
+        //$template = $this->settings['template'] ?? '';
+        $template = '';
 
         $pars = '';
         if ($this->settings['allow'] ?? false) {
@@ -217,22 +179,21 @@ class BtexController extends ActionController implements LoggerAwareInterface
 
         $tempstr = bib2html(' [bibtex file=' . $bibtexUrl . $pars . '] ', $sort, $languageKey, $sortfixed, $template, $style);
 
-        $tempstr = str_replace("<ul>", '<ul class="geweitet">', $tempstr);
+        $tempstr = str_replace('<ul>', '<ul class="geweitet">', $tempstr);
         $tempstr = str_replace('class="toggle"', 'class="bibtextoggle"', $tempstr);
         return $tempstr;
     }
 
-    protected function getBibtexFileContent(string $bibtexUrl) : string
+    protected function getBibtexFileContent(string $bibtexUrl): string
     {
         // check if URL / file exists
         try {
             $content = file_get_contents($bibtexUrl, false, null, 0, 10);
         } catch (\Exception $e) {
             // @extensionScannerIgnoreLine
-            $this->logger->error('Error on opening URL '  . $bibtexUrl . ': ' . $e->getMessage());
+            $this->logger->error('Error on opening URL ' . $bibtexUrl . ': ' . $e->getMessage());
             $content = '';
         }
         return $content;
     }
-
 }

@@ -1,0 +1,91 @@
+# todo: also scan osbibtex directories
+
+
+# default phpstan configuration
+#
+# Run phpstan
+# -----------
+#
+# Build/Scripts/runTests.sh -s phpstan
+#
+# Adding a baseline
+# -----------------
+#
+#  Build/Scripts/runTests.sh -s phpstanGenerateBaseline
+#
+# Dealing with mixed arrays
+# -------------------------
+#  Be as specific as possible, e.g. use
+#
+# * `array<string>` etc.
+# * or `array{'foo': int, "bar": string}`
+#
+# If the array is dynamic or cannot be specified, use `mixed[]`
+# see
+#
+# * https://phpstan.org/writing-php-code/phpdoc-types#array-shapes
+# * https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type
+# * https://github.com/phpstan/phpstan/discussions/4375
+
+
+# ----------------------
+
+# basic configuration
+
+includes:
+  #- phpstan-baseline.neon
+  # If phpstan/extension-installer is used, this is not necessary.
+  #- .Build/vendor/jangregor/phpstan-prophecy/extension.neon
+
+parameters:
+  bootstrapFiles:
+    - phpstan.bootstrap.php
+  tmpDir: ../../.Build/.cache/phpstan
+  parallel:
+    # Don't be overly greedy on machines with more CPU's to be a good neighbor especially on CI
+    maximumNumberOfProcesses: 5
+  level: 4
+  # check these paths
+  paths:
+    - ../../Classes
+    #- ../../Tests
+  # use these paths (but do not check)
+  scanDirectories:
+    - ../../.Build/Web/typo3/sysext
+    - ../../Resources/Private/Php/
+
+  # do not check if array types specified
+  checkMissingIterableValueType: false
+
+  excludePaths:
+    - ../../ext_emconf.php
+
+  editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
+
+  # do not report errors which are defined in ignoreErrors, but are not found in code
+  #reportUnmatchedIgnoredErrors: false
+
+  ignoreErrors:
+    # https://phpstan.org/user-guide/ignoring-errors
+
+services:
+    # Make sure to use a constant for severity in addFlashMessage
+    # https://github.com/symplify/phpstan-rules/blob/main/docs/rules_overview.md#requireconstantinmethodcallpositionrule
+    # cannot use this here: enforces LOCAL constant
+    #-
+    #    class: Symplify\PHPStanRules\Rules\RequireConstantInMethodCallPositionRule
+    #    tags: [phpstan.rules.rule]
+    #    arguments:
+    #        requiredLocalConstantInMethodCall:
+    #            TYPO3\CMS\Extbase\Mvc\Controller\ActionController:
+    #                addFlashMessage:
+    #                    - 3
+    -
+        class: Symplify\PHPStanRules\Rules\ForbiddenNodeRule
+        tags: [phpstan.rules.rule]
+        arguments:
+            forbiddenNodes:
+                - PhpParser\Node\Expr\ErrorSuppress
+    -
+        class: Symplify\PHPStanRules\Rules\SuffixInterfaceRule
+        tags: [phpstan.rules.rule]
