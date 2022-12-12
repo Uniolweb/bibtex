@@ -12,11 +12,11 @@ class BibtexHelper
      */
     public function sortOptions($config)
     {
-        $options = array();
-        
+        $options = [];
+
         // Hier die Optionen hinzufügen
-        $options[] = array("- leer lassen -"," ");
-        
+        $options[] = ['- leer lassen -', ' '];
+
         $config['items'] = array_merge($options, $config['items']);
 
         return $config['items'];
@@ -30,11 +30,11 @@ class BibtexHelper
      */
     public function allowOptions($config)
     {
-        $options = array();
-        
+        $options = [];
+
         // Hier die Optionen hinzufügen
-        $options[] = array('- alle erlauben -', '');
-        
+        $options[] = ['- alle erlauben -', ''];
+
         $config['items'] = array_merge($options, $config['items']);
 
         return $config['items'];
@@ -48,11 +48,11 @@ class BibtexHelper
      */
     public function denyOptions($config)
     {
-        $options = array();
-        
+        $options = [];
+
         // Hier die Optionen hinzufügen
-        $options[] = array('- keine Ausblenden -','');
-        
+        $options[] = ['- keine Ausblenden -', ''];
+
         $config['items'] = array_merge($options, $config['items']);
 
         return $config['items'];

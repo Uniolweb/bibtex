@@ -46,7 +46,7 @@
                                     <numIndex index="3" type="array">
                                         <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.year</numIndex>
                                         <numIndex index="1">year</numIndex>
-                                    </numIndex>    
+                                    </numIndex>
                                 </items>
                                 <!--
                                 <size>10</size>
@@ -117,11 +117,11 @@
                                     <numIndex index="11" type="array">
                                         <numIndex index="0">phdthesis</numIndex>
                                         <numIndex index="1">phdthesis</numIndex>
-                                    </numIndex>          
+                                    </numIndex>
                                     <numIndex index="12" type="array">
                                         <numIndex index="0">proceedings</numIndex>
                                         <numIndex index="1">proceedings</numIndex>
-                                    </numIndex> 
+                                    </numIndex>
                                     <numIndex index="13" type="array">
                                         <numIndex index="0">techreport</numIndex>
                                         <numIndex index="1">techreport</numIndex>
@@ -195,11 +195,11 @@
                                     <numIndex index="11" type="array">
                                         <numIndex index="0">phdthesis</numIndex>
                                         <numIndex index="1">phdthesis</numIndex>
-                                    </numIndex>          
+                                    </numIndex>
                                     <numIndex index="12" type="array">
                                         <numIndex index="0">proceedings</numIndex>
                                         <numIndex index="1">proceedings</numIndex>
-                                    </numIndex> 
+                                    </numIndex>
                                     <numIndex index="13" type="array">
                                         <numIndex index="0">techreport</numIndex>
                                         <numIndex index="1">techreport</numIndex>
@@ -217,6 +217,8 @@
                     </settings.deny>
 
 
+                    <!-- wird zur Zeit nicht unterstützt
+                    todo: wieder reaktivieren?
                     <settings.template>
                         <TCEforms>
                             <label>Template-Datei (optional, nicht empfohlen)</label>
@@ -228,6 +230,7 @@
                             </config>
                         </TCEforms>
                     </settings.template>
+                    -->
 
                     <!--
                     <settings.key>

@@ -1,0 +1,11 @@
+/.Build/
+/.php_cs.cache
+/.php-cs-fixer.cache
+/auth.json
+/Build/node_modules/
+/Build/yarn.lock
+/Build/yarn-error.log
+/Build/node_modules
+/Build/testing-docker/.env
+/composer.lock
+/var

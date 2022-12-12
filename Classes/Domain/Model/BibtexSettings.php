@@ -19,7 +19,7 @@ class BibtexSettings
      */
     private $sortFixed = false;
 
-    public function getDefaultSort() : string
+    public function getDefaultSort(): string
     {
         return self::DEFAULT_SORT;
     }
@@ -55,7 +55,4 @@ class BibtexSettings
     {
         $this->sortFixed = $sortFixed;
     }
-
-
-
 }
