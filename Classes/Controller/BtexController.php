@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
 namespace Uniolit\Bibtex\Controller;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
-use Uniolit\Bibtex\Domain\Model\BibtexSettings;
+use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
+use Uniolit\Bibtex\Configuration\BibtexSettings;
 
 class BtexController extends ActionController implements LoggerAwareInterface
 {
@@ -19,24 +20,18 @@ class BtexController extends ActionController implements LoggerAwareInterface
     /** @var int */
     private $languageId = 0;
 
-    /*
-     * @todo Check if key should be used, is currently not used.
-    private $key = '';
-    */
-
-    /**
-     * @var string
-     */
-    private $bibtexUrl = '';
-
     private $cache;
 
     /** @var AssetCollector */
     protected $assetCollector;
 
-    public function __construct(AssetCollector $assetCollector)
+    /** @var Bibtex2HtmlService */
+    protected $bibtex2HtmlService;
+
+    public function __construct(AssetCollector $assetCollector, Bibtex2HtmlService $bibtex2HtmlService)
     {
         $this->assetCollector = $assetCollector;
+        $this->bibtex2HtmlService = $bibtex2HtmlService;
     }
 
     public function initializeAction()
@@ -59,6 +54,18 @@ class BtexController extends ActionController implements LoggerAwareInterface
         );
     }
 
+    protected function getBibtexSettings(): BibtexSettings
+    {
+        return new BibtexSettings(
+            $this->settings['link'] ?? '',
+            $this->settings['sort'] ?? BibtexSettings::DEFAULT_SORT,
+            true,
+            'uniol',
+            array_filter(explode(',', $this->settings['allow'] ?? '')),
+            array_filter(explode(',', $this->settings['deny'] ?? ''))
+        );
+    }
+
     /**
      * @param BibtexSettings $bibtexSettings
      * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
@@ -68,53 +75,31 @@ class BtexController extends ActionController implements LoggerAwareInterface
         $context = GeneralUtility::makeInstance(Context::class);
         $this->languageId = (int)($context->getPropertyFromAspect('language', 'id'));
 
-        if ($bibtexSettings) {
-            $sort = $bibtexSettings->getSort();
-        } else {
-            $sort = $this->settings['sort'] ?? BibtexSettings::DEFAULT_SORT;
-            $bibtexSettings = new BibtexSettings();
-            $bibtexSettings->setSort($sort);
-        }
-        //$this->key = $this->settings['key'] ?? '';
-
-        if (($this->settings['sortfixed'] ?? false) === '1') {
-            $bibtexSettings->setSortFixed(true);
-        }
-        // @todo: remove this once changing the sorting is supported
-        $bibtexSettings->setSortFixed(true);
-
-        $this->bibtexUrl = $this->settings['link'];
-
-        $bibtexContent = $this->getBibtexFileContent($this->bibtexUrl);
-        if (!$bibtexContent) {
-            // todo: localize
-            $convertedContent = 'Bibtex file does not exist or is empty.';
-            // @extensionScannerIgnoreLine
-            $this->logger->error('bibtex file does not exist or is empty:' . $this->bibtexUrl);
-        } else {
-            $this->logger->debug('Use internal bib2html');
-            if ($this->isCachable()) {
-                // do cache
-                $identifier = $this->getCacheIdentifier($this->bibtexUrl, $sort);
-                $convertedContent = $this->getFromCache($identifier);
-                if (!$convertedContent) {
-                    $convertedContent = $this->bibtex2Html($this->bibtexUrl, $bibtexSettings);
-                    $this->setInCache($identifier, $convertedContent);
-                }
-            } else {
-                // do not cache
-                $convertedContent = $this->bibtex2Html($this->bibtexUrl, $bibtexSettings);
-            }
+        if ($bibtexSettings === null) {
+            $bibtexSettings = $this->getBibtexSettings();
         }
 
-        $this->view->assign('output', $convertedContent);
+        // todo: use caching (getCacheIdentifier. setInCache)? Is this really necessary? Plugin is uncached!
+        $entries = $this->bibtex2HtmlService->bibtex2Html($bibtexSettings, $this->languageId);
+
+        $this->view->assign('entries', $entries);
         $this->view->assign('bibtexSettings', $bibtexSettings);
+
+        // todo handle error output
+        /*
+        if ($lang === 'en') {
+            return 'Bibtex file does not exist or it was not possible to read the content:&nbsp; ' . $bibFile;
+        }
+        return 'Bibtex Datei existiert nicht oder Inhalte konnten nicht gelesen werden:&nbsp; ' . $bibFile;
+        */
     }
 
     /**
      * Currently, only cache entries with default settings
      *
      * @return bool
+     *
+     * @deprecated Not used, plugin is cached plugin
      */
     protected function isCachable(): bool
     {
@@ -128,6 +113,12 @@ class BtexController extends ActionController implements LoggerAwareInterface
         return true;
     }
 
+    /**
+     * @param string $identifier
+     * @param string $content
+     *
+     * @deprecated Not used, plugin is cached plugin
+     */
     protected function setInCache(string $identifier, string $content)
     {
         $tags = [];
@@ -136,64 +127,26 @@ class BtexController extends ActionController implements LoggerAwareInterface
         $this->cache->set($identifier, $content, $tags, $lifetime);
     }
 
+    /**
+     * @param string $url
+     * @param string $sort
+     * @return string
+     *
+     * @deprecated Not used, plugin is cached plugin
+     */
     protected function getCacheIdentifier(string $url, string $sort): string
     {
         return md5($url . '?sort=' . $sort . '&lang=' . $this->languageId);
     }
 
+    /**
+     * @param string $identifier
+     * @return mixed
+     *
+     * @deprecated Not used, plugin is cached plugin
+     */
     protected function getFromCache(string $identifier)
     {
         return $this->cache->get($identifier);
-    }
-
-    protected function bibtex2Html(string $bibtexUrl, BibtexSettings $bibtexSettings): string
-    {
-        $sort = $bibtexSettings->getSort();
-        if ($sort === 'none') {
-            $sort = '';
-        }
-        $sortfixed = $bibtexSettings->isSortFixed();
-
-        // @todo currently not implemented
-        //$template = $this->settings['template'] ?? '';
-        $template = '';
-
-        $pars = '';
-        if ($this->settings['allow'] ?? false) {
-            $pars .= ' allow=' . $this->settings['allow'];
-        }
-        if ($this->settings['deny'] ?? false) {
-            $pars .= ' deny=' . $this->settings['deny'];
-        }
-        /*
-        if ($this->settings['key'] ?? false) {
-            $pars .= ' allow=' . $this->settings['key'];
-        }
-        */
-
-        // @todo: use configurable language mapping, e.g. via TypoScript
-        $languageKey = $this->languageId === 0 ? '' : '_en';
-        $style = 'uniol';
-        $path = Environment::getPublicPath();
-        include_once($path . '/typo3conf/ext/bibtex/Resources/Private/Php/bib2html/bib2html.php');
-
-        $tempstr = bib2html(' [bibtex file=' . $bibtexUrl . $pars . '] ', $sort, $languageKey, $sortfixed, $template, $style);
-
-        $tempstr = str_replace('<ul>', '<ul class="geweitet">', $tempstr);
-        $tempstr = str_replace('class="toggle"', 'class="bibtextoggle"', $tempstr);
-        return $tempstr;
-    }
-
-    protected function getBibtexFileContent(string $bibtexUrl): string
-    {
-        // check if URL / file exists
-        try {
-            $content = file_get_contents($bibtexUrl, false, null, 0, 10);
-        } catch (\Exception $e) {
-            // @extensionScannerIgnoreLine
-            $this->logger->error('Error on opening URL ' . $bibtexUrl . ': ' . $e->getMessage());
-            $content = '';
-        }
-        return $content;
     }
 }

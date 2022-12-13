@@ -1,0 +1,19 @@
+<f:spaceless>
+	<ul class="bibte">
+		<!-- START BLOCK : bibtex_entry -->
+		<f:for each="{entries}" as="entry">
+			<li>
+				<div class="bibtexentry">[{entry.type}]
+					<f:format.raw><a href="javascript:return false;" class="bibtextoggle">bibtex</a>{entry.pdf}</f:format.raw>
+				</div>
+				<div>
+					<f:format.raw>{entry.entry}</f:format.raw>
+				</div>
+				<div class="bibtex">
+					<code><f:format.raw>{entry.bibtex}</f:format.raw></code>
+				</div>
+			</li>
+		</f:for>
+		<!-- END BLOCK : bibtex_entry -->
+	</ul>
+</f:spaceless>
