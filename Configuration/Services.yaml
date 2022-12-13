@@ -1,0 +1,11 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Uniolit\Bibtex\:
+    resource: '../Classes/*'
+
+  Uniolit\Bibtex\Service\Bibtex2Html\Bibtex2HtmlService:
+    public: true

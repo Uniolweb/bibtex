@@ -1,8 +1,9 @@
 <?php
 
-namespace Uniolit\Bibtex\Helper;
+declare(strict_types=1);
+namespace Uniolit\Bibtex\Utility;
 
-class BibtexHelper
+class BibtexUtility
 {
     /**
      * @param $config

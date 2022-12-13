@@ -21,6 +21,7 @@
                     </settings.link>
 
 
+                    <!-- todo: use multiple, e.g. sort by year, author -->
                     <settings.sort>
                         <TCEforms>
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort</label>
@@ -28,7 +29,7 @@
                                 <type>select</type>
                                 <renderType>selectSingle</renderType>
                                 <!--
-                                    <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->sortOptions</itemsProcFunc>
+                                    <itemsProcFunc>Uniolit\Bibtex\Utility\BibtexUtility->sortOptions</itemsProcFunc>
                                     -->
                                 <items>
                                     <numIndex index="0" type="array">
@@ -67,7 +68,7 @@
                                 <type>select</type>
                                 <renderType>selectSingle</renderType>
                                 <!--
-                                <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->allowOptions</itemsProcFunc>
+                                <itemsProcFunc>Uniolit\Bibtex\Utility\BibtexUtility->allowOptions</itemsProcFunc>
                                 -->
                                 <items type="array">
                                     <numIndex index="0" type="array">
@@ -145,7 +146,7 @@
                                 <type>select</type>
                                 <renderType>selectSingle</renderType>
                                 <!--
-                                <itemsProcFunc>Uniolit\Bibtex\Helper\BibtexHelper->denyOptions</itemsProcFunc>
+                                <itemsProcFunc>Uniolit\Bibtex\Utility\BibtexUtility->denyOptions</itemsProcFunc>
                                 -->
                                 <items type="array">
                                     <numIndex index="0" type="array">
