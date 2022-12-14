@@ -204,6 +204,8 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         $parse->removeDelimit = true;
         $parse->loadBibtexString($data);
         $parse->extractEntries();
+
+        /** @var array<int,array<string,string>> $entries */
         list($preamble, $strings, $entries) = $parse->returnArrays();
 
         // Format the entries array  for html output
@@ -227,11 +229,11 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             array_multisort($sortiere[$sort], ($sort == 'year' ? SORT_DESC : SORT_ASC), $entries);
         }
         //// End added by C.v.O Uni Oldenburg
-
+        /** @var array<int,array<string,string>> $newEntries */
         $newEntries = [];
 
         /**
-         * @var array $entry
+         * @var array<string,string> $entry
          * @todo use class
          */
         foreach ($entries as $entry) {
@@ -243,7 +245,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
 
             // apply filters
             $pos = strpos($filter, $resourceType);
-            $bibkey = $entry['bibtexCitation'];
+            $bibkey = $entry['bibtexCitation'] ?? '';
 
             if (((strcmp($filterType, 'allow') === 0) && ($pos === false)) or
                 ((strcmp($filterType, 'deny') === 0) && ($pos !== false)) or
