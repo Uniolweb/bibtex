@@ -10,7 +10,7 @@
                     <!-- URL of Bibtex file -->
                     <settings.link>
                         <TCEforms>
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.bibtexUrl</label>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.bibtexUrl</label>
                             <config>
                                 <type>input</type>
                                 <size>64</size>
@@ -28,24 +28,29 @@
                             <config>
                                 <type>select</type>
                                 <renderType>selectSingle</renderType>
-                                <!--
-                                    <itemsProcFunc>Uniolit\Bibtex\Utility\BibtexUtility->sortOptions</itemsProcFunc>
-                                    -->
                                 <items>
                                     <numIndex index="0" type="array">
-                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.none</numIndex>
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.none
+                                        </numIndex>
                                         <numIndex index="1">none</numIndex>
                                     </numIndex>
                                     <numIndex index="1" type="array">
-                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.bibtexEntryType</numIndex>
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.bibtexEntryType
+                                        </numIndex>
                                         <numIndex index="1">bibtexEntryType</numIndex>
                                     </numIndex>
                                     <numIndex index="2" type="array">
-                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.author</numIndex>
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.author
+                                        </numIndex>
                                         <numIndex index="1">author</numIndex>
                                     </numIndex>
                                     <numIndex index="3" type="array">
-                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.year</numIndex>
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.year
+                                        </numIndex>
                                         <numIndex index="1">year</numIndex>
                                     </numIndex>
                                 </items>
@@ -60,19 +65,133 @@
                         </TCEforms>
                     </settings.sort>
 
+                    <settings.filterType>
+                        <TCEforms>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType</label>
+                            <onChange>reload</onChange>
+                            <config>
+                                <type>radio</type>
+                                <items type="array">
+                                    <numIndex index="0" type="array">
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.doNotFilter
+                                        </numIndex>
+                                        <numIndex index="1">none</numIndex>
+                                    </numIndex>
+                                    <numIndex index="1" type="array">
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.allow
+                                        </numIndex>
+                                        <numIndex index="1">allow</numIndex>
+                                    </numIndex>
+                                    <numIndex index="2" type="array">
+                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.deny</numIndex>
+                                        <numIndex index="1">deny</numIndex>
+                                    </numIndex>
+                                </items>
+                                <default>none</default>
+                            </config>
 
+                        </TCEforms>
+                    </settings.filterType>
+
+                    <settings.filterEntries>
+                        <TCEforms>
+                            <displayCond>FIELD:settings.filterType:IN:allow,deny</displayCond>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterByPublication</label>
+                            <config>
+                                <type>select</type>
+                                <!-- <renderType>selectSingle</renderType> -->
+                                <renderType>selectMultipleSideBySide</renderType>
+                                <size>15</size>
+                                <minitems>1</minitems>
+                                <maxitems>100</maxitems>
+                                <!-- <eval>required</eval> -->
+                                <items type="array">
+                                    <!--
+                                    <numIndex index="0" type="array">
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.allow.all
+                                        </numIndex>
+                                        <numIndex index="1"></numIndex>
+                                    </numIndex>
+                                    -->
+                                    <numIndex index="1" type="array">
+                                        <numIndex index="0">article</numIndex>
+                                        <numIndex index="1">article</numIndex>
+                                    </numIndex>
+                                    <numIndex index="2" type="array">
+                                        <numIndex index="0">book</numIndex>
+                                        <numIndex index="1">book</numIndex>
+                                    </numIndex>
+                                    <numIndex index="3" type="array">
+                                        <numIndex index="0">booklet</numIndex>
+                                        <numIndex index="1">booklet</numIndex>
+                                    </numIndex>
+                                    <numIndex index="4" type="array">
+                                        <numIndex index="0">conference</numIndex>
+                                        <numIndex index="1">conference</numIndex>
+                                    </numIndex>
+                                    <numIndex index="5" type="array">
+                                        <numIndex index="0">inbook</numIndex>
+                                        <numIndex index="1">inbook</numIndex>
+                                    </numIndex>
+                                    <numIndex index="6" type="array">
+                                        <numIndex index="0">incollection</numIndex>
+                                        <numIndex index="1">incollection</numIndex>
+                                    </numIndex>
+                                    <numIndex index="7" type="array">
+                                        <numIndex index="0">inproceedings</numIndex>
+                                        <numIndex index="1">inproceedings</numIndex>
+                                    </numIndex>
+                                    <numIndex index="8" type="array">
+                                        <numIndex index="0">manual</numIndex>
+                                        <numIndex index="1">manual</numIndex>
+                                    </numIndex>
+                                    <numIndex index="9" type="array">
+                                        <numIndex index="0">mastersthesis</numIndex>
+                                        <numIndex index="1">mastersthesis</numIndex>
+                                    </numIndex>
+                                    <numIndex index="10" type="array">
+                                        <numIndex index="0">misc</numIndex>
+                                        <numIndex index="1">misc</numIndex>
+                                    </numIndex>
+                                    <numIndex index="11" type="array">
+                                        <numIndex index="0">phdthesis</numIndex>
+                                        <numIndex index="1">phdthesis</numIndex>
+                                    </numIndex>
+                                    <numIndex index="12" type="array">
+                                        <numIndex index="0">proceedings</numIndex>
+                                        <numIndex index="1">proceedings</numIndex>
+                                    </numIndex>
+                                    <numIndex index="13" type="array">
+                                        <numIndex index="0">techreport</numIndex>
+                                        <numIndex index="1">techreport</numIndex>
+                                    </numIndex>
+                                    <numIndex index="14" type="array">
+                                        <numIndex index="0">unpublished</numIndex>
+                                        <numIndex index="1">unpublished</numIndex>
+                                    </numIndex>
+                                </items>
+                            </config>
+                        </TCEforms>
+                    </settings.filterEntries>
+
+
+
+                    <!--
                     <settings.allow>
                         <TCEforms>
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.allow</label>
+                            <displayCond>FIELD:settings.allowDeny:=:allow</displayCond>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.allow</label>
                             <config>
                                 <type>select</type>
                                 <renderType>selectSingle</renderType>
-                                <!--
-                                <itemsProcFunc>Uniolit\Bibtex\Utility\BibtexUtility->allowOptions</itemsProcFunc>
-                                -->
                                 <items type="array">
                                     <numIndex index="0" type="array">
-                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.allow.all</numIndex>
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.allow.all
+                                        </numIndex>
                                         <numIndex index="1"></numIndex>
                                     </numIndex>
                                     <numIndex index="1" type="array">
@@ -141,16 +260,16 @@
 
                     <settings.deny>
                         <TCEforms>
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.deny</label>
+                            <displayCond>FIELD:settings.allowDeny:=:deny</displayCond>
+                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.deny</label>
                             <config>
                                 <type>select</type>
                                 <renderType>selectSingle</renderType>
-                                <!--
-                                <itemsProcFunc>Uniolit\Bibtex\Utility\BibtexUtility->denyOptions</itemsProcFunc>
-                                -->
                                 <items type="array">
                                     <numIndex index="0" type="array">
-                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:settings.deny.all</numIndex>
+                                        <numIndex index="0">
+                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.deny.all
+                                        </numIndex>
                                         <numIndex index="1"></numIndex>
                                     </numIndex>
                                     <numIndex index="1" type="array">
@@ -216,6 +335,7 @@
                             </config>
                         </TCEforms>
                     </settings.deny>
+                    -->
 
 
                     <!-- wird zur Zeit nicht unterstützt

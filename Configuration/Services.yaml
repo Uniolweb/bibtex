@@ -9,3 +9,11 @@ services:
 
   Uniolit\Bibtex\Service\Bibtex2Html\Bibtex2HtmlService:
     public: true
+
+  Uniolit\Bibtex\Command\ConvertFlexformCommand:
+    tags:
+      - name: 'console.command'
+        command: 'bibtex:convertFlexform'
+        description: 'Convert Flexform'
+        schedulable: false
+        hidden: false

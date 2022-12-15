@@ -19,21 +19,6 @@
                 <source>(default)</source>
             </trans-unit>
 
-            <trans-unit id="settings.bibtexUrl" xml:space="preserve">
-                <source>URL (of bibtex file)</source>
-            </trans-unit>
-            <trans-unit id="settings.allow" xml:space="preserve">
-                <source>Only display these (Allow)</source>
-            </trans-unit>
-            <trans-unit id="settings.deny" xml:space="preserve">
-                <source>Do not display (Deny)</source>
-            </trans-unit>
-            <trans-unit id="settings.allow.all" xml:space="preserve">
-                <source>- show all -</source>
-            </trans-unit>
-            <trans-unit id="settings.deny.all" xml:space="preserve">
-                <source>- hide none -</source>
-            </trans-unit>
         </body>
     </file>
 </xliff>

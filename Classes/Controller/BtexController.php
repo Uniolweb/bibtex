@@ -61,8 +61,8 @@ class BtexController extends ActionController implements LoggerAwareInterface
             $this->settings['sort'] ?? BibtexSettings::DEFAULT_SORT,
             true,
             'uniol',
-            array_filter(explode(',', $this->settings['allow'] ?? '')),
-            array_filter(explode(',', $this->settings['deny'] ?? ''))
+            $this->settings['filterType'] ?? '',
+            array_filter(explode(',', $this->settings['filterEntries'] ?? ''))
         );
     }
 

@@ -119,12 +119,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         $sort = $bibtexSettings->getSort();
         $sortFixed = $bibtexSettings->isSortFixed();
         $filterType = $bibtexSettings->getFilterType();
-        $filterItems = [];
-        if ($filterType === 'allow') {
-            $filterItems = $bibtexSettings->getAllow();
-        } elseif ($filterType === 'deny') {
-            $filterItems = $bibtexSettings->getDeny();
-        }
+        $filterItems = $bibtexSettings->getFilterEntries();
 
         if (!$bibFile) {
             return [];
@@ -137,7 +132,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         $newEntries = $this->bib2htmlPreProcess(
             $content,
             $filterType,
-            implode(',', $filterItems),
+            $filterItems,
             $sort,
             $lang,
             $sortFixed,
@@ -179,7 +174,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
      *
      * @param string $data
      * @param string $filterType
-     * @param string $filter
+     * @param array $filter
      * @param string $sort
      * @param string $lang
      * @param bool $sortFixed
@@ -190,7 +185,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
     protected function bib2htmlPreProcess(
         string $data,
         string $filterType = '',
-        string $filter = '',
+        array $filter = [],
         string $sort = '',
         string $lang = '',
         bool $sortFixed = false,
@@ -244,12 +239,14 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             $bibformat->preProcess($resourceType, $entry);
 
             // apply filters
-            $pos = strpos($filter, $resourceType);
             $bibkey = $entry['bibtexCitation'] ?? '';
+            $filterMatch = in_array($resourceType, $filter);
 
-            if (((strcmp($filterType, 'allow') === 0) && ($pos === false)) or
-                ((strcmp($filterType, 'deny') === 0) && ($pos !== false)) or
-                ((strcmp($filterType, 'key') === 0) && (strcmp($filter, $bibkey) != 0))) {
+            if (($filterType === 'allow' && $filterMatch === false)
+                || ($filterType === 'deny' && $filterMatch === true)
+                //|| ((strcmp($filterType, 'key') === 0) && (strcmp($filter, $bibkey) != 0))
+            ) {
+                // filter does not match
                 continue;
             }
 

@@ -7,10 +7,49 @@
                 <source>Publications</source>
                 <target>Publikationen</target>
             </trans-unit>
-
             <trans-unit id="ce-wizard.ce.bibtex.title" xml:space="preserve">
                 <source>Bibtex</source>
                 <target>Bibtex</target>
+            </trans-unit>
+			<trans-unit id="settings.bibtexUrl" xml:space="preserve">
+                <source>URL (of bibtex file)*</source>
+				<target>URL (der Bibtex-Datei)*</target>
+            </trans-unit>
+			<trans-unit id="settings.allow" xml:space="preserve">
+                <source>Only display these (Allow)</source>
+				<target>Nur diese anzeigen (Allow)</target>
+            </trans-unit>
+			<trans-unit id="settings.deny" xml:space="preserve">
+                <source>Do not display (Deny)</source>
+				<target>Nicht anzeigen (Deny)</target>
+            </trans-unit>
+			<trans-unit id="settings.allow.all" xml:space="preserve">
+                <source>- show all -</source>
+				<target>- alle anzeigen -</target>
+            </trans-unit>
+			<trans-unit id="settings.deny.all" xml:space="preserve">
+                <source>- hide none -</source>
+				<target>- keine ausblenden -</target>
+            </trans-unit>
+			<trans-unit id="settings.filterType" xml:space="preserve">
+                <source>Filter by publication type</source>
+				<target>Nach Publikationstypen filtern</target>
+            </trans-unit>
+			<trans-unit id="settings.filterType.doNotFilter" xml:space="preserve">
+                <source>Display all</source>
+				<target>Alle anzeigen</target>
+            </trans-unit>
+			<trans-unit id="settings.filterType.allow" xml:space="preserve">
+                <source>Include only publication types from the following list</source>
+				<target>Nur ausgewählte anzeigen</target>
+            </trans-unit>
+			<trans-unit id="settings.filterType.deny" xml:space="preserve">
+                <source>Exclude publication types from the following list</source>
+				<target>Alle anzeigen, außer ausgewählte</target>
+            </trans-unit>
+			<trans-unit id="settings.filterByPublication" xml:space="preserve">
+                <source>Select publication types (multi-select mode)</source>
+				<target>Publikationstypen auswählen (Mehrfachauswahl)</target>
             </trans-unit>
         </body>
     </file>

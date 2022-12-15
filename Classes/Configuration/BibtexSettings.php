@@ -14,6 +14,8 @@ class BibtexSettings
     /** @var bool if true, do not show select to select sort order */
     public const DEFAULT_SORT_FIXED = true;
 
+    public const DEFAULT_FILTER_TYPE = '';
+
     private string $url = '';
 
     /**
@@ -31,11 +33,10 @@ class BibtexSettings
 
     private string $style = self::DEFAULT_STYLE;
 
-    /** @var string[] */
-    private array $allow;
+    private string $filterType = '';
 
     /** @var string[] */
-    private array $deny;
+    private array $filterEntries;
 
     /**
      * Currently not used!
@@ -48,23 +49,23 @@ class BibtexSettings
      * @param string $sort
      * @param bool $sortFixed
      * @param string $style
-     * @param string[] $allow
-     * @param string[] $deny
+     * @param string $filterType
+     * @param string[] $filterEntries
      */
     public function __construct(
         string $url,
         string $sort = self::DEFAULT_SORT,
         bool $sortFixed = self::DEFAULT_SORT_FIXED,
         string $style = self::DEFAULT_STYLE,
-        array $allow = [],
-        array $deny = []
+        string $filterType = '',
+        array $filterEntries = []
     ) {
         $this->url = $url;
         $this->sort = $sort;
         $this->sortFixed = $sortFixed;
         $this->style = $style;
-        $this->allow = $allow;
-        $this->deny = $deny;
+        $this->filterType = $filterType;
+        $this->filterEntries = $filterEntries;
     }
 
     public function getDefaultSort(): string
@@ -117,13 +118,7 @@ class BibtexSettings
      */
     public function getFilterType(): string
     {
-        if ($this->allow) {
-            return 'allow';
-        }
-        if ($this->deny) {
-            return 'deny';
-        }
-        return '';
+        return $this->filterType;
     }
 
     /**
@@ -131,7 +126,10 @@ class BibtexSettings
      */
     public function getAllow(): array
     {
-        return $this->allow;
+        if ($this->getFilterType() === 'allow') {
+            return $this->getFilterEntries();
+        }
+        return [];
     }
 
     /**
@@ -139,7 +137,18 @@ class BibtexSettings
      */
     public function getDeny(): array
     {
-        return $this->deny;
+        if ($this->getFilterType() === 'deny') {
+            return $this->getFilterEntries();
+        }
+        return [];
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getFilterEntries(): array
+    {
+        return $this->filterEntries;
     }
 
     /**
