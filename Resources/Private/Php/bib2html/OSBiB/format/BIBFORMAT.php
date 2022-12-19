@@ -456,7 +456,9 @@ class BIBFORMAT
             list($start, $end) = $parsePages->init($row['pages']);
             $this->formatPages(trim($start), trim($end));
         }
-        $this->formatTitle($row['title'], "{", "}");
+        if ($row['title'] ?? false) {
+            $this->formatTitle($row['title'], "{", "}");
+        }
         return array($type, $row);
     }
 

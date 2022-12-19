@@ -262,9 +262,9 @@ class Bibtex2HtmlService implements LoggerAwareInterface
              * should be:  "Climate Policies after Paris: Pledge, Trade and Recyle"
              */
             $mapped_entry = str_replace([',&quot' ], '&quot', $mapped_entry);
-            $newEntries[] = [
-                'year' => $entry['year'],
-                'type' =>  $entry['bibtexEntryType'],
+            $newEntry = [
+                'year' => $entry['year'] ?? '',
+                'type' =>  $entry['bibtexEntryType'] ?? '',
                 'pdf' => $this->toDownload($entry, $lang),
                 'key' => \strtr($bibkey, ':', '-'),
                 'entry' => $mapped_entry,
@@ -274,6 +274,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                 'twist_entry' => $this->toTWiStEntry($mapped_entry, $resourceType),
                 'twist_pdf' => $this->toTWiStPDF($entry)
             ];
+            $newEntries[] = $newEntry;
         }
         return $newEntries;
     }

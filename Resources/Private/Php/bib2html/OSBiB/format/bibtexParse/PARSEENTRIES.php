@@ -313,6 +313,10 @@ class PARSEENTRIES
             $oldString = substr($oldString, 0, $lg - 1);
         }
         $split = preg_split("/=/", $oldString, 2);
+        if (!isset($split[1])) {
+            // todo: this is an error: should not happen!
+            return;
+        }
         $string = $split[1];
         while ($string) {
             list($entry, $string) = $this->fieldSplit($string);
