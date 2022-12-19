@@ -167,6 +167,7 @@ class PARSEENTRIES
         } else {
             while ($this->currentLine < count($this->bibtexString)) {
                 $line = $lastLine ? $lastLine : $this->getLine();
+                $this->currentLine++;
                 if (!preg_match("/^@/i", $line)) {
                     continue;
                 }
