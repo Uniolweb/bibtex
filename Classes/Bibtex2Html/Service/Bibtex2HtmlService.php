@@ -104,12 +104,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         $languageKey = $languageId === 0 ? '' : '_en';
 
         $entries = $this->bib2html($bibtexSettings, $languageKey);
-
-        /*
-        if ($convertStyle) {
-            $content = $this->convertStyle($content);
-        }
-        */
         return $entries;
     }
 
@@ -117,7 +111,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
     {
         $bibFile = $bibtexSettings->getUrl();
         $sort = $bibtexSettings->getSort();
-        $sortFixed = $bibtexSettings->isSortFixed();
         $filterType = $bibtexSettings->getFilterType();
         $filterItems = $bibtexSettings->getFilterEntries();
 
@@ -129,20 +122,22 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             return [];
         }
         // if bibtex file identified and opened, then convert to html
-        $newEntries = $this->bib2htmlPreProcess(
-            $content,
+        $entries = $this->bibtexPreProcess(
+            $content
+        );
+
+        $entries = $this->sortEntries($entries, $sort, $lang);
+        $newEntries = $this->preFormatBibtexEntries(
+            $entries,
             $filterType,
             $filterItems,
-            $sort,
-            $lang,
-            $sortFixed,
-            $bibtexSettings->getTemplate()
+            $lang
         );
 
         return $newEntries;
     }
 
-    protected function fetchContent(string $url): string
+    public function fetchContent(string $url): string
     {
         try {
             $response = $this->requestFactory->request($url);
@@ -156,41 +151,13 @@ class Bibtex2HtmlService implements LoggerAwareInterface
     }
 
     /**
-     * @param string $content
-     * @return string
-     *
-     * @todo Replace this, change directly in the template file
-     */
-    protected function convertStyle(string $content): string
-    {
-        $content = str_replace('<ul>', '<ul class="geweitet">', $content);
-        $content = str_replace('class="toggle"', 'class="bibtextoggle"', $content);
-        return $content;
-    }
-
-    /**
-     * Preprocess elements, do not convert to HTML but return as array to be passed
-     * to Fluid
+     * Preprocess elements, return elements as array
      *
      * @param string $data
-     * @param string $filterType
-     * @param array $filter
-     * @param string $sort
-     * @param string $lang
-     * @param bool $sortFixed
-     * @param string $template
-     * @param string $style
      * @return array
      */
-    protected function bib2htmlPreProcess(
-        string $data,
-        string $filterType = '',
-        array $filter = [],
-        string $sort = '',
-        string $lang = '',
-        bool $sortFixed = false,
-        string $template = '',
-        string $style = 'uniol'
+    public function bibtexPreProcess(
+        string $data
     ): array {
         // parse the content of bib string and generate associative array with valid entries
         $parse = $this->osbibFactory->instantiateParseEntries();
@@ -202,88 +169,114 @@ class Bibtex2HtmlService implements LoggerAwareInterface
 
         /** @var array<int,array<string,string>> $entries */
         list($preamble, $strings, $entries) = $parse->returnArrays();
+        return $entries;
+    }
 
-        // Format the entries array  for html output
-
-        $bibformat = $this->osbibFactory->instantiateBibFormat();
-        $bibformat->cleanEntry = true; // convert BibTeX (and LaTeX) special characters to UTF-8
-        list($info, $citation, $styleCommon, $styleTypes) = $bibformat->loadStyle(
-            $this->osbibPath . 'styles/bibliography/',
-            $style . $lang
-        );
-        $bibformat->getStyle($styleCommon, $styleTypes);
-
-        //// Added by C.v.O Uni Oldenburg
+    public function sortEntries(
+        array $entries,
+        string $sort = '',
+        string $lang = ''
+    ): array {
         if ($sort) {
-            $sortiere = [
+            $sortArray = [
                 $sort => []
             ];
             foreach ($entries as $key => $entry) {
-                $sortiere[$sort][$key] = $entry[$sort] ?? '';
+                $sortArray[$sort][$key] = $entry[$sort] ?? '';
             }
-            array_multisort($sortiere[$sort], ($sort == 'year' ? SORT_DESC : SORT_ASC), $entries);
+            array_multisort($sortArray[$sort], ($sort == 'year' ? SORT_DESC : SORT_ASC), $entries);
         }
-        //// End added by C.v.O Uni Oldenburg
-        /** @var array<int,array<string,string>> $newEntries */
-        $newEntries = [];
-
-        /**
-         * @var array<string,string> $entry
-         * @todo use class
-         */
-        foreach ($entries as $entry) {
-            // Get the resource type ('book', 'article', 'inbook' etc.)
-            $resourceType = $entry['bibtexEntryType'];
-
-            //  adds all the resource elements automatically to the BIBFORMAT::item array
-            $bibformat->preProcess($resourceType, $entry);
-
-            // apply filters
-            $bibkey = $entry['bibtexCitation'] ?? '';
-            $filterMatch = in_array($resourceType, $filter);
-
-            if (($filterType === 'allow' && $filterMatch === false)
-                || ($filterType === 'deny' && $filterMatch === true)
-                //|| ((strcmp($filterType, 'key') === 0) && (strcmp($filter, $bibkey) != 0))
-            ) {
-                // filter does not match
-                continue;
-            }
-
-            // get the formatted resource string ready for printing to the web browser
-            // the str_replace is used to remove the { } parentheses possibly present in title
-            // to enforce uppercase, TODO: check if it can be done only on title
-            $mapped_entry = $bibformat->map();
-            $mapped_entry = str_replace(['{', '}'], '', $mapped_entry);
-
-            /**
-             * SP 2021-07-08 Fix trailing comma in title
-             * e.g.  "Climate Policies after Paris: Pledge, Trade and Recyle,"
-             * should be:  "Climate Policies after Paris: Pledge, Trade and Recyle"
-             */
-            $mapped_entry = str_replace([',&quot' ], '&quot', $mapped_entry);
-            $newEntry = [
-                'year' => $entry['year'] ?? '',
-                'type' =>  $entry['bibtexEntryType'] ?? '',
-                'pdf' => $this->toDownload($entry, $lang),
-                'key' => \strtr($bibkey, ':', '-'),
-                'entry' => $mapped_entry,
-                'bibtex' => $this->formatBibtex((string)($entry['bibtexEntry'] ?? '')),
-                // These are rather AG TWiSt specific formats but probably of more general interest
-                'twist_title' => $this->toTwistTitle($mapped_entry, $resourceType, $entry['doi'] ?? ''),
-                'twist_entry' => $this->toTWiStEntry($mapped_entry, $resourceType),
-                'twist_pdf' => $this->toTWiStPDF($entry)
-            ];
-            $newEntries[] = $newEntry;
-        }
-        return $newEntries;
+        return $entries;
     }
 
     /**
-     * @param $entry Current entry
-     * @param $lang language string, e.g. 'en', 'de' (default is 'en')
-     * @return string
+     * Convert entries to HTML enhanced entries. Some entries will already be formatted as array, for example
+     * the download link.
+     *
+     * @param array $entries
+     * @param string $filterType
+     * @param array $filter
+     * @param string $lang
+     * @param string $style
+     * @return array
      */
+     protected function preFormatBibtexEntries(
+         array $entries,
+         string $filterType = '',
+         array $filter = [],
+         string $lang = '',
+         string $style = 'uniol'
+     ): array {
+         //// End added by C.v.O Uni Oldenburg
+         /** @var array<int,array<string,string>> $newEntries */
+         $newEntries = [];
+
+         // Format the entries array  for html output
+         $bibformat = $this->osbibFactory->instantiateBibFormat();
+         $bibformat->cleanEntry = true; // convert BibTeX (and LaTeX) special characters to UTF-8
+         list($info, $citation, $styleCommon, $styleTypes) = $bibformat->loadStyle(
+             $this->osbibPath . 'styles/bibliography/',
+             $style . $lang
+         );
+         $bibformat->getStyle($styleCommon, $styleTypes);
+
+         /**
+          * @var array<string,string> $entry
+          * @todo use class
+          */
+         foreach ($entries as $entry) {
+             // Get the resource type ('book', 'article', 'inbook' etc.)
+             $resourceType = $entry['bibtexEntryType'];
+
+             //  adds all the resource elements automatically to the BIBFORMAT::item array
+             $bibformat->preProcess($resourceType, $entry);
+
+             // apply filters
+             $bibkey = $entry['bibtexCitation'] ?? '';
+             $filterMatch = in_array($resourceType, $filter);
+
+             if (($filterType === 'allow' && $filterMatch === false)
+                 || ($filterType === 'deny' && $filterMatch === true)
+                 //|| ((strcmp($filterType, 'key') === 0) && (strcmp($filter, $bibkey) != 0))
+             ) {
+                 // filter does not match
+                 continue;
+             }
+
+             // get the formatted resource string ready for printing to the web browser
+             // the str_replace is used to remove the { } parentheses possibly present in title
+             // to enforce uppercase, TODO: check if it can be done only on title
+             $mapped_entry = $bibformat->map();
+             $mapped_entry = str_replace(['{', '}'], '', $mapped_entry);
+
+             /**
+              * SP 2021-07-08 Fix trailing comma in title
+              * e.g.  "Climate Policies after Paris: Pledge, Trade and Recyle,"
+              * should be:  "Climate Policies after Paris: Pledge, Trade and Recyle"
+              */
+             $mapped_entry = str_replace([',&quot' ], '&quot', $mapped_entry);
+             $newEntry = [
+                 'year' => $entry['year'] ?? '',
+                 'type' =>  $entry['bibtexEntryType'] ?? '',
+                 'pdf' => $this->toDownload($entry, $lang),
+                 'key' => \strtr($bibkey, ':', '-'),
+                 'entry' => $mapped_entry,
+                 'bibtex' => $this->formatBibtex((string)($entry['bibtexEntry'] ?? '')),
+                 // These are rather AG TWiSt specific formats but probably of more general interest
+                 'twist_title' => $this->toTwistTitle($mapped_entry, $resourceType, $entry['doi'] ?? ''),
+                 'twist_entry' => $this->toTWiStEntry($mapped_entry, $resourceType),
+                 'twist_pdf' => $this->toTWiStPDF($entry)
+             ];
+             $newEntries[] = $newEntry;
+         }
+         return $newEntries;
+     }
+
+    /**
+      * @param $entry Current entry
+      * @param $lang language string, e.g. 'en', 'de' (default is 'en')
+      * @return string
+      */
     protected function toDownload($entry, $lang): string
     {
         if (array_key_exists('url', $entry)) {

@@ -1,33 +1,51 @@
 #!/bin/bash
 
-# 7.4 and composer latest
+PHP_VERSION=8.1
+PHP_VERSION_PLATFORM="8.1.13"
 
 # abort on error
 set -e
+
+# setup
+# -----
 
 echo "create link to auth.json"
 rm -f auth.json
 ln -s /var/www/site-uol11/auth.json auth.json
 
+echo "add Platform $PHP_VERSION_PLATFORM"
+composer config platform.php "$PHP_VERSION_PLATFORM"
+
 echo "composer install"
-Build/Scripts/runTests.sh -s composerInstallMax
+Build/Scripts/runTests.sh -s composerInstallMax -p $PHP_VERSION
+
+# check
+# -----
 
 echo "cgl"
-Build/Scripts/runTests.sh -s cgl -n
+Build/Scripts/runTests.sh -s cgl -n -p $PHP_VERSION
 
 echo "composer validate"
-Build/Scripts/runTests.sh -s composerValidate
+#Build/Scripts/runTests.sh -s composerValidate -p $PHP_VERSION
+composer validate
 
 echo "lint"
-Build/Scripts/runTests.sh -s lint
+Build/Scripts/runTests.sh -s lint -p $PHP_VERSION
 
 echo "phpstan"
-Build/Scripts/runTests.sh -s phpstan -e "-c ../phpstan.neon" -v
+Build/Scripts/runTests.sh -s phpstan -p $PHP_VERSION
 
 echo "Unit tests"
-Build/Scripts/runTests.sh -s unit -v
+Build/Scripts/runTests.sh -s unit -p $PHP_VERSION
 
 #echo "functional tests"
 #Build/Scripts/runTests.sh -d mariadb -s functional
+
+# cleanup
+# --------
+
+echo "cleanup: remove platform"
+composer config --unset platform.php
+composer config --unset platform
 
 echo "done"
