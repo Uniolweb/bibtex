@@ -165,13 +165,26 @@ class PARSEENTRIES
                 }
             }
         } else {
+            $lastCurrentLine = $this->currentLine;
+            $numSame = 0;
             while ($this->currentLine < count($this->bibtexString)) {
                 $line = $lastLine ? $lastLine : $this->getLine();
-                $this->currentLine++;
+
+                // BEGIN: check to guard against endless loop
+                if ($lastCurrentLine === $this->currentLine) {
+                    $numSame++;
+                    if ($numSame > 3) {
+                        break;
+                    }
+                }
+                $lastCurrentLine = $this->currentLine;
+                // END: check to guard against endless loop
+
                 if (!preg_match("/^@/i", $line)) {
                     continue;
                 }
                 if (($lastLine = $this->getEntry($line)) !== false) {
+                    // todo: continue does not make sense here, should be break?
                     continue;
                 }
             }
