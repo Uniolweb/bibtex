@@ -20,8 +20,8 @@
                 <target>Jahr</target>
             </trans-unit>
             <trans-unit id="sort.none" xml:space="preserve">
-                <source>(default)</source>
-                <target>(ohne)</target>
+                <source>--- no sorting ---</source>
+                <target>--- keine Sortierung ---</target>
             </trans-unit>
         </body>
     </file>

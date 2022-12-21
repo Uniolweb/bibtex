@@ -8,6 +8,11 @@ class BibtexSettings
     /** @var string */
     public const DEFAULT_SORT = 'none';
 
+    public const ALLOWED_SORT = [
+        'year',
+        'bibtexEntryType',
+    ];
+
     /** @var string */
     public const DEFAULT_STYLE = 'uniol';
 
@@ -89,6 +94,12 @@ class BibtexSettings
      */
     public function getSort(): string
     {
+        if ($this->sort === 'none') {
+            return '';
+        }
+        if (!in_array($this->sort, self::ALLOWED_SORT)) {
+            return '';
+        }
         return $this->sort;
     }
 

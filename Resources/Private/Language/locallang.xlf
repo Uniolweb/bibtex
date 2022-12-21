@@ -16,7 +16,7 @@
                 <source>Year</source>
             </trans-unit>
             <trans-unit id="sort.none" xml:space="preserve">
-                <source>(default)</source>
+                <source>--- no sorting ---</source>
             </trans-unit>
 
         </body>

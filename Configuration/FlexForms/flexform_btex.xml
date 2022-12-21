@@ -140,12 +140,17 @@
                                         </numIndex>
                                         <numIndex index="1">bibtexEntryType</numIndex>
                                     </numIndex>
+
+                                    <!-- deactivated because parsing of authors not reliable, also does not make
+                                      sense because there are often several authors in different order -->
+                                    <!--
                                     <numIndex index="2" type="array">
                                         <numIndex index="0">
                                             LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.author
                                         </numIndex>
                                         <numIndex index="1">author</numIndex>
                                     </numIndex>
+                                    -->
                                     <numIndex index="3" type="array">
                                         <numIndex index="0">
                                             LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.year
