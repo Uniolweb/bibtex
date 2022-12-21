@@ -8,13 +8,13 @@ use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
 
 class Bibtex2HtmlServiceTest extends UnitTestCase
 {
-    /*
+
     protected function loadBibtexFile(string $relativePathBibtex): string
     {
         $thisDir = realpath(__DIR__);
         return file_get_contents($thisDir . '/' . $relativePathBibtex);
     }
-    */
+
 
     /**
      * @return \Generator<string,array<string,string>>
@@ -113,15 +113,6 @@ Booktitle = {Standardization in Smart Grids: Introduction to IT--Related Methodo
     public function bibtexPreProcessHandlesUnicodeInAuthorsDataProvider(): \Generator
     {
         yield 'Handle unicode in autors' => [
-            /*
-            '@INPROCEEDINGS{,
-Author = {Trefke, J{\"o}rn; Rohjans, Sebastian; Uslar, Mathias; Lehnhoff, Sebastian; Nordstr{\"o}m, Lars; Saleem, Arshad},
-Title = {Smart Grid Architecture Model Use Case Management in a large European Smart Grid Project},
-Year = {2013},
-Month = {10},
-Organization = {IEEE}
-}',
-            */
             '@INPROCEEDINGS{,
 Author = {Trefke, Jörn; Rohjans, Sebastian; Uslar, Mathias; Lehnhoff, Sebastian; Nordström, Lars; Saleem, Arshad},
 Title = {Smart Grid Architecture Model Use Case Management in a large European Smart Grid Project},
@@ -154,5 +145,42 @@ Organization = {IEEE}
         $this->assertEquals($expectedAuthors, $actualAuthors);
     }
 
+    /**
+     * @return \Generator<mixed>
+     */
+    public function bibtexPreProcessHandlesCitationKeyWithParenthesisWithoutEndlessLoopDataProvider(): \Generator
+    {
+        yield 'Handle entry with citation key with ()' => [
+            '@misc{RohlJHHellmersSDiekmannRHeinA(2022):.2022,
+ author = {{R{\"o}hl, JH, Hellmers, S, Diekmann, R, Hein A (2022):}},
+ year = {2022},
+ title = {Concept of an Observation-driven Android Robot-Patient with individualized Communication Skills. Conference for Biomedical Robotics and Biomechatronic},
+ url = {https://ieeexplore.ieee.org/document/9925488.},
+ urldate = {07.11.22}
+}',
+            'expectedAuthors' => 'Röhl, JH, Hellmers, S, Diekmann, R, Hein A (2022):'
+        ];
+    }
+
+
+    /**
+     * @todo This test currently fails because of work-around against endless loop
+     * @dataProvider bibtexPreProcessHandlesCitationKeyWithParenthesisWithoutEndlessLoopDataProvider
+     * @param string $bibtexContent
+     * @param string $expectedAuthors
+     * @return void
+     */
+    public function bibtexPreProcessHandlesCitationKeyWithParenthesisWithoutEndlessLoop(string $bibtexContent, string $expectedAuthors): void
+    {
+        $bibtex2HtmlService = new Bibtex2HtmlService();
+        $bibtex2HtmlService->autoloadClasses();
+        $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
+        $firstEntry = reset($actualResults);
+
+        $this->assertEquals(true, isset($firstEntry['author']));
+        $actualAuthors = $firstEntry['author'];
+
+        $this->assertEquals($expectedAuthors, $actualAuthors);
+    }
 
 }

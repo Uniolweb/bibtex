@@ -167,14 +167,17 @@ class PARSEENTRIES
         } else {
             $lastCurrentLine = $this->currentLine;
             $numSame = 0;
+            $lastLine = '';
             while ($this->currentLine < count($this->bibtexString)) {
                 $line = $lastLine ? $lastLine : $this->getLine();
 
                 // BEGIN: check to guard against endless loop
+                // this is a workaround to guard against endless loop which may occur with entries such as:
+                // todo: fix this
                 if ($lastCurrentLine === $this->currentLine) {
                     $numSame++;
-                    if ($numSame > 3) {
-                        break;
+                    if ($numSame > 50) {
+                        $this->currentLine++;
                     }
                 }
                 $lastCurrentLine = $this->currentLine;

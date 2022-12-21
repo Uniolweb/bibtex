@@ -75,12 +75,12 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         // OSBib
 
         if (!class_exists('PARSEENTRIES')
-            && !class_exists('\Hasantayyar\Osbib\Format\BibtextParse\PARSEENTRIES')
+            //&& !class_exists('\Hasantayyar\Osbib\Format\BibtextParse\PARSEENTRIES')
         ) {
             include_once($this->osbibPath . 'format/bibtexParse/PARSEENTRIES.php');
         }
         if (!class_exists('BIBFORMAT')
-            && !class_exists('\Hasantayyar\Osbib\Format\BIBFORMAT')
+            //&& !class_exists('\Hasantayyar\Osbib\Format\BIBFORMAT')
         ) {
             include_once($this->osbibPath . 'format/BIBFORMAT.php');
         }
