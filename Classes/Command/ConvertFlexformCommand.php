@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Uniolit\Bibtex\Configuration\BibtexSettings;
 
 class ConvertFlexformCommand extends Command
 {
@@ -263,6 +264,11 @@ class ConvertFlexformCommand extends Command
         } else {
             $arrayReference['settings.filterType']['vDEF'] = 'none';
             $arrayReference['settings.filterEntries']['vDEF'] = '';
+        }
+
+        $sort = $arrayReference['settings.filterType']['vDEF'] ?? '';
+        if (!in_array($sort, BibtexSettings::ALLOWED_SORT)) {
+            $arrayReference['settings.filterType']['vDEF'] = '';
         }
 
         // remove unused fields
