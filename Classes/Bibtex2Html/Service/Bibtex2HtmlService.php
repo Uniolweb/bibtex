@@ -30,6 +30,8 @@ namespace Uniolit\Bibtex\Bibtex2Html\Service;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Http\RequestFactory;
+use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Uniolit\Bibtex\Bibtex2Html\Factory\OsbibFactory;
@@ -109,15 +111,34 @@ class Bibtex2HtmlService implements LoggerAwareInterface
 
     protected function bib2html(BibtexSettings $bibtexSettings, string $lang=''): array
     {
-        $bibFile = $bibtexSettings->getUrl();
+        $fileType = $bibtexSettings->getFileType();
+
         $sort = $bibtexSettings->getSort();
         $filterType = $bibtexSettings->getFilterType();
         $filterItems = $bibtexSettings->getFilterEntries();
 
-        if (!$bibFile) {
+        if (!$fileType) {
             return [];
         }
-        $content = $this->fetchContent($bibFile);
+        $content = '';
+        switch ($fileType) {
+            case 'url':
+                $url = $bibtexSettings->getUrl();
+                if (!$url) {
+                    return [];
+                }
+                $content = $this->fetchContentByUrl($bibtexSettings->getUrl());
+                break;
+
+            case 'file':
+                $fileRef = $bibtexSettings->getFileRef();
+                if (!$fileRef) {
+                    return [];
+                }
+                $content = $this->fetchContentByFileReference($fileRef);
+                break;
+        }
+
         if (!$content) {
             return [];
         }
@@ -137,7 +158,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         return $newEntries;
     }
 
-    public function fetchContent(string $url): string
+    public function fetchContentByUrl(string $url): string
     {
         try {
             $response = $this->requestFactory->request($url);
@@ -148,6 +169,17 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             $this->logger->error($message);
             return '';
         }
+    }
+
+    public function fetchContentByFileReference(int $fileRefId): string
+    {
+        $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
+        $fileRef = $resourceFactory->getFileReferenceObject($fileRefId);
+        if (!$fileRef || ! $fileRef instanceof FileReference) {
+            return '';
+        }
+        $file = $fileRef->getOriginalFile();
+        return $fileRef->getStorage()->getFileContents($file);
     }
 
     /**
@@ -228,11 +260,8 @@ class Bibtex2HtmlService implements LoggerAwareInterface
              // Get the resource type ('book', 'article', 'inbook' etc.)
              $resourceType = $entry['bibtexEntryType'];
 
-             //  adds all the resource elements automatically to the BIBFORMAT::item array
-             $bibformat->preProcess($resourceType, $entry);
-
              // apply filters
-             $bibkey = $entry['bibtexCitation'] ?? '';
+
              $filterMatch = in_array($resourceType, $filter);
 
              if (($filterType === 'allow' && $filterMatch === false)
@@ -242,6 +271,10 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                  // filter does not match
                  continue;
              }
+
+             //  adds all the resource elements automatically to the BIBFORMAT::item array
+             $bibformat->preProcess($resourceType, $entry);
+             $bibkey = $entry['bibtexCitation'] ?? '';
 
              // get the formatted resource string ready for printing to the web browser
              // the str_replace is used to remove the { } parentheses possibly present in title

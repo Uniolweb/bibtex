@@ -45,7 +45,12 @@ class BibtexSettings
      */
     private string $template = '';
 
+    private string $fileType = 'url';
+
+    private int $fileRef = 0;
+
     /**
+     * @param string $fileType
      * @param string $sort
      * @param bool $sortFixed
      * @param string $style
@@ -53,6 +58,7 @@ class BibtexSettings
      * @param string[] $filterEntries
      */
     public function __construct(
+        string $fileType,
         string $url,
         string $sort = self::DEFAULT_SORT,
         bool $sortFixed = self::DEFAULT_SORT_FIXED,
@@ -60,7 +66,12 @@ class BibtexSettings
         string $filterType = '',
         array $filterEntries = []
     ) {
-        $this->url = $url;
+        $this->fileType = $fileType;
+        if ($fileType === 'url') {
+            $this->url = $url;
+        } else {
+            $this->fileRef = (int)$url;
+        }
         $this->sort = $sort;
         $this->sortFixed = $sortFixed;
         $this->style = $style;
@@ -157,6 +168,22 @@ class BibtexSettings
     public function getUrl(): string
     {
         return $this->url;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFileType(): string
+    {
+        return $this->fileType;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFileRef(): int
+    {
+        return $this->fileRef;
     }
 
     public function getTemplate(): string

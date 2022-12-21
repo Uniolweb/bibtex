@@ -56,8 +56,16 @@ class BtexController extends ActionController implements LoggerAwareInterface
 
     protected function getBibtexSettings(): BibtexSettings
     {
+        $fileType = $this->settings['fileType'] ?? 'url';
+        $url = '';
+        if ($fileType === 'url') {
+            $url = $this->settings['link'] ?? '';
+        } else {
+            $url = (string)($this->settings['file'] ?? 0);
+        }
         return new BibtexSettings(
-            $this->settings['link'] ?? '',
+            $fileType,
+            $url,
             $this->settings['sort'] ?? BibtexSettings::DEFAULT_SORT,
             true,
             'uniol',
