@@ -173,7 +173,8 @@ class PARSEENTRIES
 
                 // BEGIN: check to guard against endless loop
                 // this is a workaround to guard against endless loop which may occur with entries such as:
-                // todo: fix this
+                // Sybille Peters
+                // @todo: fix this
                 if ($lastCurrentLine === $this->currentLine) {
                     $numSame++;
                     if ($numSame > 50) {

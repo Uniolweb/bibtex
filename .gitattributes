@@ -6,6 +6,7 @@
 /Build export-ignore
 /Gruntfile.js export-ignore
 /package.json export-ignore
+/PHP/OSBiB-3.0  export-ignore
 /phpstan.neon export-ignore
 /Resources/Private/TypeScript/ export-ignore
 /Tests/ export-ignore

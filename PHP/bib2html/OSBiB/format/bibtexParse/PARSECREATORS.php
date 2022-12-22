@@ -23,19 +23,16 @@ http://bibliophile.sourceforge.net
 
 class PARSECREATORS
 {
-	public function __construct()
-	{
-	}
-/* Create writer arrays from bibtex input.
-'author field can be (delimiters between authors are 'and' or '&'):
-1. <first-tokens> <von-tokens> <last-tokens>
-2. <von-tokens> <last-tokens>, <first-tokens>
-3. <von-tokens> <last-tokens>, <jr-tokens>, <first-tokens>
-*/
+    /** Create writer arrays from bibtex input.
+    'author field can be (delimiters between authors are 'and' or '&'):
+    1. <first-tokens> <von-tokens> <last-tokens>
+    2. <von-tokens> <last-tokens>, <first-tokens>
+    3. <von-tokens> <last-tokens>, <jr-tokens>, <first-tokens>
+    */
 	function parse($input)
 	{
 		$input = trim($input);
-// split on ' and ' 
+// split on ' and '
 		$authorArray = preg_split("/\s(and|&)\s/i", $input);
 		foreach($authorArray as $value)
 		{
@@ -108,7 +105,7 @@ class PARSECREATORS
 			$firstname = join(" ", $firstnameArray);
 		return array($firstname, $initials);
 	}
-// surname may have title such as 'den', 'von', 'de la' etc. - characterised by first character lowercased.  Any 
+// surname may have title such as 'den', 'von', 'de la' etc. - characterised by first character lowercased.  Any
 // uppercased part means lowercased parts following are part of the surname (e.g. Van den Bussche)
 	function grabSurname($input)
 	{
