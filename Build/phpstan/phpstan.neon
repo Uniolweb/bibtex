@@ -52,7 +52,7 @@ parameters:
   # use these paths (but do not check)
   scanDirectories:
     - ../../.Build/Web/typo3/sysext
-    - ../../Resources/Private/Php/
+    - ../../PHP/
 
   # do not check if array types specified
   checkMissingIterableValueType: false

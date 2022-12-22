@@ -28,6 +28,6 @@ $EM_CONF[$_EXTKEY] = array(
         'suggests' => [],
     ],
     '_md5_values_when_last_written' => '',
-    'autoload' => ['classmap' => ['Classes', 'Resources/PHP', 'Resources/Private/Php']],
+    'autoload' => ['classmap' => ['Classes', 'PHP']],
 );
 

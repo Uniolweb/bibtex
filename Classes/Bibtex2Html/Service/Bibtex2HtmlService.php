@@ -29,6 +29,7 @@ namespace Uniolit\Bibtex\Bibtex2Html\Service;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
@@ -56,36 +57,17 @@ class Bibtex2HtmlService implements LoggerAwareInterface
 
     protected string $osbibPath = '';
 
-    protected string $bib2HtmlPath = '';
+    protected string $bibliographyStylesPath = '';
 
     public function __construct(RequestFactory $requestFactory = null, OsbibFactory $osbibFactory = null)
     {
-        $this->osbibPath = ExtensionManagementUtility::extPath('bibtex', 'Resources/Private/Php/bib2html/OSBiB/');
-        $this->bib2HtmlPath = ExtensionManagementUtility::extPath('bibtex', 'Resources/Private/Php/bib2html/');
+        $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('bibtex');
+        $this->osbibPath = ExtensionManagementUtility::extPath('bibtex', 'PHP/bib2html/OSBiB/');
+        $stylesPathString = $extensionConfiguration['bibliographyStylePath'] ?? 'bibtex:Resources/Private/Osbib/Styles/Bibliography';
+        $stylesPath = explode(':', $stylesPathString);
+        $this->bibliographyStylesPath = ExtensionManagementUtility::extPath($stylesPath[0], $stylesPath[1]);
         $this->requestFactory = $requestFactory ?: GeneralUtility::makeInstance(RequestFactory::class);
         $this->osbibFactory = $osbibFactory ?: GeneralUtility::makeInstance(OsbibFactory::class);
-    }
-
-    /**
-     * Autoload classes for non-Composer mode
-     *
-     *
-     * @todo check if composer mode
-     */
-    public function autoloadClasses(): void
-    {
-        // OSBib
-
-        if (!class_exists('PARSEENTRIES')
-            //&& !class_exists('\Hasantayyar\Osbib\Format\BibtextParse\PARSEENTRIES')
-        ) {
-            include_once($this->osbibPath . 'format/bibtexParse/PARSEENTRIES.php');
-        }
-        if (!class_exists('BIBFORMAT')
-            //&& !class_exists('\Hasantayyar\Osbib\Format\BIBFORMAT')
-        ) {
-            include_once($this->osbibPath . 'format/BIBFORMAT.php');
-        }
     }
 
     /**
@@ -100,7 +82,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
      */
     public function bibtex2Html(BibtexSettings $bibtexSettings, int $languageId = 0): array
     {
-        $this->autoloadClasses();
+        $this->osbibFactory->autoloadClasses();
 
         // @todo: use configurable language mapping, e.g. via TypoScript
         $languageKey = $languageId === 0 ? '' : '_en';
@@ -152,7 +134,8 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             $entries,
             $filterType,
             $filterItems,
-            $lang
+            $lang,
+            $bibtexSettings->getStyle()
         );
 
         return $newEntries;
@@ -247,7 +230,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
          $bibformat = $this->osbibFactory->instantiateBibFormat();
          $bibformat->cleanEntry = true; // convert BibTeX (and LaTeX) special characters to UTF-8
          list($info, $citation, $styleCommon, $styleTypes) = $bibformat->loadStyle(
-             $this->osbibPath . 'styles/bibliography/',
+             $this->bibliographyStylesPath . '/',
              $style . $lang
          );
          $bibformat->getStyle($styleCommon, $styleTypes);

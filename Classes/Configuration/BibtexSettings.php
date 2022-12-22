@@ -13,8 +13,13 @@ class BibtexSettings
         'bibtexEntryType',
     ];
 
+    public const ALLOWED_STYLES = [
+        'uniol_de',
+        'uniol_en',
+    ];
+
     /** @var string */
-    public const DEFAULT_STYLE = 'uniol';
+    public const DEFAULT_STYLE = 'uniol_en';
 
     /** @var bool if true, do not show select to select sort order */
     public const DEFAULT_SORT_FIXED = true;
@@ -79,7 +84,7 @@ class BibtexSettings
         }
         $this->sort = $sort;
         $this->sortFixed = $sortFixed;
-        $this->style = $style;
+        $this->setStyle($style);
         $this->filterType = $filterType;
         $this->filterEntries = $filterEntries;
     }
@@ -125,6 +130,18 @@ class BibtexSettings
     public function setSortFixed(bool $sortFixed): void
     {
         $this->sortFixed = $sortFixed;
+    }
+
+    /**
+     * @param string $style
+     */
+    public function setStyle(string $style): void
+    {
+        if (!in_array($style, self::ALLOWED_STYLES)) {
+            $style = self::DEFAULT_STYLE;
+        }
+
+        $this->style = $style;
     }
 
     /**
