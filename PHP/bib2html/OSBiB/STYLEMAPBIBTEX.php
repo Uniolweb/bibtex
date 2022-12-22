@@ -44,13 +44,12 @@ class STYLEMAPBIBTEX
      */
     protected $types = [];
 
-
     public function __construct()
     {
         $this->loadMap();
     }
 
-    public function mapType(string $type) : string
+    public function mapType(string $type): string
     {
         $mappedType = array_search($type, $this->types);
 
@@ -87,13 +86,13 @@ class STYLEMAPBIBTEX
          * Currently, in-text citation formatting is not available (although it is defined in the XML style file). Future
          * releases will implement this.
          */
-        $this->citation = array(
-            "creator" => "creator",
-            "title" => "title",
-            "year" => "year",
-            "pages" => "pages",
-            "ID" => "ID"
-        );
+        $this->citation = [
+            'creator' => 'creator',
+            'title' => 'title',
+            'year' => 'year',
+            'pages' => 'pages',
+            'ID' => 'ID'
+        ];
         /**
          * NB NB NB NB NB NB NB NB NB NB NB
          *
@@ -101,7 +100,7 @@ class STYLEMAPBIBTEX
          * NOT remove any elements or change the generic types. You may edit the value of each element. If your system
          * does not have a particular resource type, then you should set the value to FALSE (e.g. 'film' => FALSE,)
          */
-        $this->types = array(
+        $this->types = [
             // The generic types must be present and unchanged.  DO NOT CHANGE THE VALUE OF THESE THREE!
             'genericBook' => 'genericBook',
             'genericArticle' => 'genericArticle',
@@ -141,14 +140,14 @@ class STYLEMAPBIBTEX
             'map' => false,
             'chart' => false,
             'miscellaneous' => 'misc',
-        );
+        ];
         /**
          * Basic array of elements common to all types - change the key to map the database field that stores that value.
          */
-        $this->basic = array(
+        $this->basic = [
             'title' => 'title',
             'year' => 'publicationYear',
-        );
+        ];
         /**
          * Creator mapping.  OSBib uses 'creator1' .. 'creator5' for internally managing creator names such as
          * author, editor, series editor, translator, reviser, artist, inventor, composer etc.  The associative
@@ -286,7 +285,6 @@ class STYLEMAPBIBTEX
         $this->electronic = $this->basic;
         $this->proceedings_article['creator1'] = 'author';
 
-
         // overwrite publicationYear
         $this->proceedings_article['year'] = 'conferenceYear';
         $this->proceedings_article['pages'] = 'pages';
@@ -300,7 +298,7 @@ class STYLEMAPBIBTEX
         $this->thesis['creator1'] = 'author';
         $this->thesis[] = 'label'; // 'thesis', 'dissertation'
 
-        // 'type' is special and used in BIBFORMAT.php
+        // 'type' is special and used in BibFormat.php
         $this->thesis['type'] = 'type'; // 'Master's', 'PhD', 'Doctoral', 'Diploma' etc.
         $this->thesis['institution'] = 'institution';
         $this->thesis['address'] = 'institutionLocation';
@@ -372,9 +370,7 @@ class STYLEMAPBIBTEX
         $this->conference_paper['publisherLocation'] = 'publisherLocation';
         $this->conference_paper['isbn'] = 'ISSN';
 
-        /***********************
-         * The following not used by BibTeX.  They are ignored as per $this->types above.
-         ***********************/
+        // The following not used by BibTeX.  They are ignored as per $this->types above.
 
         // FILM
         $this->film = $this->basic;
@@ -616,5 +612,3 @@ class STYLEMAPBIBTEX
         $this->music_score['isbn'] = 'ISBN';
     }
 }
-
-?>

@@ -1,13 +1,13 @@
 <?php
 /********************************
 OSBib:
-A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software 
+A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
 using the OSBib standard.
 
 Released through http://bibliophile.sourceforge.net under the GPL licence.
 Do whatever you like with this -- some credit to the author(s) would be appreciated.
 
-If you make improvements, please consider contacting the administrators at bibliophile.sourceforge.net 
+If you make improvements, please consider contacting the administrators at bibliophile.sourceforge.net
 so that your improvements can be added to the release package.
 
 Adapted from WIKINDX: http://wikindx.sourceforge.net
@@ -24,126 +24,125 @@ http://bibliophile.sourceforge.net
 */
 class MISC
 {
-// Constructor
-	function MISC()
-	{
-	}
+    // Constructor
+    public function MISC()
+    {
+    }
 // <hr>
-	function hr($class = FALSE)
-	{
-		$string = <<< END
+    public function hr($class = false)
+    {
+        $string = <<< END
 <hr class="$class" />
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <P>
-	function p($data = '', $class = FALSE, $align = "left")
-	{
-		$string = <<< END
+    public function p($data = '', $class = false, $align = 'left')
+    {
+        $string = <<< END
 <p class="$class" align="$align">$data</p>
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <BR>
-	function br()
-	{
-		$string = <<< END
+    public function br()
+    {
+        $string = <<< END
 <br />
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <UL>
-	function ul($data, $class = FALSE)
-	{
-		$string = <<< END
+    public function ul($data, $class = false)
+    {
+        $string = <<< END
 <ul class="$class">$data</ul>
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <OL>
-	function ol($data, $class = FALSE, $type = "1")
-	{
-		$string = <<< END
+    public function ol($data, $class = false, $type = '1')
+    {
+        $string = <<< END
 <ul class="$class" type="$type">$data</ul>
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <LI>
-	function li($data, $class = FALSE)
-	{
-		$string = <<< END
+    public function li($data, $class = false)
+    {
+        $string = <<< END
 <li class="$class">$data</li>
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <STRONG>
-	function b($data, $class = FALSE)
-	{
-		return <<< END
+    public function b($data, $class = false)
+    {
+        return <<< END
 <strong class="$class">$data</strong>
 END;
-	}
+    }
 // <EM>
-	function i($data, $class = FALSE)
-	{
-		return <<< END
+    public function i($data, $class = false)
+    {
+        return <<< END
 <em class="$class">$data</em>
 END;
-	}
+    }
 // <U>
-	function u($data, $class = FALSE)
-	{
-		return <<< END
+    public function u($data, $class = false)
+    {
+        return <<< END
 <u class="$class">$data</u>
 END;
-	}
+    }
 // <SPAN>
-	function span($data, $class = FALSE)
-	{
-		return <<< END
+    public function span($data, $class = false)
+    {
+        return <<< END
 <span class="$class">$data</span>
 END;
-	}
+    }
 // <Hx>
-	function h($data, $class = FALSE, $level = 4)
-	{
-		$tag = 'h' . $level;
-		$string = <<< END
+    public function h($data, $class = false, $level = 4)
+    {
+        $tag = 'h' . $level;
+        $string = <<< END
 <$tag class="$class">$data</$tag>
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <img>
-	function img($src, $width, $height, $alt = "")
-	{
-		$string = <<< END
+    public function img($src, $width, $height, $alt = '')
+    {
+        $string = <<< END
 <img src="$src" border="0" width="$width" height="$height" alt="$alt" />
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <A>
-	function a($class, $label, $link, $target = "_self")
-	{
-// NB - no blank line before END;
-		return <<< END
+    public function a($class, $label, $link, $target = '_self')
+    {
+        // NB - no blank line before END;
+        return <<< END
 <a class="$class" href="$link" target="$target">$label</a>
 END;
-	}
+    }
 // <A NAME="...">
-	function aName($name)
-	{
-		$string = <<< END
+    public function aName($name)
+    {
+        $string = <<< END
 <a name="$name"></a>
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 // <script src="...">
-	function jsExternal($src)
-	{
-		$string = <<< END
+    public function jsExternal($src)
+    {
+        $string = <<< END
 <script src="$src" type="text/javascript"></script>
 END;
-		return $string . "\n";
-	}
+        return $string . "\n";
+    }
 }
-?>

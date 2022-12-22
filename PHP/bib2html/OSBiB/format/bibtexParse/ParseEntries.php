@@ -32,11 +32,11 @@ http://bibliophile.sourceforge.net
 
 */
 
-// For a quick command-line test (php -f PARSEENTRIES.php) after installation, uncomment these lines:
+// For a quick command-line test (php -f ParseEntries.php) after installation, uncomment these lines:
 
 /*************************
  * // Parse a file
- * $parse = NEW PARSEENTRIES();
+ * $parse = NEW ParseEntries();
  * $parse->expandMacro = TRUE;
  * //    $array = array("RMP" =>"Rev., Mod. Phys.");
  * //    $parse->loadStringMacro($array);
@@ -84,7 +84,7 @@ http://bibliophile.sourceforge.net
  *
  * END;
  *
- * $parse = NEW PARSEENTRIES();
+ * $parse = NEW ParseEntries();
  * $parse->expandMacro = TRUE;
  * //    $parse->removeDelimit = FALSE;
  * //    $parse->fieldExtract = FALSE;
@@ -100,64 +100,131 @@ http://bibliophile.sourceforge.net
  * print_r($entries);
  * print "\n\n";
  **********************/
-class PARSEENTRIES
+class ParseEntries
 {
+    /**
+     * @var array|bool
+     * @todo Use only array as type?
+     */
+    protected $preamble = [];
 
-    function __construct()
+    /**
+     * @var array|bool
+     * @todo Use only array as type?
+     */
+    protected $strings = [];
+
+    /**
+     * @var array|bool
+     * @todo Use only array as type?
+     */
+    protected $entries = [];
+
+    /** @var bool  */
+    protected $fieldExtract = true;
+
+    /** @var bool  */
+    protected $removeDelimit = true;
+
+    /** @var bool */
+    protected $expandMacro = false;
+
+    /** @var bool */
+    protected $parseFile = true;
+
+    /**
+     * @var array|mixed
+     * @todo use more strict types here, should be array?
+     * @todo rename variable if usually not a string, e.g. $bibtexStrings
+     */
+    protected $bibtexString = [];
+
+    /**
+     * File identifier (returned by fopen): Returns a file pointer resource on success, or false on failure
+     * Type is bool or any type for which is_resource() returns false
+     * @var bool|resource
+     */
+    protected $fid = false;
+
+    /**
+     * @var int
+     */
+    protected int $currentLine = 0;
+
+    protected int $count = 0;
+
+    protected array $userStrings = [];
+
+    protected bool $delimitersExist = false;
+
+    public function __construct(bool $expandMacro = false, bool $fieldExtract = true, bool $removeDelimit = true)
     {
-        $this->preamble = $this->strings = $this->entries = array();
+        $this->preamble = $this->strings = $this->entries = [];
         $this->count = 0;
-        $this->fieldExtract = true;
-        $this->removeDelimit = true;
-        $this->expandMacro = false;
+        $this->fieldExtract = $fieldExtract;
+        $this->removeDelimit = $removeDelimit;
+        $this->expandMacro = $expandMacro;
         $this->parseFile = true;
     }
 
-// Open bib file
-    function openBib($file)
+    /**
+     * Open bib file
+     */
+    public function openBib(string $file): void
     {
         if (!is_file($file)) {
             die;
         }
         $this->fid = fopen($file, 'r');
-// 22/08/2004 Mark Grimshaw - commented out as set in constructor.
-// 25/08/2004 G. Gardey needed in order to be able to alternate file parsing or PHP string parsing
+        // 22/08/2004 Mark Grimshaw - commented out as set in constructor.
+        // 25/08/2004 G. Gardey needed in order to be able to alternate file parsing or PHP string parsing
         $this->parseFile = true;
     }
 
-// Load a bibtex string to parse it
-    function loadBibtexString($bibtex_string)
+    /**
+     * Load a bibtex string to parse it
+     *
+     * @param string|mixed $bibtex_string
+     * @todo pass only string?
+     */
+    public function loadBibtexString($bibtex_string): void
     {
         if (is_string($bibtex_string)) {
             $this->bibtexString = explode("\n", $bibtex_string);
         } else {
+            // todo: convert to array?
             $this->bibtexString = $bibtex_string;
         }
         $this->parseFile = false;
         $this->currentLine = 0;
     }
 
-    // set strings macro
-    function loadStringMacro($macro_array)
+    /**
+     * set strings macro
+     *
+     * @todo Currently not used
+     * @todo use type hints
+     */
+    public function loadStringMacro(array $macro_array): void
     {
         $this->userStrings = $macro_array;
     }
 
 // Close bib file
-    function closeBib()
+    public function closeBib(): void
     {
         fclose($this->fid);
     }
 
 // Get a line from bib file
 
-    function extractEntries()
+    public function extractEntries(): void
     {
         $lastLine = false;
         if ($this->parseFile) {
             while (!feof($this->fid)) {
                 $line = $lastLine ? $lastLine : $this->getLine();
-                if (!preg_match("/^@/i", $line)) {
+                if (!preg_match('/^@/i', $line)) {
                     continue;
                 }
                 if (($lastLine = $this->getEntry($line)) !== false) {
@@ -184,7 +251,7 @@ class PARSEENTRIES
                 $lastCurrentLine = $this->currentLine;
                 // END: check to guard against endless loop
 
-                if (!preg_match("/^@/i", $line)) {
+                if (!preg_match('/^@/i', $line)) {
                     continue;
                 }
                 if (($lastLine = $this->getEntry($line)) !== false) {
@@ -195,12 +262,14 @@ class PARSEENTRIES
         }
     }
 
-// Count entry delimiters
-
-    function getLine()
+    /**
+     * Count entry delimiters
+     * @return string|bool
+     */
+    public function getLine()
     {
-// 21/08/2004 G.Gardey
-// remove comments from parsing
+        // 21/08/2004 G.Gardey
+        // remove comments from parsing
         if ($this->parseFile) {
             if (!feof($this->fid)) {
                 do {
@@ -210,25 +279,25 @@ class PARSEENTRIES
                 return $line;
             }
             return false;
-        } else {
-            do {
-                $line = trim($this->bibtexString[$this->currentLine]);
-                $isComment = (strlen($line) > 0) ? $line[0] == '%' : false;
-                $this->currentLine++;
-            } while ($this->currentLine < count($this->bibtexString) && $isComment);
-            $val = ($this->currentLine < count($this->bibtexString)) ? $line : false;
-            return $val;
         }
+        do {
+            $line = trim($this->bibtexString[$this->currentLine]);
+            $isComment = (strlen($line) > 0) ? $line[0] == '%' : false;
+            $this->currentLine++;
+        } while ($this->currentLine < count($this->bibtexString) && $isComment);
+        $val = ($this->currentLine < count($this->bibtexString)) ? $line : false;
+        return $val;
     }
 
-// Extract value part of @string field enclosed by double-quotes.
-
-    function getEntry($line)
+    /**
+     * Extract value part of @string field enclosed by double-quotes.
+     */
+    public function getEntry(string $line): string
     {
         $entry = '';
         $count = 0;
         $lastLine = false;
-        if (preg_match("/@(.*)\s*([{(])/", preg_quote($line), $matches)) {
+        if (preg_match("/@(.*)\s*([{(])/", preg_quote($line, '/'), $matches)) {
             do {
                 $count += $this->braceCount($line, $matches[2]);
                 $entry .= ' ' . $line;
@@ -237,7 +306,6 @@ class PARSEENTRIES
                 }
                 $lastLine = $line;
             } while ($count);
-
         } else {
             $line .= $this->getLine();
             $this->getEntry($line);
@@ -245,10 +313,10 @@ class PARSEENTRIES
         if (!array_key_exists(1, $matches)) {
             return $lastLine;
         }
-        if (preg_match("/string/i", $matches[1])) {
+        if (preg_match('/string/i', $matches[1])) {
             $this->strings[] = $entry;
         } else {
-            if (preg_match("/preamble/i", $matches[1])) {
+            if (preg_match('/preamble/i', $matches[1])) {
                 $this->preamble[] = $entry;
             } else {
                 if ($this->fieldExtract) {
@@ -262,9 +330,10 @@ class PARSEENTRIES
         return $lastLine;
     }
 
-// Extract a field
-
-    function braceCount($line, $delimitStart)
+    /**
+     * Extract a field
+     */
+    public function braceCount(string $line, string $delimitStart): int
     {
         if ($delimitStart == '{') {
             $delimitEnd = '}';
@@ -272,7 +341,6 @@ class PARSEENTRIES
             $delimitStart = '(';
             $delimitEnd = ')';
         }
-        $count = 0;
         $count = substr_count($line, $delimitStart);
         $count -= substr_count($line, $delimitEnd);
         return $count;
@@ -281,9 +349,9 @@ class PARSEENTRIES
     /**
      * Start splitting a bibtex entry into component fields.
      * Store the entry type and citation.
-     * @param $entry
+     * @param string $entry
      */
-    function fullSplit($entry)
+    public function fullSplit(string $entry): void
     {
         // Sybille Peters: check for invalid input
         if (!$entry) {
@@ -298,8 +366,7 @@ class PARSEENTRIES
 
         if ($matches[2] ?? false) {
             // sometimes a bibtex file will have no citation key
-            if (preg_match("/=/", $matches[2])) // this is a field
-            {
+            if (preg_match('/=/', $matches[2])) { // this is a field
                 $matches = preg_split("/@(.*)\s*[{(](.*)/U", $entry, 2, PREG_SPLIT_DELIM_CAPTURE);
             }
             //print_r($matches); print "<P>";
@@ -316,20 +383,23 @@ class PARSEENTRIES
      *
      * @param string $oldString
      */
-    function reduceFields($oldString)
+    public function reduceFields(string $oldString): void
     {
         // Sybille Peters: check for invalid input
         if (!$oldString) {
             return;
         }
 
+        /** @var array $values */
+        $values = [];
+
         // 03/05/2005 G. Gardey. Do not remove all occurences, juste one
         //              * correctly parse an entry ended by: somefield = {aValue}}
         $lg = strlen($oldString);
-        if ($oldString[$lg - 1] == "}" || $oldString[$lg - 1] == ")" || $oldString[$lg - 1] == ",") {
+        if ($oldString[$lg - 1] == '}' || $oldString[$lg - 1] == ')' || $oldString[$lg - 1] == ',') {
             $oldString = substr($oldString, 0, $lg - 1);
         }
-        $split = preg_split("/=/", $oldString, 2);
+        $split = preg_split('/=/', $oldString, 2);
         if (!isset($split[1])) {
             // todo: this is an error: should not happen!
             return;
@@ -347,7 +417,7 @@ class PARSEENTRIES
         if ($rev[0] != ',') {
             $oldString .= ',';
         }
-        $keys = preg_split("/=,/", $oldString);
+        $keys = preg_split('/=,/', $oldString);
         // 22/08/2004 - Mark Grimshaw
         // I have absolutely no idea why this array_pop is required but it is.  Seems to always be an empty key at the end after the split
         // which causes problems if not removed.
@@ -357,7 +427,7 @@ class PARSEENTRIES
             $rev = strrev($value);
             // remove any dangling ',' left on final field of entry
             if ($rev[0] == ',') {
-                $value = rtrim($value, ",");
+                $value = rtrim($value, ',');
             }
             if (!$value) {
                 continue;
@@ -373,24 +443,27 @@ class PARSEENTRIES
 
     /**
      * Grab a complete bibtex entry
+     * @param string $seg
+     * @return array<int,string|bool>
      */
-    function fieldSplit($seg)
+    public function fieldSplit(string $seg): array
     {
         // handle fields like another-field = {}
         $array = preg_split("/,\s*([-_.:,a-zA-Z0-9]+)\s*={1}\s*/U", $seg, PREG_SPLIT_DELIM_CAPTURE);
         //$array = preg_split("/,\s*(\w+)\s*={1}\s*/U", $seg, PREG_SPLIT_DELIM_CAPTURE);
         if (!array_key_exists(1, $array)) {
-            return array($array[0], false);
+            return [$array[0], false];
         }
-        return array($array[0], $array[1]);
+        return [$array[0], $array[1]];
     }
 
-    // 02/05/2005 G.Gardey	only remove delimiters from a string
-
-    function returnArrays()
+    /**
+     * 02/05/2005 G.Gardey only remove delimiters from a string
+     */
+    public function returnArrays(): array
     {
         foreach ($this->preamble as $value) {
-            preg_match("/.*[{(](.*)/", $value, $matches);
+            preg_match('/.*[{(](.*)/', $value, $matches);
             $preamble = substr($matches[1], 0, -1);
             $preambles['bibtexPreamble'] = trim($this->removeDelimitersAndExpand(trim($preamble), true));
         }
@@ -404,7 +477,7 @@ class PARSEENTRIES
                 $value = trim($value);
                 $matches = preg_split("/@string\s*([{(])/i", $value, 2, PREG_SPLIT_DELIM_CAPTURE);
                 $delimit = $matches[1];
-                $matches = preg_split("/=/", $matches[2], 2, PREG_SPLIT_DELIM_CAPTURE);
+                $matches = preg_split('/=/', $matches[2], 2, PREG_SPLIT_DELIM_CAPTURE);
                 $strings[trim($matches[0])] = trim($this->extractStringValue($matches[1]));
             }
         }
@@ -418,10 +491,9 @@ class PARSEENTRIES
         if ($this->removeDelimit || $this->expandMacro && $this->fieldExtract) {
             $count = count($this->entries);
             for ($i = 0; $i < $count; $i++) {
-                foreach ($this->entries[$i] as $key => $value)
+                foreach ($this->entries[$i] as $key => $value) {
                     // 02/05/2005 G. Gardey don't expand macro for bibtexCitation
                     // and bibtexEntryType
-                {
                     if ($key != 'bibtexCitation' && $key != 'bibtexEntryType') {
                         $this->entries[$i][$key] = trim($this->removeDelimitersAndExpand($this->entries[$i][$key]));
                     }
@@ -437,12 +509,13 @@ class PARSEENTRIES
         if (empty($this->entries)) {
             $this->entries = false;
         }
-        return array($this->preamble, $this->strings, $this->entries);
+        return [$this->preamble, $this->strings, $this->entries];
     }
 
-// Remove enclosures around entry field values.  Additionally, expand macros if flag set.
-
-    function removeDelimitersAndExpand($string, $preamble = false)
+    /**
+     * Remove enclosures around entry field values.  Additionally, expand macros if flag set.
+     */
+    public function removeDelimitersAndExpand(string $string, $preamble = false)
     {
         // 02/05/2005 G. Gardey
         $string = $this->removeDelimiters($string);
@@ -458,18 +531,18 @@ class PARSEENTRIES
                         // Sybille Peters: eregi_replace was removed
                         //$string = eregi_replace($key, $value, $string);
                         //$string = preg_replace('/' . $key . '/', $value, $string);
-                        $string = str_replace( $key, $value, $string);
+                        $string = str_replace($key, $value, $string);
                     }
                     // 22/08/2004 Mark Grimshaw - make sure a '#' surrounded by any number of spaces is replaced by just one space.
                     // 30/04/2005 Mark Grimshaw - ensure entries such as journal = {{Journal of } # JRNL23} are properly parsed
                     // 02/05/2005 G. Gardey - another solution for the previous line
-                    $items = explode("#", $string);
-                    $string = "";
+                    $items = explode('#', $string);
+                    $string = '';
                     foreach ($items as $val) {
-                        $string .= $this->removeDelimiters(trim($val)) . " ";
+                        $string .= $this->removeDelimiters(trim($val)) . ' ';
                     }
 
-                    $string = preg_replace("/\s+/", " ", $string);
+                    $string = preg_replace("/\s+/", ' ', $string);
                 }
             }
             if (!empty($this->userStrings)) {
@@ -478,7 +551,7 @@ class PARSEENTRIES
                     // Sybille Peters: eregi_replace was removed
                     //$string = eregi_replace($key, $value, $string);
                     //$string = preg_replace('/' . $key . '/', $value, $string);
-                    $string = str_replace( $key, $value, $string);
+                    $string = str_replace($key, $value, $string);
                     $string = preg_replace("/\s*#\s*/", ' ', $string);
                 }
             }
@@ -486,19 +559,20 @@ class PARSEENTRIES
         return $string;
     }
 
-// This method starts the whole process
-
-    function removeDelimiters($string)
+    /**
+     * This method starts the whole process
+     */
+    public function removeDelimiters(string $string): string
     {
-// MG 10/06/2005 - Make a note of whether delimiters exist - required in removeDelimitersAndExpand() otherwise, expansion happens everywhere including
-// inside {...} and "..."
+        // MG 10/06/2005 - Make a note of whether delimiters exist - required in removeDelimitersAndExpand() otherwise, expansion happens everywhere including
+        // inside {...} and "..."
         $this->delimitersExist = false;
-        if ($string && ($string[0] == "\"")) {
+        if ($string && ($string[0] == '"')) {
             $string = substr($string, 1);
             $string = substr($string, 0, -1);
         } else {
-            if ($string && ($string[0] == "{")) {
-                if (strlen($string) > 0 && $string[strlen($string) - 1] == "}") {
+            if ($string && ($string[0] == '{')) {
+                if ($string[strlen($string) - 1] == '}') {
                     $string = substr($string, 1);
                     $string = substr($string, 0, -1);
                 }
@@ -507,9 +581,10 @@ class PARSEENTRIES
         return $string;
     }
 
-// Return arrays of entries etc. to the calling process.
-
-    function extractStringValue($string)
+    /**
+     * Return arrays of entries etc. to the calling process.
+     */
+    public function extractStringValue(string $string): string
     {
         // 2/05/2005 G. Gardey Add support for @string macro
         // defined by curly bracket : @string{M12 = {December}}
@@ -525,5 +600,3 @@ class PARSEENTRIES
         return $string;
     }
 }
-
-?>

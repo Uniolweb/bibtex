@@ -14,10 +14,7 @@
  * http://bibliophile.sourceforge.net
  ********************************/
 
-/*****
- * LOADSTYLE class
- *
- *****/
+// LOADSTYLE class
 class LOADSTYLE
 {
     public function __construct()
@@ -33,24 +30,23 @@ class LOADSTYLE
      * @return    Sorted assoc. array - keys = filename (less '.xml'), values = Style description.
      * @author    Mark Grimshaw
      * @version    1
-     *
      */
-    function loadDir($stylesDir)
+    public function loadDir($stylesDir)
     {
         $handle = opendir($stylesDir);
         while (false !== ($dir = readdir($handle))) {
-            $fileName = strtoupper($dir) . ".xml";
+            $fileName = strtoupper($dir) . '.xml';
             if (is_dir($stylesDir . '/' . $dir)
-                && file_exists($stylesDir . '/' . $dir . "/" . $fileName)) {
-                if ($fh = fopen($stylesDir . '/' . $dir . "/" . $fileName, "r")) {
-                    preg_match("/<description>(.*)<\\/description>/i", fgets($fh), $matches);
+                && file_exists($stylesDir . '/' . $dir . '/' . $fileName)) {
+                if ($fh = fopen($stylesDir . '/' . $dir . '/' . $fileName, 'r')) {
+                    preg_match('/<description>(.*)<\\/description>/i', fgets($fh), $matches);
                     $array[strtoupper($dir)] = $matches[1];
                 }
                 fclose($fh);
             }
         }
         if (!isset($array)) {
-            return $array = array();
+            return $array = [];
         }
         /**
          * Sort alphabetically on the key.
@@ -59,5 +55,3 @@ class LOADSTYLE
         return $array;
     }
 }
-
-?>

@@ -6,9 +6,11 @@ PHP_VERSION_PLATFORM="8.1.13"
 # abort on error
 set -e
 
+
 # cleanup
 # --------
 
+echo "cleanup"
 echo "cleanup: remove platform"
 composer config --unset platform.php
 composer config --unset platform
@@ -17,7 +19,6 @@ rm -f composer.lock
 # composer validate
 # (before add platform php to composer.json!)
 # -------------------
-
 echo "composer validate"
 #Build/Scripts/runTests.sh -s composerValidate -p $PHP_VERSION
 composer validate
@@ -30,11 +31,14 @@ echo "create link to auth.json"
 rm -f auth.json
 ln -s /var/www/site-uol11/auth.json auth.json
 
+echo "composer validate"
+composer validate
+
 echo "add Platform $PHP_VERSION_PLATFORM"
 composer config platform.php "$PHP_VERSION_PLATFORM"
 
 echo "composer install"
-Build/Scripts/runTests.sh -s composerInstallMax -p $PHP_VERSION
+Build/Scripts/runTests.sh -s composerInstall -p $PHP_VERSION
 
 # check
 # -----

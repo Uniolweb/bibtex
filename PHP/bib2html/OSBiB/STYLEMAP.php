@@ -16,7 +16,6 @@
  ********************************/
 class STYLEMAP
 {
-
     /**
      * Use this type for unknown type
      *
@@ -34,7 +33,7 @@ class STYLEMAP
         $this->loadMap();
     }
 
-    public function mapType(string $type) : string
+    public function mapType(string $type): string
     {
         $mappedType = array_search($type, $this->types);
 
@@ -64,20 +63,20 @@ class STYLEMAP
      *
      * @author Mark Grimshaw
      */
-    function loadMap()
+    public function loadMap()
     {
         /**
          * What fields are available to the in-text citation template? This array should NOT be changed.
          * Currently, in-text citation formatting is not available (although it is defined in the XML style file). Future
          * releases will implement this.
          */
-        $this->citation = array(
-            "creator" => "creator",
-            "title" => "title",
-            "year" => "year",
-            "pages" => "pages",
-            "ID" => "ID"
-        );
+        $this->citation = [
+            'creator' => 'creator',
+            'title' => 'title',
+            'year' => 'year',
+            'pages' => 'pages',
+            'ID' => 'ID'
+        ];
         /**
          * NB NB NB NB NB NB NB NB NB NB NB
          *
@@ -85,7 +84,7 @@ class STYLEMAP
          * NOT remove any elements or change the generic types. You may edit the value of each element. If your system
          * does not have a particular resource type, then you should set the value to FALSE (e.g. 'film' => FALSE,)
          */
-        $this->types = array(
+        $this->types = [
 // The generic types must be present and unchanged.  DO NOT CHANGE THE VALUE OF THESE THREE!
             'genericBook' => 'genericBook',
             'genericArticle' => 'genericArticle',
@@ -125,14 +124,14 @@ class STYLEMAP
             'map' => 'map',
             'chart' => 'chart',
             'miscellaneous' => 'miscellaneous',
-        );
+        ];
         /**
          * Basic array of elements common to all types - change the key to map the database field that stores that value.
          */
-        $this->basic = array(
+        $this->basic = [
             'title' => 'title',
             'year1' => 'publicationYear',
-        );
+        ];
         /**
          * Creator mapping.  OSBib uses 'creator1' .. 'creator5' for internally managing creator names such as
          * author, editor, series editor, translator, reviser, artist, inventor, composer etc.  The associative
@@ -164,15 +163,15 @@ class STYLEMAP
          *
          * If you do not conform to this, XML style definition sheets you produce will not be compatible with other systems.
          */
-// Three Generic fallback types used when there's no style definition for one of the resources below.
-// Generic Book type - no collection data, like a book
+        // Three Generic fallback types used when there's no style definition for one of the resources below.
+        // Generic Book type - no collection data, like a book
         $this->genericBook = $this->basic;
         $this->genericBook['creator1'] = 'creator';
         $this->genericBook['creator2'] = 'editor';
         $this->genericBook['publisherName'] = 'publisherName';
         $this->genericBook['publisherLocation'] = 'publisherLocation';
         $this->genericBook['isbn'] = 'ID';
-// Generic Article type - in a collection like an article
+        // Generic Article type - in a collection like an article
         $this->genericArticle = $this->basic;
         $this->genericArticle['creator1'] = 'creator';
         $this->genericArticle['creator2'] = 'editor';
@@ -182,7 +181,7 @@ class STYLEMAP
         $this->genericArticle['date'] = 'date';
         $this->genericArticle['pages'] = 'pages';
         $this->genericArticle['isbn'] = 'ID';
-// Generic Miscellaneous type - whatever is best not put in the above two fall back types....?
+        // Generic Miscellaneous type - whatever is best not put in the above two fall back types....?
         $this->genericMisc = $this->basic;
         $this->genericMisc['creator1'] = 'creator';
         $this->genericMisc['publisherName'] = 'publisherName';
@@ -191,8 +190,8 @@ class STYLEMAP
         $this->genericMisc['date'] = 'date';
         $this->genericMisc['isbn'] = 'ID';
 
-// Resource specific mappings. The order here is the display order when editing/creating styles.
-// BOOK
+        // Resource specific mappings. The order here is the display order when editing/creating styles.
+        // BOOK
         $this->book = $this->basic;
         $this->book['creator1'] = 'author';
         $this->book['creator2'] = 'editor';
@@ -209,12 +208,12 @@ class STYLEMAP
         $this->book['publisherName'] = 'publisherName';
         $this->book['publisherLocation'] = 'publisherLocation';
         $this->book['isbn'] = 'ISBN';
-// BOOK ARTICLE/CHAPTER
+        // BOOK ARTICLE/CHAPTER
         $this->book_article = $this->book;
         $this->book_article['collectionTitle'] = 'book';
         $this->book_article['collectionTitleShort'] = 'shortBook';
         $this->book_article['pages'] = 'pages';
-// JOURNAL ARTICLE
+        // JOURNAL ARTICLE
         $this->journal_article = $this->basic;
         $this->journal_article['creator1'] = 'author';
         $this->journal_article['field1'] = 'volume';
@@ -224,7 +223,7 @@ class STYLEMAP
         $this->journal_article['collectionTitleShort'] = 'shortJournal';
         $this->journal_article['pages'] = 'pages';
         $this->journal_article['isbn'] = 'ISSN';
-// NEWSPAPER ARTICLE
+        // NEWSPAPER ARTICLE
         $this->newspaper_article = $this->basic;
         $this->newspaper_article['year1'] = 'issueYear'; // override publicationYear
         $this->newspaper_article['date'] = 'issueDate';
@@ -235,7 +234,7 @@ class STYLEMAP
         $this->newspaper_article['field2'] = 'city';
         $this->newspaper_article['pages'] = 'pages';
         $this->newspaper_article['isbn'] = 'ISSN';
-// MAGAZINE ARTICLE
+        // MAGAZINE ARTICLE
         $this->magazine_article = $this->basic;
         $this->magazine_article['year1'] = 'issueYear'; // override publicationYear
         $this->magazine_article['date'] = 'issueDate';
@@ -248,7 +247,7 @@ class STYLEMAP
         $this->magazine_article['field3'] = 'number';
         $this->magazine_article['pages'] = 'pages';
         $this->magazine_article['isbn'] = 'ISSN';
-// PROCEEDINGS ARTICLE
+        // PROCEEDINGS ARTICLE
         $this->proceedings_article = $this->basic;
         $this->proceedings_article['creator1'] = 'author';
         $this->proceedings_article['collectionTitle'] = 'conference';
@@ -259,9 +258,9 @@ class STYLEMAP
         $this->proceedings_article['year2'] = 'conferenceYear';
         $this->proceedings_article['pages'] = 'pages';
         $this->proceedings_article['isbn'] = 'ISSN';
-// THESIS
+        // THESIS
         $this->thesis = $this->basic;
-// overwrite publicationYear
+        // overwrite publicationYear
         $this->thesis['year1'] = 'awardYear';
         $this->thesis['creator1'] = 'author';
         $this->thesis['field1'] = 'type'; // 'Master's', 'PhD', 'Doctoral', 'Diploma' etc.
@@ -276,7 +275,7 @@ class STYLEMAP
         $this->thesis['year2'] = 'abstractYear';
         $this->thesis['pages'] = 'pages';
         $this->thesis['isbn'] = 'ID';
-// WEB ARTICLE
+        // WEB ARTICLE
         $this->web_article = $this->basic;
         $this->web_article['creator1'] = 'author';
         $this->web_article['collectionTitle'] = 'journal';
@@ -288,7 +287,7 @@ class STYLEMAP
         $this->web_article['date'] = 'accessDate';
         $this->web_article['year2'] = 'accessYear';
         $this->web_article['isbn'] = 'ID';
-// FILM
+        // FILM
         $this->film = $this->basic;
         $this->film['creator1'] = 'director';
         $this->film['creator2'] = 'producer';
@@ -296,7 +295,7 @@ class STYLEMAP
         $this->film['runningTime'] = 'runningTime';
         $this->film['publisherName'] = 'distributor';
         $this->film['isbn'] = 'ID';
-// BROADCAST
+        // BROADCAST
         $this->broadcast = $this->basic;
         $this->broadcast['creator1'] = 'director';
         $this->broadcast['creator2'] = 'producer';
@@ -306,7 +305,7 @@ class STYLEMAP
         $this->broadcast['publisherName'] = 'channel';
         $this->broadcast['publisherLocation'] = 'channelLocation';
         $this->broadcast['isbn'] = 'ID';
-// SOFTWARE
+        // SOFTWARE
         $this->software = $this->basic;
         $this->software['creator1'] = 'author';
         $this->software['field2'] = 'type';
@@ -314,14 +313,14 @@ class STYLEMAP
         $this->software['publisherName'] = 'publisherName';
         $this->software['publisherLocation'] = 'publisherLocation';
         $this->software['isbn'] = 'ID';
-// ARTWORK
+        // ARTWORK
         $this->artwork = $this->basic;
         $this->artwork['creator1'] = 'artist';
         $this->artwork['field2'] = 'medium';
         $this->artwork['publisherName'] = 'publisherName';
         $this->artwork['publisherLocation'] = 'publisherLocation';
         $this->artwork['isbn'] = 'ID';
-// AUDIOVISUAL
+        // AUDIOVISUAL
         $this->audiovisual = $this->basic;
         $this->audiovisual['creator1'] = 'author';
         $this->audiovisual['creator2'] = 'performer';
@@ -336,7 +335,7 @@ class STYLEMAP
         $this->audiovisual['publisherLocation'] = 'publisherLocation';
         $this->audiovisual['field2'] = 'medium';
         $this->audiovisual['isbn'] = 'ID';
-// (LEGAL) CASE
+        // (LEGAL) CASE
         $this->case = $this->basic;
         $this->case['field1'] = 'reporter';
         $this->case['creator3'] = 'counsel';
@@ -345,7 +344,7 @@ class STYLEMAP
         $this->case['year1'] = 'caseDecidedYear'; // override
         $this->case['publisherName'] = 'court';
         $this->case['isbn'] = 'ISBN';
-// LEGAL RULING/REGULATION
+        // LEGAL RULING/REGULATION
         $this->legal_ruling = $this->basic;
         $this->legal_ruling['creator1'] = 'author';
         $this->legal_ruling['field1'] = 'section';
@@ -358,7 +357,7 @@ class STYLEMAP
         $this->legal_ruling['publisherLocation'] = 'publisherLocation';
         $this->legal_ruling['pages'] = 'pages';
         $this->legal_ruling['isbn'] = 'ISBN';
-// (PARLIAMENTARY) BILL
+        // (PARLIAMENTARY) BILL
         $this->bill = $this->basic;
         $this->bill['field2'] = 'code';
         $this->bill['field3'] = 'codeVolume';
@@ -370,25 +369,25 @@ class STYLEMAP
         $this->bill['publisherLocation'] = 'publisherLocation';
         $this->bill['pages'] = 'pages';
         $this->bill['isbn'] = 'ID';
-// CLASSICAL WORK
+        // CLASSICAL WORK
         $this->classical = $this->basic;
         $this->classical['creator1'] = 'attributedTo';
         $this->classical['field4'] = 'volume';
         $this->classical['isbn'] = 'ISBN';
-// CONFERENCE PAPER
+        // CONFERENCE PAPER
         $this->conference_paper = $this->basic;
         $this->conference_paper['creator1'] = 'author';
         $this->conference_paper['publisherName'] = 'publisherName';
         $this->conference_paper['publisherLocation'] = 'publisherLocation';
         $this->conference_paper['isbn'] = 'ISSN';
-// MISCELLANEOUS
+        // MISCELLANEOUS
         $this->miscellaneous = $this->basic;
         $this->miscellaneous['creator1'] = 'creator';
         $this->miscellaneous['field2'] = 'medium';
         $this->miscellaneous['publisherName'] = 'publisherName';
         $this->miscellaneous['publisherLocation'] = 'publisherLocation';
         $this->miscellaneous['isbn'] = 'ID';
-// GOVERNMENT REPORT/DOCUMENTATION
+        // GOVERNMENT REPORT/DOCUMENTATION
         $this->government_report = $this->basic;
         $this->government_report['creator1'] = 'author';
         $this->government_report['field2'] = 'department';
@@ -399,7 +398,7 @@ class STYLEMAP
         $this->government_report['publisherName'] = 'publisherName';
         $this->government_report['pages'] = 'pages';
         $this->government_report['isbn'] = 'ISSN';
-// REPORT/DOCUMENTATION
+        // REPORT/DOCUMENTATION
         $this->report = $this->basic;
         $this->report['creator1'] = 'author';
         $this->report['field2'] = 'type';
@@ -411,7 +410,7 @@ class STYLEMAP
         $this->report['year1'] = 'reportYear'; // override
         $this->report['pages'] = 'pages';
         $this->report['isbn'] = 'ISSN';
-// GOVERNMENT/LEGAL HEARING
+        // GOVERNMENT/LEGAL HEARING
         $this->hearing = $this->basic;
         $this->hearing['field1'] = 'committee';
         $this->hearing['field2'] = 'legislativeBody';
@@ -424,7 +423,7 @@ class STYLEMAP
         $this->hearing['publisherLocation'] = 'publisherLocation';
         $this->hearing['pages'] = 'pages';
         $this->hearing['isbn'] = 'ISSN';
-// ONLINE DATABASE
+        // ONLINE DATABASE
         $this->database = $this->basic;
         $this->database['creator1'] = 'author';
         $this->database['URL'] = 'URL';
@@ -433,7 +432,7 @@ class STYLEMAP
         $this->database['publisherName'] = 'publisherName';
         $this->database['publisherLocation'] = 'publisherLocation';
         $this->database['isbn'] = 'ID';
-// MANUSCRIPT
+        // MANUSCRIPT
         $this->manuscript = $this->basic;
         $this->manuscript['creator1'] = 'author';
         $this->manuscript['collectionTitle'] = 'collection';
@@ -444,7 +443,7 @@ class STYLEMAP
         $this->manuscript['year1'] = 'issueYear'; // override
         $this->manuscript['pages'] = 'pages';
         $this->manuscript['isbn'] = 'ISBN';
-// MAP
+        // MAP
         $this->map = $this->basic;
         $this->map['creator1'] = 'cartographer';
         $this->map['creator5'] = 'seriesEditor';
@@ -454,7 +453,7 @@ class STYLEMAP
         $this->map['publisherName'] = 'publisherName';
         $this->map['publisherLocation'] = 'publisherLocation';
         $this->map['isbn'] = 'ISBN';
-// CHART
+        // CHART
         $this->chart = $this->basic;
         $this->chart['creator1'] = 'creator';
         $this->chart['field1'] = 'fileName';
@@ -466,7 +465,7 @@ class STYLEMAP
         $this->chart['publisherName'] = 'publisherName';
         $this->chart['publisherLocation'] = 'publisherLocation';
         $this->chart['isbn'] = 'ID';
-// STATUTE
+        // STATUTE
         $this->statute = $this->basic;
         $this->statute['field2'] = 'code';
         $this->statute['field5'] = 'codeNumber';
@@ -477,7 +476,7 @@ class STYLEMAP
         $this->statute['year1'] = 'statuteYear'; // override
         $this->statute['pages'] = 'pages';
         $this->statute['isbn'] = 'ID';
-// PATENT
+        // PATENT
         $this->patent = $this->basic;
         $this->patent['creator1'] = 'inventor';
         $this->patent['creator2'] = 'issuingOrganisation';
@@ -497,7 +496,7 @@ class STYLEMAP
         $this->patent['date'] = 'issueDate';
         $this->patent['year1'] = 'issueYear'; // override
         $this->patent['isbn'] = 'ID';
-// PERSONAL COMMUNICATION
+        // PERSONAL COMMUNICATION
         $this->personal = $this->basic;
         $this->personal['creator1'] = 'author';
         $this->personal['creator2'] = 'recipient';
@@ -505,14 +504,14 @@ class STYLEMAP
         $this->personal['date'] = 'date';
         $this->personal['year1'] = 'year'; // override
         $this->personal['isbn'] = 'ID';
-// PROCEEDINGS (complete set of)
+        // PROCEEDINGS (complete set of)
         $this->proceedings = $this->basic;
         $this->proceedings['publisherName'] = 'conferenceOrganiser';
         $this->proceedings['publisherLocation'] = 'conferenceLocation';
         $this->proceedings['date'] = 'conferenceDate';
         $this->proceedings['year2'] = 'conferenceYear';
         $this->proceedings['isbn'] = 'ISSN';
-// MUSIC ALBUM
+        // MUSIC ALBUM
         $this->music_album = $this->basic;
         $this->music_album['creator1'] = 'performer';
         $this->music_album['creator2'] = 'composer';
@@ -520,7 +519,7 @@ class STYLEMAP
         $this->music_album['field2'] = 'medium';
         $this->music_album['publisherName'] = 'publisherName';
         $this->music_album['isbn'] = 'ID';
-// MUSIC TRACK
+        // MUSIC TRACK
         $this->music_track = $this->basic;
         $this->music_track['creator1'] = 'performer';
         $this->music_track['creator2'] = 'composer';
@@ -530,7 +529,7 @@ class STYLEMAP
         $this->music_track['field2'] = 'medium';
         $this->music_track['publisherName'] = 'publisherName';
         $this->music_track['isbn'] = 'ID';
-// MUSIC SCORE
+        // MUSIC SCORE
         $this->music_score = $this->basic;
         $this->music_score['creator1'] = 'composer';
         $this->music_score['creator2'] = 'editor';
@@ -538,7 +537,7 @@ class STYLEMAP
         $this->music_score['publisherName'] = 'publisherName';
         $this->music_score['publisherLocation'] = 'publisherLocation';
         $this->music_score['isbn'] = 'ISBN';
-// UNPUBLISHED WORK
+        // UNPUBLISHED WORK
         $this->unpublished = $this->basic;
         $this->unpublished['year1'] = 'year';
         $this->unpublished['creator1'] = 'author';
@@ -548,5 +547,3 @@ class STYLEMAP
         $this->unpublished['isbn'] = 'ID';
     }
 }
-
-?>

@@ -1,13 +1,13 @@
 <?php
 /********************************
 OSBib:
-A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software 
+A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
 using the OSBib standard.
 
 Released through http://bibliophile.sourceforge.net under the GPL licence.
 Do whatever you like with this -- some credit to the author(s) would be appreciated.
 
-If you make improvements, please consider contacting the administrators at bibliophile.sourceforge.net 
+If you make improvements, please consider contacting the administrators at bibliophile.sourceforge.net
 so that your improvements can be added to the release package.
 
 Adapted from WIKINDX: http://wikindx.sourceforge.net
@@ -39,53 +39,53 @@ define("OSBIB_STYLE_DIR", "../styles/bibliography"); // CB
 	$vars = $init->getVars();
 // start the session
 	$init->startSession();
-	
+
 	if(!$vars)
 	{
 		include_once("ADMINSTYLE.php");
-		$admin = new ADMINSTYLE($vars);
+		$admin = new AdminStyle($vars);
 		$pString = $admin->gateKeep('display');
 	}
 	else if($vars["action"] == 'adminStyleAddInit')
 	{
 		include_once("ADMINSTYLE.php");
-		$admin = new ADMINSTYLE($vars);
+		$admin = new AdminStyle($vars);
 		$pString = $admin->gateKeep('addInit');
 	}
 	else if($vars["action"] == 'adminStyleAdd')
 	{
 		include_once("ADMINSTYLE.php");
-		$admin = new ADMINSTYLE($vars);
+		$admin = new AdminStyle($vars);
 		$pString = $admin->gateKeep('add');
 	}
 	else if($vars["action"] == 'adminStyleEditInit')
 	{
 		include_once("ADMINSTYLE.php");
-		$admin = new ADMINSTYLE($vars);
+		$admin = new AdminStyle($vars);
 		$pString = $admin->gateKeep('editInit');
 	}
 	else if($vars["action"] == 'adminStyleEditDisplay')
 	{
 		include_once("ADMINSTYLE.php");
-		$admin = new ADMINSTYLE($vars);
+		$admin = new AdminStyle($vars);
 		$pString = $admin->gateKeep('editDisplay');
 	}
 	else if($vars["action"] == 'adminStyleEdit')
 	{
 		include_once("ADMINSTYLE.php");
-		$admin = new ADMINSTYLE($vars);
+		$admin = new AdminStyle($vars);
 		$pString = $admin->gateKeep('edit');
 	}
 	else if($vars["action"] == 'adminStyleCopyInit')
 	{
 		include_once("ADMINSTYLE.php");
-		$admin = new ADMINSTYLE($vars);
+		$admin = new AdminStyle($vars);
 		$pString = $admin->gateKeep('copyInit');
 	}
 	else if($vars["action"] == 'adminStyleCopyDisplay')
 	{
 		include_once("ADMINSTYLE.php");
-		$admin = new ADMINSTYLE($vars);
+		$admin = new AdminStyle($vars);
 		$pString = $admin->gateKeep('copyDisplay');
 	}
 
@@ -101,20 +101,20 @@ define("OSBIB_STYLE_DIR", "../styles/bibliography"); // CB
 
 	else if($vars["action"] == 'help')
 	{
-		include_once("HELPSTYLE.php");
-		$help = new HELPSTYLE();
+		include_once(__DIR__ . '/HelpStyle.php');
+		$help = new HelpStyle();
 		$pString = $help->display();
-		include_once("CLOSE.php");
-		new CLOSE($pString, FALSE);
+		include_once(__DIR__ . '/Close.php');
+		new Close($pString, FALSE);
 	}
 	else
 		$pString = $errors->text("inputError", "invalid");
 /*****
-*	Close the HTML code by calling the constructor of CLOSE which also 
+*	Close the HTML code by calling the constructor of CLOSE which also
 *	prints the HTTP header, body and flushes the print buffer.
 *****/
-	include_once("CLOSE.php");
-	new CLOSE($pString);
+	include_once(__DIR__ . '/Close.php');
+	new Close($pString);
 
 
 ?>

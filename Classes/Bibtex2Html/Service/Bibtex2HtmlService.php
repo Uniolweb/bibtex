@@ -215,9 +215,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
     ): array {
         // parse the content of bib string and generate associative array with valid entries
         $parse = $this->osbibFactory->instantiateParseEntries();
-        $parse->expandMacro = true;
-        $parse->fieldExtract = true;
-        $parse->removeDelimit = true;
         $parse->loadBibtexString($data);
         $parse->extractEntries();
 

@@ -24,9 +24,9 @@ class PARSEXML
     }
 
     // Grab a complete XML entry
-    function extractEntries($fh)
+    public function extractEntries($fh)
     {
-        $this->entries = array();
+        $this->entries = [];
         while (!feof($fh)) {
             if (preg_match_all("/<style.*>(.*)<\/style>/Ui", trim(fgets($fh)), $startEntry)) {
                 $this->getEntry($startEntry[1]);
@@ -48,7 +48,7 @@ class PARSEXML
             foreach ($this->entries[0]['_ELEMENTS'][1]['_ELEMENTS'] as $array) {
                 $types[] = $array;
             }
-            $citation = array();
+            $citation = [];
         } else {
             $citation = $this->entries[0]['_ELEMENTS'][1]['_ELEMENTS'];
             $common = $this->entries[0]['_ELEMENTS'][2]['_ELEMENTS'][0]['_ELEMENTS'];
@@ -57,80 +57,78 @@ class PARSEXML
                 $types[] = $array;
             }
         }
-        return array($info, $citation, $common, $types);
+        return [$info, $citation, $common, $types];
     }
 
 // This method starts the whole process
 
-    function getEntry($entries)
+    public function getEntry($entries)
     {
-// entries now elements in $entries array
+        // entries now elements in $entries array
         foreach ($entries as $entry) {
-// create root node in node array
-            $this->nodeStack = array();
-            $this->startElement(null, 'ROOT', array());
-// complete $xmlString and parse it
-            $xmlString = "<style>" . $entry . "</style>";
+            // create root node in node array
+            $this->nodeStack = [];
+            $this->startElement(null, 'ROOT', []);
+            // complete $xmlString and parse it
+            $xmlString = '<style>' . $entry . '</style>';
             $this->entries[] = $this->parse($xmlString);
         }
     }
 
-    function startElement($parser, $name, $attrs)
+    public function startElement($parser, $name, $attrs)
     {
-        $node = array();
-        $node["_NAME"] = $name;
-        if (!empty($attrs) && ($name == "resource")) {
-            $node["_ATTRIBUTES"] = $attrs;
+        $node = [];
+        $node['_NAME'] = $name;
+        if (!empty($attrs) && ($name == 'resource')) {
+            $node['_ATTRIBUTES'] = $attrs;
         }
-        $node["_DATA"] = "";
-        $node["_ELEMENTS"] = array();
-// add the new node to the end of the node stack
+        $node['_DATA'] = '';
+        $node['_ELEMENTS'] = [];
+        // add the new node to the end of the node stack
         array_push($this->nodeStack, $node);
     }
 
 // create a node
 
-    function parse($xmlString = "")
+    public function parse($xmlString = '')
     {
-// set up a new XML parser to do all the work for us
+        // set up a new XML parser to do all the work for us
         $this->parser = xml_parser_create('UTF-8');
         xml_set_object($this->parser, $this);
         xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, false);
-        xml_set_element_handler($this->parser, "startElement", "endElement");
-        xml_set_character_data_handler($this->parser, "characterData");
-// parse the data
+        xml_set_element_handler($this->parser, 'startElement', 'endElement');
+        xml_set_character_data_handler($this->parser, 'characterData');
+        // parse the data
         xml_parse($this->parser, $xmlString);
         xml_parser_free($this->parser);
-// recover the root node from the node stack
+        // recover the root node from the node stack
         $rnode = array_pop($this->nodeStack);
-// return the root node _ELEMENTS array
-        return ($rnode["_ELEMENTS"][0]);
+        // return the root node _ELEMENTS array
+        return $rnode['_ELEMENTS'][0];
     }
 
-    function endElement($parser, $name)
+    public function endElement($parser, $name)
     {
-// pop this element off the node stack.....
+        // pop this element off the node stack.....
         $node = array_pop($this->nodeStack);
-        $data = trim($node["_DATA"]);
-// (Don't store empty DATA strings and empty ELEMENTS arrays)
-//		if($data !== FALSE)
-//			$node["_DATA"] = $data;
-//		else
-//			unset($node["_DATA"]);
-//		if(empty($node["_ELEMENTS"]))
-//			unset($node["_ELEMENTS"]);
-// .....and add it as an element of the last node in the stack...
+        $data = trim($node['_DATA']);
+        // (Don't store empty DATA strings and empty ELEMENTS arrays)
+        //		if($data !== FALSE)
+        //			$node["_DATA"] = $data;
+        //		else
+        //			unset($node["_DATA"]);
+        //		if(empty($node["_ELEMENTS"]))
+        //			unset($node["_ELEMENTS"]);
+        // .....and add it as an element of the last node in the stack...
         $lastnode = count($this->nodeStack);
-        array_push($this->nodeStack[$lastnode - 1]["_ELEMENTS"], $node);
+        array_push($this->nodeStack[$lastnode - 1]['_ELEMENTS'], $node);
     }
 
 // Collect the data onto the end of the current chars.
-    function characterData($parser, $data)
+    public function characterData($parser, $data)
     {
-// add this data to the last node in the stack...
+        // add this data to the last node in the stack...
         $lastnode = count($this->nodeStack);
-        $this->nodeStack[$lastnode - 1]["_DATA"] .= $data;
+        $this->nodeStack[$lastnode - 1]['_DATA'] .= $data;
     }
 }
-
-?>

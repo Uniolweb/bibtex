@@ -50,19 +50,19 @@ class MINIMALRTF
         /**
          * some defaults
          */
-        $this->justify = array(
-            "centre" => "qc",
-            "left" => "qj",
-            "right" => "qr",
-            "full" => "qj",
-        );
+        $this->justify = [
+            'centre' => 'qc',
+            'left' => 'qj',
+            'right' => 'qr',
+            'full' => 'qj',
+        ];
     }
 
     /**
      * Create the RTF opening tag
      * @return string
      */
-    function openRtf()
+    public function openRtf()
     {
         return "{\\rtf1\\ansi\\ansicpg1252\n\n";
     }
@@ -71,7 +71,7 @@ class MINIMALRTF
      * Create the RTF closing tag
      * @return string
      */
-    function closeRtf()
+    public function closeRtf()
     {
         return "\n}\n\n";
     }
@@ -80,7 +80,7 @@ class MINIMALRTF
      * Convert input text to bold text
      * @parameter string $input - text to be converted
      */
-    function bold($input = "")
+    public function bold($input = '')
     {
         return "{\b $input }";
     }
@@ -89,7 +89,7 @@ class MINIMALRTF
      * Convert input text to italics text
      * @parameter string $input - text to be converted
      */
-    function italics($input = "")
+    public function italics($input = '')
     {
         return "{\i $input }";
     }
@@ -98,7 +98,7 @@ class MINIMALRTF
      * Convert input text to underline text
      * @parameter string $input - text to be converted
      */
-    function underline($input = "")
+    public function underline($input = '')
     {
         return "{\ul $input }";
     }
@@ -108,7 +108,7 @@ class MINIMALRTF
      * @parameter integer $number - number of this fontblock
      * @parameter string $font - required font
      */
-    function createFontBlock($fontBlock = false, $font = false)
+    public function createFontBlock($fontBlock = false, $font = false)
     {
         if (($fontBlock === false) || ($font === false)) {
             return false;
@@ -121,7 +121,7 @@ class MINIMALRTF
      * Set font blocks
      * @return string fontblock string
      */
-    function setFontBlock()
+    public function setFontBlock()
     {
         if (!isset($this->fontBlocks)) {
             return false;
@@ -141,10 +141,10 @@ class MINIMALRTF
      * @parameter integer $indentL - no. TABs to indent from the left
      * @parameter integer $indentR - no. TABs to indent from the right
      */
-    function justify($justify = "full", $indentL = 0, $indentR = 0)
+    public function justify($justify = 'full', $indentL = 0, $indentR = 0)
     {
         if (!array_key_exists($justify, $this->justify)) {
-            $justifyC = "qj";
+            $justifyC = 'qj';
         } else {
             $justifyC = $this->justify[$justify];
         }
@@ -158,7 +158,7 @@ class MINIMALRTF
      * Font Size is twice what is shown in a word processor
      * @return string
      */
-    function paragraph($fontBlock = 0, $fontSize = 12)
+    public function paragraph($fontBlock = 0, $fontSize = 12)
     {
         $fontSize *= 2;
         return "{\\f$fontBlock\\fs$fontSize \\par }\n";
@@ -169,7 +169,7 @@ class MINIMALRTF
      * @parameter string $input - input string
      * @return string
      */
-    function textBlock($fontBlock = false, $fontSize = false, $input = false)
+    public function textBlock($fontBlock = false, $fontSize = false, $input = false)
     {
         if (($fontBlock === false) || ($fontSize === false) || ($input === false)) {
             return false;
@@ -187,10 +187,10 @@ class MINIMALRTF
      * @parameter string $string UTF-8 encoded string
      * @return array unicode character code
      */
-    function utf8_2_unicode($string)
+    public function utf8_2_unicode($string)
     {
-        $unicode = array();
-        $values = array();
+        $unicode = [];
+        $values = [];
         $lookingFor = 1;
         for ($i = 0; $i < strlen($string); $i++) {
             $thisValue = ord($string[$i]);
@@ -205,14 +205,12 @@ class MINIMALRTF
                     $number = ($lookingFor == 3) ?
                         (($values[0] % 16) * 4096) + (($values[1] % 64) * 64) + ($values[2] % 64) :
                         (($values[0] % 32) * 64) + ($values[1] % 64);
-                    $unicode[] = '\u' . $number . " ?";
-                    $values = array();
+                    $unicode[] = '\u' . $number . ' ?';
+                    $values = [];
                     $lookingFor = 1;
                 }
             }
         }
-        return join('', $unicode);
+        return implode('', $unicode);
     }
 }
-
-?>

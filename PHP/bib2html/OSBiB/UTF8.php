@@ -21,7 +21,6 @@
  **/
 class UTF8
 {
-
     public function __construct()
     {
         $this->loadVars();
@@ -30,19 +29,17 @@ class UTF8
     // Decode UTF-8 ONLY if the input has been UTF-8-encoded.
     // Adapted from 'nospam' in the user contributions at:
     // http://www.php.net/manual/en/function.utf8-decode.php
-    function smartUtf8_decode($inStr)
+    public function smartUtf8_decode($inStr)
     {
         // Replace ? with a unique string
-        $newStr = str_replace("?", "w0i0k0i0n0d0x", $inStr);
+        $newStr = str_replace('?', 'w0i0k0i0n0d0x', $inStr);
         // Try the utf8_decode
         $newStr = $this->decodeUtf8($newStr);
         // if it contains ? marks
-        if (strpos($newStr, "?") !== false) // Something went wrong, set newStr to the original string.
-        {
+        if (strpos($newStr, '?') !== false) { // Something went wrong, set newStr to the original string.
             $newStr = $inStr;
-        } else // If not then all is well, put the ?-marks back where is belongs
-        {
-            $newStr = str_replace("w0i0k0i0n0d0x", "?", $newStr);
+        } else { // If not then all is well, put the ?-marks back where is belongs
+            $newStr = str_replace('w0i0k0i0n0d0x', '?', $newStr);
         }
         return $newStr;
     }
@@ -57,10 +54,9 @@ class UTF8
     // Each b represents a bit that can be used to store character data.
 
     // input CANNOT have single byte upper half extended ascii codes
-    function decodeUtf8($utf8_string)
+    public function decodeUtf8($utf8_string)
     {
-
-        $out = "";
+        $out = '';
         $ns = strlen($utf8_string);
         for ($nn = 0; $nn < $ns; $nn++) {
             $ch = $utf8_string [$nn];
@@ -83,7 +79,7 @@ class UTF8
 
                     $ii = ($b1 * 64) + $b2;
 
-                    $ent = sprintf("&#%d;", $ii);
+                    $ent = sprintf('&#%d;', $ii);
                     $out .= $ent;
                 } //3 16 1110bbbb 10bbbbbb 10bbbbbb
 
@@ -103,7 +99,7 @@ class UTF8
 
                         $ii = ((($b1 * 64) + $b2) * 64) + $b3;
 
-                        $ent = sprintf("&#%d;", $ii);
+                        $ent = sprintf('&#%d;', $ii);
                         $out .= $ent;
                     } //4 21 11110bbb 10bbbbbb 10bbbbbb 10bbbbbb
 
@@ -128,25 +124,23 @@ class UTF8
 
                             $ii = ((((($b1 * 64) + $b2) * 64) + $b3) * 64) + $b4;
 
-                            $ent = sprintf("&#%d;", $ii);
+                            $ent = sprintf('&#%d;', $ii);
                             $out .= $ent;
                         }
                     }
                 }
             }
-
         }
         return $out;
     }
 
-    function encodeUtf8($str)
+    public function encodeUtf8($str)
     {
-        preg_match_all("/&#([0-9]*?);/", $str, $unicode);
+        preg_match_all('/&#([0-9]*?);/', $str, $unicode);
         foreach ($unicode[0] as $key => $value) {
-            $str = preg_replace("/" . $value . "/", $this->code2utf8($unicode[1][$key]), $str);
+            $str = preg_replace('/' . $value . '/', $this->code2utf8($unicode[1][$key]), $str);
         }
         return $str;
-
     }
 
     /**
@@ -157,10 +151,10 @@ class UTF8
      * @link   http://www.randomchaos.com/document.php?source=php_and_unicode
      * @see    unicode_to_utf8()
      */
-    function utf8_to_unicode($str)
+    public function utf8_to_unicode($str)
     {
-        $unicode = array();
-        $values = array();
+        $unicode = [];
+        $values = [];
         $lookingFor = 1;
 
         for ($i = 0; $i < strlen($str); $i++) {
@@ -177,7 +171,7 @@ class UTF8
                         (($values[0] % 16) * 4096) + (($values[1] % 64) * 64) + ($values[2] % 64) :
                         (($values[0] % 32) * 64) + ($values[1] % 64);
                     $unicode[] = $number;
-                    $values = array();
+                    $values = [];
                     $lookingFor = 1;
                 }
             }
@@ -192,7 +186,7 @@ class UTF8
      * @link   http://www.randomchaos.com/document.php?source=php_and_unicode
      * @see    utf8_to_unicode()
      */
-    function unicode_to_utf8($str)
+    public function unicode_to_utf8($str)
     {
         $utf8 = '';
         foreach ($str as $unicode) {
@@ -210,7 +204,7 @@ class UTF8
         return $utf8;
     }
 
-    function code2utf8($num)
+    public function code2utf8($num)
     {
         if ($num < 128) {
             return chr($num);
@@ -236,7 +230,7 @@ class UTF8
      * @see    strtolower()
      * @see    utf8_strtoupper()
      */
-    function utf8_strtolower($string)
+    public function utf8_strtolower($string)
     {
         if (function_exists('mb_strtolower')) {
             return mb_strtolower($string, 'utf-8');
@@ -261,7 +255,7 @@ class UTF8
      * @see    strtoupper()
      * @see    utf8_strtoupper()
      */
-    function utf8_strtoupper($string)
+    public function utf8_strtoupper($string)
     {
         if (function_exists('mb_strtoupper')) {
             return mb_strtoupper($string, 'utf-8');
@@ -284,7 +278,7 @@ class UTF8
      * @author Andreas Gohr <andi@splitbrain.org>
      * @see    substr()
      */
-    function utf8_substr($str, $start, $length = null)
+    public function utf8_substr($str, $start, $length = null)
     {
         if (function_exists('mb_substr')) {
             return mb_substr($str, $start, $length, 'utf-8');
@@ -300,8 +294,7 @@ class UTF8
      * @author Andrea Rossato <arossato@istitutocolli.org>
      * @see    ucfirst()
      */
-
-    function utf8_ucfirst($str)
+    public function utf8_ucfirst($str)
     {
         $fc = $this->utf8_substr($str, 0, 1);
         return $this->utf8_strtoupper($fc) . $this->utf8_substr($str, 1, $this->utf8_strlen($str));
@@ -315,7 +308,7 @@ class UTF8
      * @author Andreas Gohr <andi@splitbrain.org>
      * @see    strlen()
      */
-    function utf8_strlen($string)
+    public function utf8_strlen($string)
     {
         if (!defined('UTF8_NOMBSTRING') && function_exists('mb_strlen')) {
             return mb_strlen($string, 'utf-8');
@@ -325,17 +318,16 @@ class UTF8
         return count($uni);
     }
 
-    function utf8_htmlspecialchars($str)
+    public function utf8_htmlspecialchars($str)
     {
-        $str = str_replace("\"", "&quot;", $str);
-        $str = str_replace("<", "&lt;", $str);
-        $str = str_replace(">", "&gt;", $str);
-        $str = preg_replace("/&(?![a-zA-Z0-9#]+?;)/", "&amp;", $str);
+        $str = str_replace('"', '&quot;', $str);
+        $str = str_replace('<', '&lt;', $str);
+        $str = str_replace('>', '&gt;', $str);
+        $str = preg_replace('/&(?![a-zA-Z0-9#]+?;)/', '&amp;', $str);
         return $str;
     }
 
-
-    function loadVars()
+    public function loadVars()
     {
         /**
          * UTF-8 Case lookup table
@@ -345,7 +337,7 @@ class UTF8
          *
          * @author Andreas Gohr <andi@splitbrain.org>
          */
-        $this->UTF8_LOWER_TO_UPPER = array(
+        $this->UTF8_LOWER_TO_UPPER = [
             0x00000061 => 0x00000041,
             0x00000062 => 0x00000042,
             0x00000063 => 0x00000043,
@@ -1101,7 +1093,7 @@ class UTF8
             0x0001044b => 0x00010423,
             0x0001044c => 0x00010424,
             0x0001044d => 0x00010425,
-        );
+        ];
 
         /**
          * UTF-8 Case lookup table
@@ -1113,7 +1105,4 @@ class UTF8
          */
         $this->UTF8_UPPER_TO_LOWER = array_flip($this->UTF8_LOWER_TO_UPPER);
     }
-
 }
-
-?>

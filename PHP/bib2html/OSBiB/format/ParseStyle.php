@@ -14,22 +14,20 @@
  * Mark Grimshaw 2005
  * http://bibliophile.sourceforge.net
  ********************************/
-class PARSESTYLE
+class ParseStyle
 {
-    public function __construct()
-    {
-    }
+    protected ?\STYLEMAPBIBTEX $map = null;
 
-    // parse input into array
-    function parseStringToArray($type, $subject, $map = false)
+    /**
+     * parse input into array
+     */
+    public function parseStringToArray(string $type, string $subject, ?STYLEMAPBIBTEX $map = null): array
     {
-        if (!$subject) {
-            return array();
+        if (!$subject || !$map) {
+            return [];
         }
-        if ($map) {
-            $this->map = $map;
-        }
-        $search = join('|', $this->map->$type);
+        $this->map = $map;
+        $search = implode('|', $this->map->$type);
         $subjectArray = split("\|", $subject);
         // Loop each field string
         $index = 0;
@@ -55,11 +53,11 @@ class PARSESTYLE
             $post = $array[3];
             // Anything in $pre enclosed in '%' characters is only to be printed if the resource has something in the
             // previous field -- replace with unique string for later preg_replace().
-            if (preg_match("/%(.*)%(.*)%|%(.*)%/U", $pre, $dependent)) {
+            if (preg_match('/%(.*)%(.*)%|%(.*)%/U', $pre, $dependent)) {
                 // if sizeof == 4, we have simply %*% with the significant character in [3].
                 // if sizeof == 3, we have %*%*% with dependent in [1] and alternative in [2].
-                $pre = str_replace($dependent[0], "__DEPENDENT_ON_PREVIOUS_FIELD__", $pre);
-                if (sizeof($dependent) == 4) {
+                $pre = str_replace($dependent[0], '__DEPENDENT_ON_PREVIOUS_FIELD__', $pre);
+                if (count($dependent) == 4) {
                     $dependentPre = $dependent[3];
                     $dependentPreAlternative = '';
                 } else {
@@ -69,9 +67,9 @@ class PARSESTYLE
             }
             // Anything in $post enclosed in '%' characters is only to be printed if the resource has something in the
             // next field -- replace with unique string for later preg_replace().
-            if (preg_match("/%(.*)%(.*)%|%(.*)%/U", $post, $dependent)) {
-                $post = str_replace($dependent[0], "__DEPENDENT_ON_NEXT_FIELD__", $post);
-                if (sizeof($dependent) == 4) {
+            if (preg_match('/%(.*)%(.*)%|%(.*)%/U', $post, $dependent)) {
+                $post = str_replace($dependent[0], '__DEPENDENT_ON_NEXT_FIELD__', $post);
+                if (count($dependent) == 4) {
                     $dependentPost = $dependent[3];
                     $dependentPostAlternative = '';
                 } else {
@@ -81,12 +79,12 @@ class PARSESTYLE
             }
             // find singular/plural alternatives in $pre and $post and replace with unique string for later preg_replace().
             if (preg_match("/\^(.*)\^(.*)\^/U", $pre, $matchCarat)) {
-                $pre = str_replace($matchCarat[0], "__SINGULAR_PLURAL__", $pre);
+                $pre = str_replace($matchCarat[0], '__SINGULAR_PLURAL__', $pre);
                 $singular = $matchCarat[1];
                 $plural = $matchCarat[2];
             } else {
                 if (preg_match("/\^(.*)\^(.*)\^/U", $post, $matchCarat)) {
-                    $post = str_replace($matchCarat[0], "__SINGULAR_PLURAL__", $post);
+                    $post = str_replace($matchCarat[0], '__SINGULAR_PLURAL__', $post);
                     $singular = $matchCarat[1];
                     $plural = $matchCarat[2];
                 }
@@ -126,12 +124,11 @@ class PARSESTYLE
             $final[$fieldName]['pre'] = $pre;
             $final[$fieldName]['post'] = $post;
         }
-        if (!isset($final)) // presumably no field names...
-        {
-            $this->badInput($this->errors->text("inputError", "invalid"), $this->errorDisplay);
+        if (!isset($final)) { // presumably no field names...
+            $this->badInput($this->errors->text('inputError', 'invalid'), $this->errorDisplay);
         }
         // last element of odd number is actually ultimate punctuation
-        if (isset($independent) && sizeof($independent) % 2) {
+        if (isset($independent) && count($independent) % 2) {
             $final['ultimate'] = array_pop($independent);
         }
         if (isset($independent) && !empty($independent)) {
@@ -140,5 +137,3 @@ class PARSESTYLE
         return $final;
     }
 }
-
-

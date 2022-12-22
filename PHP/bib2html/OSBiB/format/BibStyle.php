@@ -25,26 +25,29 @@
  *
  *    $Header: /cvsroot/bibliophile/OSBib/format/BIBSTYLE.php,v 1.1 2005/06/20 22:26:51 sirfragalot Exp $
  *****/
-class BIBSTYLE
+class BibStyle
 {
-
     public function __construct($db, $output)
     {
         $this->db = $db;
-        include_once("core/session/SESSION.php");
+        // todo: this file is not included in this repository
+        //include_once('core/session/SESSION.php');
+        include_once(__DIR__ . '/../create/SESSION.php');
         $this->session = new SESSION();
-        include_once("core/styles/BIBFORMAT.php");
-        $this->bibformat = new BIBFORMAT("core/styles/");
+        // todo: this file is not included in this repository
+        //include_once('core/styles/BIBFORMAT.php');
+        include_once(__DIR__ . '/BibFormat.php');
+        $this->bibformat = new BibFormat('core/styles/');
         /**
          * CSS class for highlighting search terms
          */
-        $this->bibformat->patternHighlight = "highlight";
-        include_once("core/html/MISC.php");
+        $this->bibformat->patternHighlight = 'highlight';
+        include_once('core/html/MISC.php');
         // get the bibliographic style
         if ($output == 'rtf') {
-            $this->setupStyle = $this->session->getVar("exportRtf_style");
+            $this->setupStyle = $this->session->getVar('exportRtf_style');
         } else {
-            $this->setupStyle = $this->session->getVar("setup_style");
+            $this->setupStyle = $this->session->getVar('setup_style');
         }
         /**
          * If our style arrays do not exist in session, parse the style file and write to session.  Loading and
@@ -53,20 +56,20 @@ class BIBSTYLE
          * prefixes - creating/copying or editing a bibliographic style clears these arrays from the session which will
          * force a reload of the style here.
          */
-        $styleInfo = $this->session->getVar("style_name");
-        $styleCommon = unserialize(base64_decode($this->session->getVar("style_common")));
-        $styleTypes = unserialize(base64_decode($this->session->getVar("style_types")));
+        $styleInfo = $this->session->getVar('style_name');
+        $styleCommon = unserialize(base64_decode($this->session->getVar('style_common')));
+        $styleTypes = unserialize(base64_decode($this->session->getVar('style_types')));
         // File not yet parsed or user's choice of style has changed so need to
         // load, parse and store to session
         if ((!$styleInfo || !$styleCommon || !$styleTypes)
             || ($styleInfo != $this->setupStyle)) {
             list($info, $citation, $styleCommon, $styleTypes) =
-                $this->bibformat->loadStyle("styles/bibliography/", $this->setupStyle);
-            $this->session->setVar("style_name", $info['name']);
-            $this->session->setVar("cite_citation", base64_encode(serialize($citation)));
-            $this->session->setVar("style_common", base64_encode(serialize($styleCommon)));
-            $this->session->setVar("style_types", base64_encode(serialize($styleTypes)));
-            $this->session->delVar("style_edited");
+                $this->bibformat->loadStyle('styles/bibliography/', $this->setupStyle);
+            $this->session->setVar('style_name', $info['name']);
+            $this->session->setVar('cite_citation', base64_encode(serialize($citation)));
+            $this->session->setVar('style_common', base64_encode(serialize($styleCommon)));
+            $this->session->setVar('style_types', base64_encode(serialize($styleTypes)));
+            $this->session->delVar('style_edited');
         }
         $this->bibformat->getStyle($styleCommon, $styleTypes);
         $this->output = $output;
@@ -74,7 +77,7 @@ class BIBSTYLE
     }
     // Accept a SQL result row of raw bibliographic data and process it.
     // We build up the $bibformat->item array with formatted parts from the raw $row
-    function process($row)
+    public function process($row)
     {
         $this->row = $row;
         $type = $row['type']; // WIKINDX type
@@ -139,27 +142,25 @@ class BIBSTYLE
         // provides the order. If a field name does not exist in this style array, we print nothing.
         $pString = $this->bibformat->map();
         // ordinals such as 5$^{th}$
-        $pString = preg_replace_callback("/(\d+)\\$\^\{(.*)\}\\$/", array($this, "ordinals"), $pString);
+        $pString = preg_replace_callback("/(\d+)\\$\^\{(.*)\}\\$/", [$this, 'ordinals'], $pString);
         // remove extraneous {...}
-        return preg_replace("/{(.*)}/U", "$1", $pString);
+        return preg_replace('/{(.*)}/U', '$1', $pString);
     }
 
     // callback for ordinals above
-    function ordinals($matches)
+    public function ordinals($matches)
     {
         if ($this->output == 'html') {
-            return $matches[1] . "<sup>" . $matches[2] . "</sup>";
-        } else {
-            if ($this->output == 'rtf') {
-                return $matches[1] . "{{\up5 " . $matches[2] . "}}";
-            } else {
-                return $matches[1] . $matches[2];
-            }
+            return $matches[1] . '<sup>' . $matches[2] . '</sup>';
         }
+        if ($this->output == 'rtf') {
+            return $matches[1] . "{{\up5 " . $matches[2] . '}}';
+        }
+        return $matches[1] . $matches[2];
     }
 
     // Create the resource title
-    function createTitle()
+    public function createTitle()
     {
         $pString = stripslashes($this->row['noSort']) . ' ' .
             stripslashes($this->row['title']);
@@ -167,11 +168,11 @@ class BIBSTYLE
             $pString .= ': ' . stripslashes($this->row['subtitle']);
         }
         // anything enclosed in {...} is to be left as is
-        $this->bibformat->formatTitle($pString, "{", "}");
+        $this->bibformat->formatTitle($pString, '{', '}');
     }
 
     // Create the URL
-    function createUrl()
+    public function createUrl()
     {
         if (!$this->row['url']) {
             return false;
@@ -180,14 +181,13 @@ class BIBSTYLE
             stripslashes($this->row['url']);
         unset($this->row['url']);
         if ($this->output == 'html') {
-            return MISC::a('rLink', $url, $url, "_blank");
-        } else {
-            return $url;
+            return MISC::a('rLink', $url, $url, '_blank');
         }
+        return $url;
     }
 
     // Create date
-    function createDate()
+    public function createDate()
     {
         $startDay = isset($this->row['miscField2']) ? stripslashes($this->row['miscField2']) : false;
         $startMonth = isset($this->row['miscField3']) ? stripslashes($this->row['miscField3']) : false;
@@ -208,7 +208,7 @@ class BIBSTYLE
     }
 
     // Create runningTime for film/broadcast
-    function createRunningTime()
+    public function createRunningTime()
     {
         $minutes = stripslashes($this->row['miscField1']);
         $hours = stripslashes($this->row['miscField4']);
@@ -222,7 +222,7 @@ class BIBSTYLE
     }
 
     // Create the edition number
-    function createEdition($editionKey)
+    public function createEdition($editionKey)
     {
         if (!$this->row[$editionKey]) {
             return false;
@@ -232,10 +232,9 @@ class BIBSTYLE
     }
 
     // Create page start and page end
-    function createPages()
+    public function createPages()
     {
-        if (!$this->row['pageStart'] || $this->pages) // empty field or page format already done
-        {
+        if (!$this->row['pageStart'] || $this->pages) { // empty field or page format already done
             $this->pages = true;
             return;
         }
@@ -246,21 +245,24 @@ class BIBSTYLE
     }
 
     // get names from database for creator, editor, translator etc.
-    function grabNames($nameType)
+    public function grabNames($nameType)
     {
-        $recordset = $this->db->select(array("WKX_creator"), array(
-            "surname",
-            "firstname",
-            "initials",
-            "prefix",
-            "id"
-        ),
-            " WHERE FIND_IN_SET(" . $this->db->formatField("id") . ", " .
-            $this->db->tidyInput($this->row[$nameType]) . ")");
+        $recordset = $this->db->select(
+            ['WKX_creator'],
+            [
+            'surname',
+            'firstname',
+            'initials',
+            'prefix',
+            'id'
+        ],
+            ' WHERE FIND_IN_SET(' . $this->db->formatField('id') . ', ' .
+            $this->db->tidyInput($this->row[$nameType]) . ')'
+        );
         $numNames = $this->db->numRows($recordset);
-        $nameArray = array("surname", "firstname", "initials", "prefix");
+        $nameArray = ['surname', 'firstname', 'initials', 'prefix'];
         // Reorder $row so that creator order is correct and not that returned by SQL
-        $ids = explode(",", $this->row[$nameType]);
+        $ids = explode(',', $this->row[$nameType]);
         while ($row = $this->db->loopRecordSet($recordset)) {
             $rowSql[$row['id']] = $row;
         }
@@ -274,11 +276,10 @@ class BIBSTYLE
     }
 
     // bad Input function
-    function badInput($error)
+    public function badInput($error)
     {
-        include_once("core/html/CLOSE.php");
-        new CLOSE($this->db, $error);
+        // todo: this fileis not included in this repository !
+        include_once('core/html/Close.php');
+        new Close($this->db, $error);
     }
 }
-
-

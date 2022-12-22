@@ -34,27 +34,31 @@ class OsbibFactory
      */
     public function autoloadClasses(): void
     {
-        if (!class_exists('PARSEENTRIES')
+        if (!class_exists('ParseEntries')
         ) {
-            include_once($this->absoluteOsbibPath . '/format/bibtexParse/PARSEENTRIES.php');
+            include_once($this->absoluteOsbibPath . '/format/bibtexParse/ParseEntries.php');
         }
-        if (!class_exists('BIBFORMAT')
+        if (!class_exists('BibFormat')
         ) {
-            include_once($this->absoluteOsbibPath . '/format/BIBFORMAT.php');
+            include_once($this->absoluteOsbibPath . '/format/BibFormat.php');
         }
     }
 
     public function instantiateParseEntries()
     {
-        if (class_exists('PARSEENTRIES')) {
-            return new \PARSEENTRIES();
+        $expandMacro = true;
+        $fieldExtract = true;
+        $removeDelimit = true;
+
+        if (class_exists('ParseEntries')) {
+            return new \ParseEntries($expandMacro, $fieldExtract, $removeDelimit);
         }
     }
 
     public function instantiateBibFormat()
     {
-        if (class_exists('BIBFORMAT')) {
-            return new \BIBFORMAT($this->absoluteOsbibPath, true);
+        if (class_exists('BibFormat')) {
+            return new \BibFormat($this->absoluteOsbibPath, true);
         }
     }
 
