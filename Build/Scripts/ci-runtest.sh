@@ -6,6 +6,23 @@ PHP_VERSION_PLATFORM="8.1.13"
 # abort on error
 set -e
 
+# cleanup
+# --------
+
+echo "cleanup: remove platform"
+composer config --unset platform.php
+composer config --unset platform
+rm -f composer.lock
+
+# composer validate
+# (before add platform php to composer.json!)
+# -------------------
+
+echo "composer validate"
+#Build/Scripts/runTests.sh -s composerValidate -p $PHP_VERSION
+composer validate
+
+
 # setup
 # -----
 
@@ -24,10 +41,6 @@ Build/Scripts/runTests.sh -s composerInstallMax -p $PHP_VERSION
 
 echo "cgl"
 Build/Scripts/runTests.sh -s cgl -n -p $PHP_VERSION
-
-echo "composer validate"
-#Build/Scripts/runTests.sh -s composerValidate -p $PHP_VERSION
-composer validate
 
 echo "lint"
 Build/Scripts/runTests.sh -s lint -p $PHP_VERSION

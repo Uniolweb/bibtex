@@ -1,27 +1,35 @@
 <?php
+
 declare(strict_types=1);
 namespace Uniolit\Bibtex\Unit\Tests\Service\Bibtex2Html;
 
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
-use Uniolit\Bibtex\Configuration\BibtexSettings;
 use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
 
 class Bibtex2HtmlServiceTest extends UnitTestCase
 {
-
     protected function loadBibtexFile(string $relativePathBibtex): string
     {
         $thisDir = realpath(__DIR__);
         return file_get_contents($thisDir . '/' . $relativePathBibtex);
     }
 
+    protected function instantiateBibtex2HtmlService(): Bibtex2HtmlService
+    {
+        return new Bibtex2HtmlService(
+            null,
+            null,
+            Bibtex2HtmlService::DEFAULT_STYLES_PATH,
+            Bibtex2HtmlService::DEFAULT_OSBIBPATH
+        );
+    }
 
     /**
      * @return \Generator<string,array<string,string>>
      */
     public function bibtexPreProcessReturnsCorrectEntriesProvider(): \Generator
     {
-        yield "Simple entry" => [
+        yield 'Simple entry' => [
             'bibtexContent' => '@TechReport{V-400-17,
                 author      = {Christoph B{\"o}hringer and Thomas F. Rutherford},
                 institution = {Oldenburger Diskussionspapiere},
@@ -48,20 +56,18 @@ class Bibtex2HtmlServiceTest extends UnitTestCase
      * @dataProvider bibtexPreProcessReturnsCorrectEntriesProvider
      * @param string $bibtexContent
      * @param array<int,array<string,string>> $expectedResult
-     * @return void
      */
     public function bibtexPreProcessReturnsCorrectEntries(string $bibtexContent, array $expectedResult): void
     {
-
-        $bibtex2HtmlService = new Bibtex2HtmlService();
+        $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
         $bibtex2HtmlService->autoloadClasses();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
         $entry = reset($actualResults);
 
-        $this->assertEquals(true, isset($entry['bibtexEntry']));
+        self::assertTrue(isset($entry['bibtexEntry']));
         unset($entry['bibtexEntry']);
 
-        $this->assertEquals(ksort($expectedResult), ksort($entry));
+        self::assertEquals(ksort($expectedResult), ksort($entry));
     }
 
     /**
@@ -69,7 +75,7 @@ class Bibtex2HtmlServiceTest extends UnitTestCase
      */
     public function bibtexPreProcessTrimsTitleDataProvider(): \Generator
     {
-        yield "Trim title" => [
+        yield 'Trim title' => [
             '@BOOK{,
 Author = {Uslar, Mathias; Specht, Michael; D{\"a}nekas, Christian; Trefke, J{\"o}rn; Rohjans, Sebastian; Gonzalez, Jose; Rosinger, Christine; Bleiker, Robert},
 Title = { Standardization in Smart Grids},
@@ -86,25 +92,23 @@ Booktitle = {Standardization in Smart Grids: Introduction to IT--Related Methodo
         ];
     }
 
-
     /**
      * @test
      * @dataProvider bibtexPreProcessTrimsTitleDataProvider
      * @param string $bibtexContent
      * @param string $expectedTitle
-     * @return void
      */
     public function bibtexPreProcessTrimsTitle(string $bibtexContent, string $expectedTitle): void
     {
-        $bibtex2HtmlService = new Bibtex2HtmlService();
+        $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
         $bibtex2HtmlService->autoloadClasses();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
         $firstEntry = reset($actualResults);
 
-        $this->assertEquals(true, isset($firstEntry['title']));
+        self::assertTrue(isset($firstEntry['title']));
         $actualTitle = $firstEntry['title'];
 
-        $this->assertEquals($expectedTitle, $actualTitle);
+        self::assertEquals($expectedTitle, $actualTitle);
     }
 
     /**
@@ -124,25 +128,23 @@ Organization = {IEEE}
         ];
     }
 
-
     /**
      * @test
      * @dataProvider bibtexPreProcessHandlesUnicodeInAuthorsDataProvider
      * @param string $bibtexContent
      * @param string $expectedAuthors
-     * @return void
      */
     public function bibtexPreProcessHandlesUnicodeInAuthors(string $bibtexContent, string $expectedAuthors): void
     {
-        $bibtex2HtmlService = new Bibtex2HtmlService();
+        $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
         $bibtex2HtmlService->autoloadClasses();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
         $firstEntry = reset($actualResults);
 
-        $this->assertEquals(true, isset($firstEntry['author']));
+        self::assertTrue(isset($firstEntry['author']));
         $actualAuthors = $firstEntry['author'];
 
-        $this->assertEquals($expectedAuthors, $actualAuthors);
+        self::assertEquals($expectedAuthors, $actualAuthors);
     }
 
     /**
@@ -162,25 +164,22 @@ Organization = {IEEE}
         ];
     }
 
-
     /**
      * @todo This test currently fails because of work-around against endless loop
      * @dataProvider bibtexPreProcessHandlesCitationKeyWithParenthesisWithoutEndlessLoopDataProvider
      * @param string $bibtexContent
      * @param string $expectedAuthors
-     * @return void
      */
     public function bibtexPreProcessHandlesCitationKeyWithParenthesisWithoutEndlessLoop(string $bibtexContent, string $expectedAuthors): void
     {
-        $bibtex2HtmlService = new Bibtex2HtmlService();
+        $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
         $bibtex2HtmlService->autoloadClasses();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
         $firstEntry = reset($actualResults);
 
-        $this->assertEquals(true, isset($firstEntry['author']));
+        self::assertTrue(isset($firstEntry['author']));
         $actualAuthors = $firstEntry['author'];
 
-        $this->assertEquals($expectedAuthors, $actualAuthors);
+        self::assertEquals($expectedAuthors, $actualAuthors);
     }
-
 }

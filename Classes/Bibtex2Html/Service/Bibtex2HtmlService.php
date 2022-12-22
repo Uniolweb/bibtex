@@ -45,6 +45,10 @@ class Bibtex2HtmlService implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    public const DEFAULT_STYLES_PATH = 'bibtex:Resources/Private/Osbib/Styles/Bibliography';
+
+    public const DEFAULT_OSBIBPATH = 'bibtex:PHP/bib2html/OSBiB/';
+
     /**
      * @var RequestFactory|null
      */
@@ -57,17 +61,52 @@ class Bibtex2HtmlService implements LoggerAwareInterface
 
     protected string $osbibPath = '';
 
+    protected string $absoluteOsBibPath = '';
+
     protected string $bibliographyStylesPath = '';
 
-    public function __construct(RequestFactory $requestFactory = null, OsbibFactory $osbibFactory = null)
-    {
-        $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('bibtex');
-        $this->osbibPath = ExtensionManagementUtility::extPath('bibtex', 'PHP/bib2html/OSBiB/');
-        $stylesPathString = $extensionConfiguration['bibliographyStylePath'] ?? 'bibtex:Resources/Private/Osbib/Styles/Bibliography';
-        $stylesPath = explode(':', $stylesPathString);
-        $this->bibliographyStylesPath = ExtensionManagementUtility::extPath($stylesPath[0], $stylesPath[1]);
+    /**
+     * @param RequestFactory|null $requestFactory
+     * @param OsbibFactory|null $osbibFactory
+     * @param string $stylesPath if empty string is passed, read from extension configuration
+     * @param string $osbibPath if empty string is passed, read from extension configuration
+     * @throws \TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException
+     * @throws \TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException
+     */
+    public function __construct(
+        RequestFactory $requestFactory = null,
+        OsbibFactory $osbibFactory = null,
+        string $stylesPath = '',
+        string $osbibPath = ''
+    ) {
+        // $stylesPath: can always be overriden via constructor
+        // if not passed via constructor, use
+        // 1. Extension Configuration
+        // 2. default value
+        if (!$stylesPath) {
+            $stylesPath = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get(
+                'bibtex',
+                'bibliographyStylePath'
+            ) ?: self::DEFAULT_STYLES_PATH;
+        }
+        $this->bibliographyStylesPath = ExtensionManagementUtility::extPath(...explode(':', $stylesPath));
+
+        if (!$osbibPath) {
+            $osbibPath = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get(
+                'bibtex',
+                'osbibPath'
+            ) ?: self::DEFAULT_OSBIBPATH;
+        }
+        $this->osbibPath = $osbibPath;
+        $this->absoluteOsBibPath = ExtensionManagementUtility::extPath(...explode(':', $osbibPath));
+
         $this->requestFactory = $requestFactory ?: GeneralUtility::makeInstance(RequestFactory::class);
-        $this->osbibFactory = $osbibFactory ?: GeneralUtility::makeInstance(OsbibFactory::class);
+        $this->osbibFactory = $osbibFactory ?: GeneralUtility::makeInstance(OsbibFactory::class, $this->osbibPath);
+    }
+
+    public function autoloadClasses(): void
+    {
+        $this->osbibFactory->autoloadClasses();
     }
 
     /**
@@ -82,7 +121,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
      */
     public function bibtex2Html(BibtexSettings $bibtexSettings, int $languageId = 0): array
     {
-        $this->osbibFactory->autoloadClasses();
+        $this->autoloadClasses();
 
         // @todo: use configurable language mapping, e.g. via TypoScript
         $languageKey = $languageId === 0 ? '' : '_en';

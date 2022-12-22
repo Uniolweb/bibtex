@@ -6,11 +6,12 @@ namespace Uniolit\Bibtex\Bibtex2Html\Factory;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
 
 class OsbibFactory
 {
-    /** @var mixed|string  */
-    protected $osbibPath = 'bibtex:PHP/bib2html/OSBiB/';
+    /** @var string  */
+    protected $osbibPath = '';
 
     /** @var string  */
     protected $absoluteOsbibPath = '';
@@ -18,11 +19,10 @@ class OsbibFactory
     public function __construct(string $osbibPath = '')
     {
         if (!$osbibPath) {
-            $osbibPath = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('bibtex', 'osbibPath');
+            $osbibPath = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('bibtex', 'osbibPath')
+                ?: Bibtex2HtmlService::DEFAULT_OSBIBPATH;
         }
-        if ($osbibPath) {
-            $this->osbibPath = $osbibPath;
-        }
+        $this->osbibPath = $osbibPath;
         $this->absoluteOsbibPath = $this->getAbsolutePathForExtensionPath(...explode(':', $this->osbibPath));
     }
 

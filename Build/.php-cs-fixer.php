@@ -39,8 +39,8 @@ $finder = PhpCsFixer\Finder::create()
     //->exclude('typo3/sysext/core/Tests/Acceptance/Support/_generated')
     ->notName('install.php')
     ->notName('index.php')
-    ->in(__DIR__ . '/../Classes');
-    //->in(__DIR__ . '/../Tests');
+    ->in(__DIR__ . '/../Classes')
+    ->in(__DIR__ . '/../Tests');
 // Return a Code Sniffing configuration using
 // all sniffers needed for PSR-2
 // and additionally:
