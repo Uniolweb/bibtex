@@ -47,7 +47,8 @@ class Bibtex2HtmlService implements LoggerAwareInterface
 
     public const DEFAULT_STYLES_PATH = 'bibtex:Resources/Private/Osbib/Styles/Bibliography';
 
-    public const DEFAULT_OSBIBPATH = 'bibtex:PHP/bib2html/OSBiB/';
+    //public const DEFAULT_OSBIBPATH = 'bibtex:PHP/bib2html/OSBiB/';
+    public const DEFAULT_OSBIBPATH = 'bibtex:PHP/OSBiB-3.0/';
 
     /**
      * @var RequestFactory|null

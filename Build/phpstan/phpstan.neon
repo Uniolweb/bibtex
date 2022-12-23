@@ -49,11 +49,11 @@ parameters:
   paths:
     - ../../Classes
     - ../../Tests
-    #- ../../PHP
+    #- ../../PHP/OSBiB-3.0
   # use these paths (but do not check)
   scanDirectories:
     - ../../.Build/Web/typo3/sysext
-    - ../../PHP/
+    - ../../PHP/OSBiB-3.0
 
   # do not check if array types specified
   checkMissingIterableValueType: false

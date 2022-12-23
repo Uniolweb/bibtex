@@ -115,13 +115,27 @@ class BibFormat
         $lc = $stylePath . strtolower($style) . '/' . strtolower($style) . '.xml';
         $styleFile = file_exists($uc) ? $uc : $lc;
         if (!$fh = fopen($styleFile, 'r')) {
-            return [false, false, false];
+            //return [false, false, false];
+            return [
+                'info' => [],
+                'citation' => [],
+                'footnote' => [],
+                'common' => [],
+                'types' => [],
+            ];
         }
         include_once($this->dir . 'PARSEXML.php');
         $parseXML = new PARSEXML($this);
         list($info, $citation, $common, $types) = $parseXML->extractEntries($fh);
         fclose($fh);
-        return [$info, $citation, $common, $types];
+        // return [$info, $citation, $common, $types];
+        return [
+            'info' => $info,
+            'citation' => $citation,
+            'footnote' => $footnote,
+            'common' => $common,
+            'types' => $types,
+        ];
     }
 
     /**

@@ -82,16 +82,18 @@ class BIBFORMAT
         // WIKINDX-specific
         $this->wikindx = false;
     }
-/**
-* Read the chosen bibliographic style and create arrays based on resource type.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$stylePath	The path where the styles are.
-* @param	$style		The requested bibliographic output style.
-* @return	array
-*/
+
+    /**
+    * Read the chosen bibliographic style and create arrays based on resource type.
+    * !!! The returned array changed!
+    *
+    * @author	Mark Grimshaw
+    * @version	4.0
+    *
+    * @param	$stylePath	The path where the styles are.
+    * @param	$style		The requested bibliographic output style.
+    * @return	array
+    */
     public function loadStyle($stylePath, $style): array
     {
         //05/05/2005 G.GARDEY: add a last "/" to $stylePath if not present.
@@ -115,7 +117,7 @@ class BIBFORMAT
         $parseXML = new PARSEXML($this);
         list($info, $citation, $footnote, $common, $types) = $parseXML->extractEntries($fh);
         fclose($fh);
-        // array($info, $citation, $footnote, $common, $types);
+        // return array($info, $citation, $footnote, $common, $types);
         return [
             'info' => $info,
             'citation' => $citation,

@@ -106,13 +106,13 @@ class PARSEENTRIES
 {
     protected int $count = 0;
 
-    public function __construct()
+    public function __construct(bool $expandMacro = false, bool $fieldExtract = true, bool $removeDelimit = true)
     {
         $this->preamble = $this->strings = $this->entries = [];
         $this->count = 0;
-        $this->fieldExtract = true;
-        $this->removeDelimit = true;
-        $this->expandMacro = false;
+        $this->fieldExtract = $fieldExtract;
+        $this->removeDelimit = $removeDelimit;
+        $this->expandMacro = $expandMacro;
         $this->parseFile = true;
     }
 // Open bib file
@@ -279,17 +279,29 @@ class PARSEENTRIES
         }
 
         $matches = preg_split("/@(.*)\s*[{(](.*),/U", $entry, 2, PREG_SPLIT_DELIM_CAPTURE);
-        $this->entries[$this->count]['bibtexEntryType'] = strtolower($matches[1]);
-// sometimes a bibtex file will have no citation key
-        if (preg_match('/=/', $matches[2])) { // this is a field
-            $matches = preg_split("/@(.*)\s*[{(](.*)/U", $entry, 2, PREG_SPLIT_DELIM_CAPTURE);
+        if (!($matches[1] ?? false)) {
+            return;
         }
-        //print_r($matches); print "<P>";
-        $this->entries[$this->count]['bibtexCitation'] = $matches[2];
-        $this->reduceFields($matches[3]);
+        $this->entries[$this->count]['bibtexEntryType'] = strtolower($matches[1]);
+
+        if ($matches[2] ?? false) {
+            // sometimes a bibtex file will have no citation key
+            if (preg_match('/=/', $matches[2])) { // this is a field
+                $matches = preg_split("/@(.*)\s*[{(](.*)/U", $entry, 2, PREG_SPLIT_DELIM_CAPTURE);
+            }
+            //print_r($matches); print "<P>";
+            $this->entries[$this->count]['bibtexCitation'] = $matches[2];
+        }
+        $this->entries[$this->count]['bibtexEntry'] = $entry;
+        if ($matches[3] ?? false) {
+            $this->reduceFields($matches[3]);
+        }
     }
-// Grab a complete bibtex entry
-    public function getEntry($line)
+
+    /**
+     * Grab a complete bibtex entry
+     */
+    public function getEntry(string $line): string
     {
         $entry = '';
         $count = 0;

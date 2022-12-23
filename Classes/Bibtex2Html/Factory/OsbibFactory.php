@@ -69,6 +69,8 @@ class OsbibFactory
         $removeDelimit = true;
 
         if (class_exists('ParseEntries')) {
+            // ignore because it will warn about wrong case
+            // @phpstan-ignore-next-line
             return new \ParseEntries($expandMacro, $fieldExtract, $removeDelimit);
         }
         if (class_exists('PARSEENTRIES')) {
@@ -80,6 +82,8 @@ class OsbibFactory
     public function instantiateBibFormat()
     {
         if (class_exists('BibFormat')) {
+            // ignore because it will warn about wrong case
+            // @phpstan-ignore-next-line
             return new \BibFormat($this->absoluteOsbibPath, true);
         }
         if (class_exists('BIBFORMAT')) {
