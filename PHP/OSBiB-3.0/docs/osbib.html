@@ -16,7 +16,7 @@
 
 <body>
 <h1>OSBib v3.0 </h1>
-<p> A collection of PHP classes to manage bibliographic formatting for OS bibliography software 
+<p> A collection of PHP classes to manage bibliographic formatting for OS bibliography software
   using the OSBib standard. Taken from and originally developed in WIKINDX (<a href="http://wikindx.sourceforge.net">http://wikindx.sourceforge.net</a>). </p>
 <p>Released through <a href="http://bibliophile.sourceforge.net">http://bibliophile.sourceforge.net</a> under the GPL licence.</p>
 <p>If you make improvements, please consider contacting the administrators at <a href="http://bibliophile.sourceforge.net">bibliophile.sourceforge.net</a> so that your improvements can be added to the release package.</p>
@@ -375,7 +375,7 @@ After you have added resource elements to the <code>$item</code> array using the
 <h3><a name="citeformat" id="citeformat"></a>CITEFORMAT</h3>
 <p> This is the main OSBib engine for formatting in-text and endnote-style citations within a block of text.<br>
     <span class="style3"><code>include_once($pathToOsbibClasses . &quot;CITEFORMAT.php&quot;);<br>
-  $citeformat = new CITEFORMAT(CLASSOBJECT: &amp;$bibstyleClass, CLASSMETHOD: $process [, STRING: $pathToOsbibClasses = FALSE]);</code></span></p>
+  $citeformat = new CITEFORMAT(CLASSOBJECT: &amp;$bibstyleClass, CLASSMETHOD: $process [, STRING: $pathToOsbibClasses = '']);</code></span></p>
 <p><strong><code>CITEFORMAT</code> uses <code>BIBFORMAT</code> to format its appended bibliographies. You must set up a class similar to <code>BIBSTYLE</code> and a method similar to <code>BIBSTYLE::process()</code> (see above) prior to implementing <code>CITEFORMAT</code> and passing both the class and the method to <code>CITEFORMAT</code>. </strong></p>
 <p>By default, <code>$pathToOsbibClasses</code> will be the same directory as<code> CITEFORMAT</code> is in.</p>
 <p><em>NB - <code>CITEFORMAT</code> expects its data to be in UTF-8 format and will return its formatted data in UTF-8 format. If you need to encode or decode your data prior to or after using OSBib, do <strong>not</strong> use PHP's utf8_encode() and utf8_decode() functions. Use the OSBib functions UTF8::encodeUtf8() and UTF8::decodeUtf8() instead. Additionally, if you need to manipulate UTF-8-encoded strings with functions such as strtolower(), strlen() etc., you should strongly consider using the appropriate methods in the OSBib <a href="#utf8">UTF8</a> class. </em></p>
@@ -429,12 +429,12 @@ After you have added resource elements to the <code>$item</code> array using the
 		$citeformat->possessive2 = "s"; // Set to FALSE if not used
 		$citeformat->textEtAl = "et al.";</pre>
           <p>// start() is the method called externally that starts the whole process:<br>
-            1. 
+            1.
         Parse the input text for citations tags. WIKINDX uses BBCode-like [cite]....[/cite] tags that hold the unique ID from the database for the resource being cited in addition to any page numbers. Text prior to citation tags and within the citation tags are captured into two separate arrays.<br>
           2.  Store the resource IDs from the citation tag in an array.<br>
-          3. For these resource IDs, get the raw 
+          3. For these resource IDs, get the raw
           bibliographic data from the database and place this into a multi-dimensional array keyed by the resource's ID. Each element of this array should be an array in the same format as the array you use in <code>BIBSTYLE</code> or equivalent class (it will later be sent one array at a time to <code class="style3">BIBSTYLE::process()</code> within <code>CITEFORMAT</code>) -- the resource type (book, journal article etc.) is also required. The order you get data from the database in is important as it used for citation disambiguation.<br>
-          4. 
+          4.
           Loop through the captured text formatting the resource title, creators, publication year and pages storing these in various <code>$this-&gt;citeformat</code> arrays.<br>
           5. Run <code class="style3">$this-&gt;citeformat-&gt;process()</code> to process the citations.<br>
           6. Finally, gather the appended bibliography formatted for either in-text or endnote-style citations and return the formatted text block. <span class="style3"><code><br>

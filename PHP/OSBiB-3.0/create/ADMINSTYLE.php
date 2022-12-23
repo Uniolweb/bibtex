@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /********************************
 OSBib:
 A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
@@ -16,64 +18,101 @@ Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
 /*****
-*	ADMINSTYLE class.
+* ADMINSTYLE class.
 *
-*	Administration of citation bibliographic styles
+* Administration of citation bibliographic styles
 *
-*	$Header: /cvsroot/bibliophile/OSBib/create/ADMINSTYLE.php,v 1.10 2005/11/14 06:38:15 sirfragalot Exp $
+* $Header: /cvsroot/bibliophile/OSBib/create/ADMINSTYLE.php,v 1.10 2005/11/14 06:38:15 sirfragalot Exp $
 *****/
 class ADMINSTYLE
 {
-    public function __construct($vars)
+    /**
+     * THE OSBIB Version number
+     */
+    protected const OSBIB_VERSION = '3.0';
+
+    protected bool $footnotePages = false;
+
+    /** @var string function name to use for displaying errors */
+    protected string $errorDisplay = '';
+    protected array $vars = [];
+    protected array $styles = [];
+    protected array $creators = [];
+    protected array $fallback = [];
+    protected ?SESSION $session = null;
+    protected ?MESSAGES $messages = null;
+    protected ?LOADSTYLE $style = null;
+    protected ?SUCCESS $success = null;
+    protected ?ERRORS $errors = null;
+    protected ?MISC $misc = null;
+    protected ?FORM $form = null;
+    protected ?STYLEMAP $map = null;
+    protected ?UTF8 $utf8 = null;
+    protected ?TABLE $table = null;
+
+    public function __construct(array $vars)
     {
         $this->vars = $vars;
-        /**
-        * THE OSBIB Version number
-        */
-        $this->osbibVersion = '3.0';
-        include_once('SESSION.php');
+        include_once(__DIR__ . '/SESSION.php');
         $this->session = new SESSION();
-        include_once('MESSAGES.php');
+        include_once(__DIR__ . '/MESSAGES.php');
         $this->messages = new MESSAGES();
-        include_once('SUCCESS.php');
+        include_once(__DIR__ . '/SUCCESS.php');
         $this->success = new SUCCESS();
-        include_once('ERRORS.php');
+        include_once(__DIR__ . '/ERRORS.php');
         $this->errors = new ERRORS();
-        include_once('MISC.php');
-        include_once('FORM.php');
-        include_once('../LOADSTYLE.php');
+        include_once(__DIR__ . '/MISC.php');
+        $this->misc = new MISC();
+        include_once(__DIR__ . '/FORM.php');
+        $this->form = new FORM();
+        include_once(__DIR__ . '/../LOADSTYLE.php');
         $this->style = new LOADSTYLE();
         $this->styles = $this->style->loadDir(OSBIB_STYLE_DIR);
         $this->creators = ['creator1', 'creator2', 'creator3', 'creator4', 'creator5'];
     }
-// check we really are admin
-    public function gateKeep($method)
+
+    /**
+     * Run method as passed in parameter $method.
+     *
+     * old comment: (check we really are admin)
+     *
+     * @param string $method (can be a function name, such as 'display', 'addInt', 'add', 'editInit' ...
+     * @return mixed
+     * @todo this function has little use as it is now (unless it is extended) except to obfuscate and confuse,
+     *   deprecate it and call the functions directly?
+     */
+    public function gateKeep(string $method)
     {
+        // todo ??? is something missing here???
+
         // else, run $method
         return $this->$method();
     }
-// display options for styles
-    public function display($message = false)
+
+    /**
+     * display options for styles
+     */
+    public function display(string $message = ''): string
     {
         // Clear previous style in session
         $this->session->clearArray('cite');
         $this->session->clearArray('style');
-        $pString = MISC::h($this->messages->text('heading', 'styles'), false, 3);
+        $pString = $this->misc->h($this->messages->text('heading', 'styles'), false, 3);
         if ($message) {
-            $pString .= MISC::p($message);
+            $pString .= $this->misc->p($message);
         }
-        $pString .= MISC::p(MISC::a(
+        $pString .= $this->misc->p($this->misc->a(
             'link',
             $this->messages->text('style', 'addLabel'),
             'index.php?action=adminStyleAddInit'
         ));
         if (count($this->styles)) {
-            $pString .= MISC::p(MISC::a(
+            $pString .= $this->misc->p($this->misc->a(
                 'link',
                 $this->messages->text('style', 'copyLabel'),
                 'index.php?action=adminStyleCopyInit'
             ));
-            $pString .= MISC::p(MISC::a(
+            $pString .= $this->misc->p($this->misc->a(
                 'link',
                 $this->messages->text('style', 'editLabel'),
                 'index.php?action=adminStyleEditInit'
@@ -81,22 +120,28 @@ class ADMINSTYLE
         }
         return $pString;
     }
-// Add a style - display options.
-    public function addInit($error = false)
+
+    /**
+     * Add a style - display options.
+     */
+    public function addInit(bool $error = false): string
     {
-        $pString = MISC::h($this->messages->text(
+        $pString = $this->misc->h($this->messages->text(
             'heading',
             'styles',
             ' (' . $this->messages->text('style', 'addLabel') . ')'
         ), false, 3);
         if ($error) {
-            $pString .= MISC::p($error, 'error', 'center');
+            $pString .= $this->misc->p($error, 'error', 'center');
         }
         $pString .= $this->displayStyleForm('add');
         return $pString;
     }
-// Write style to text file
-    public function add()
+
+    /**
+     * Write style to text file
+     */
+    public function add(): string
     {
         if ($error = $this->validateInput('add')) {
             $this->badInput($error, 'addInit');
@@ -106,54 +151,65 @@ class ADMINSTYLE
         $this->styles = $this->style->loadDir(OSBIB_STYLE_DIR);
         return $this->display($pString);
     }
-// display styles for editing
-    public function editInit($error = false)
+
+    /**
+     * display styles for editing
+     *
+     * @todo $error is not used!
+     */
+    public function editInit(bool $error = false): string
     {
-        $pString = MISC::h($this->messages->text(
+        $pString = $this->misc->h($this->messages->text(
             'heading',
             'styles',
             ' (' . $this->messages->text('style', 'editLabel') . ')'
         ), false, 3);
-        $pString .= FORM::formHeader('adminStyleEditDisplay');
+        $pString .= $this->form->formHeader('adminStyleEditDisplay');
         $styleFile = $this->session->getVar('editStyleFile');
         if ($styleFile) {
-            $pString .= FORM::selectedBoxValue(false, 'editStyleFile', $this->styles, $styleFile, 20);
+            $pString .= $this->form->selectedBoxValue(false, 'editStyleFile', $this->styles, $styleFile, 20);
         } else {
-            $pString .= FORM::selectFBoxValue(false, 'editStyleFile', $this->styles, 20);
+            $pString .= $this->form->selectFBoxValue(false, 'editStyleFile', $this->styles, 20);
         }
-        $pString .= MISC::br() . FORM::formSubmit('Edit');
-        $pString .= FORM::formEnd();
+        $pString .= $this->misc->br() . $this->form->formSubmit('Edit');
+        $pString .= $this->form->formEnd();
         return $pString;
     }
-// Display a style for editing.
-    public function editDisplay($error = false)
+
+    /**
+     * Display a style for editing.
+     */
+    public function editDisplay(bool $error = false): string
     {
         if (!$error) {
             $this->loadEditSession();
         }
-        $pString = MISC::h($this->messages->text(
+        $pString = $this->misc->h($this->messages->text(
             'heading',
             'styles',
             ' (' . $this->messages->text('style', 'editLabel') . ')'
         ), false, 3);
         if ($error) {
-            $pString .= MISC::p($error, 'error', 'center');
+            $pString .= $this->misc->p($error, 'error', 'center');
         }
         $pString .= $this->displayStyleForm('edit');
         return $pString;
     }
-// Read data from style file and load it into the session
-    public function loadEditSession($copy = false)
+
+    /**
+     * Read data from style file and load it into the session
+     */
+    public function loadEditSession(bool $copy = false): void
     {
         // Clear previous style in session
         $this->session->clearArray('style');
         $this->session->clearArray('cite');
         $this->session->clearArray('footnote');
-        include_once('../PARSEXML.php');
+        include_once(__DIR__ . '/../PARSEXML.php');
         $parseXML = new PARSEXML();
-        include_once('../STYLEMAP.php');
+        include_once(__DIR__ . '/../STYLEMAP.php');
         $styleMap = new STYLEMAP();
-        $resourceTypes = array_keys($styleMap->types);
+        $resourceTypes = array_keys($styleMap->getTypes());
         $this->session->setVar('editStyleFile', $this->vars['editStyleFile']);
         $dir = strtolower($this->vars['editStyleFile']);
         $fileName = $this->vars['editStyleFile'] . '.xml';
@@ -200,11 +256,14 @@ class ADMINSTYLE
                 }
             }
         } else {
-            $this->badInput($this->errors->text('file', 'read'));
+            $this->badInput($this->errors->text('file', 'read'), $this->errorDisplay);
         }
     }
-// Transform XML nodal array to resource type template strings for loading into the style editor
-    public function arrayToTemplate($types, $footnote = false)
+
+    /**
+     * Transform XML nodal array to resource type template strings for loading into the style editor
+     */
+    public function arrayToTemplate(array $types, bool $footnote = false): void
     {
         $this->fallback = [];
         foreach ($types as $resourceArray) {
@@ -244,7 +303,7 @@ class ADMINSTYLE
                     }
                     foreach ($array['_ELEMENTS'] as $elements) {
                         if ($array['_NAME'] == 'independent') {
-                            $split = split('_', $elements['_NAME']);
+                            $split = mb_split('_', $elements['_NAME']);
                             $temp[$array['_NAME']][$split[1]]
                             = $elements['_DATA'];
                         } else {
@@ -254,11 +313,6 @@ class ADMINSTYLE
                     }
                 }
             }
-            //			if($empty)
-            //			{
-            //				$this->$type = array();
-            //				continue;
-            //			}
             /**
             * Now parse the temp array into template strings
             */
@@ -337,8 +391,11 @@ class ADMINSTYLE
             $this->$type = $tempString;
         }
     }
-// Add resource-specific rewrite creator fields to session
-    public function writeSessionRewriteCreators($type, $array)
+
+    /**
+     * Add resource-specific rewrite creator fields to session
+     */
+    public function writeSessionRewriteCreators(string $type, array $array): void
     {
         foreach ($this->creators as $creatorField) {
             $name = $creatorField . '_firstString';
@@ -383,7 +440,10 @@ class ADMINSTYLE
             }
         }
     }
-// Edit groups
+
+    /**
+     * Edit groups
+     */
     public function edit()
     {
         if ($error = $this->validateInput('edit')) {
@@ -395,48 +455,58 @@ class ADMINSTYLE
         $pString = $this->success->text('style', ' ' . $this->messages->text('misc', 'edited') . ' ');
         return $this->display($pString);
     }
-// display groups for copying and making a new style
+
+    /**
+     * display groups for copying and making a new style
+     */
     public function copyInit($error = false)
     {
-        $pString = MISC::h($this->messages->text(
+        $pString = $this->misc->h($this->messages->text(
             'heading',
             'styles',
             ' (' . $this->messages->text('style', 'copyLabel') . ')'
         ), false, 3);
-        $pString .= FORM::formHeader('adminStyleCopyDisplay');
-        $pString .= FORM::selectFBoxValue(false, 'editStyleFile', $this->styles, 20);
-        $pString .= MISC::br() . FORM::formSubmit('Edit');
-        $pString .= FORM::formEnd();
+        $pString .= $this->form->formHeader('adminStyleCopyDisplay');
+        $pString .= $this->form->selectFBoxValue(false, 'editStyleFile', $this->styles, 20);
+        $pString .= $this->misc->br() . $this->form->formSubmit('Edit');
+        $pString .= $this->form->formEnd();
         return $pString;
     }
-// Display a style for copying.
+
+    /**
+     * Display a style for copying.
+     */
     public function copyDisplay($error = false)
     {
         if (!$error) {
             $this->loadEditSession(true);
         }
-        $pString = MISC::h($this->messages->text(
+        $pString = $this->misc->h($this->messages->text(
             'heading',
             'styles',
             ' (' . $this->messages->text('style', 'copyLabel') . ')'
         ), false, 3);
         if ($error) {
-            $pString .= MISC::p($error, 'error', 'center');
+            $pString .= $this->misc->p($error, 'error', 'center');
         }
         $pString .= $this->displayStyleForm('copy');
         return $pString;
     }
-// display the citation templating form
-    public function displayCiteForm($type)
+
+    /**
+     * display the citation templating form
+     */
+    public function displayCiteForm(string $type)
     {
-        include_once('TABLE.php');
-        include_once('../STYLEMAP.php');
+        include_once(__DIR__ . '/TABLE.php');
+        $this->table = new TABLE();
+        include_once(__DIR__ . '/../STYLEMAP.php');
         $this->map = new STYLEMAP();
-        $pString = MISC::h($this->messages->text('cite', 'citationFormat') . ' (' .
+        $pString = $this->misc->h($this->messages->text('cite', 'citationFormat') . ' (' .
             $this->messages->text('cite', 'citationFormatInText') . ')');
         // 1st., creator style
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
         $exampleName = ['Joe Bloggs', 'Bloggs, Joe', 'Bloggs Joe',
             $this->messages->text('cite', 'lastName')];
         $exampleInitials = ['T. U. ', 'T.U.', 'T U ', 'TU'];
@@ -447,38 +517,38 @@ class ADMINSTYLE
         $initials = base64_decode($this->session->getVar('cite_creatorInitials'));
         $firstName = base64_decode($this->session->getVar('cite_creatorFirstName'));
         $useInitials = base64_decode($this->session->getVar('cite_useInitials'));
-        $td = MISC::b($this->messages->text('cite', 'creatorStyle')) . MISC::br() .
-            FORM::selectedBoxValue(
+        $td = $this->misc->b($this->messages->text('cite', 'creatorStyle')) . $this->misc->br() .
+            $this->form->selectedBoxValue(
                 $this->messages->text('style', 'creatorFirstStyle'),
                 'cite_creatorStyle',
                 $exampleName,
                 $firstStyle,
                 4
             );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorOthers'),
             'cite_creatorOtherStyle',
             $exampleName,
             $otherStyle,
             4
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= $this->messages->text('cite', 'useInitials') . ' ' . FORM::checkbox(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->messages->text('cite', 'useInitials') . ' ' . $this->form->checkbox(
             false,
             'cite_useInitials',
             $useInitials
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorInitials'),
             'cite_creatorInitials',
             $exampleInitials,
             $initials,
             4
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorFirstName'),
             'cite_creatorFirstName',
             $example,
@@ -487,34 +557,34 @@ class ADMINSTYLE
         );
         $uppercase = base64_decode($this->session->getVar('cite_creatorUppercase')) ?
             true : false;
-        $td .= MISC::P(FORM::checkbox(
+        $td .= $this->misc->P($this->form->checkbox(
             $this->messages->text('style', 'uppercaseCreator'),
             'cite_creatorUppercase',
             $uppercase
         ));
-        $pString .= TABLE::td($td);
+        $pString .= $this->table->td($td);
         // Delimiters
         $twoCreatorsSep = stripslashes(base64_decode($this->session->getVar('cite_twoCreatorsSep')));
         $betweenFirst = stripslashes(base64_decode($this->session->getVar('cite_creatorSepFirstBetween')));
         $betweenNext = stripslashes(base64_decode($this->session->getVar('cite_creatorSepNextBetween')));
         $last = stripslashes(base64_decode($this->session->getVar('cite_creatorSepNextLast')));
-        $td = MISC::b($this->messages->text('cite', 'creatorSep')) .
-            MISC::p($this->messages->text('style', 'ifOnlyTwoCreators') . '&nbsp;' .
-            FORM::textInput(false, 'cite_twoCreatorsSep', $twoCreatorsSep, 7, 255)) .
+        $td = $this->misc->b($this->messages->text('cite', 'creatorSep')) .
+            $this->misc->p($this->messages->text('style', 'ifOnlyTwoCreators') . '&nbsp;' .
+            $this->form->textInput(false, 'cite_twoCreatorsSep', $twoCreatorsSep, 7, 255)) .
             $this->messages->text('style', 'sepCreatorsFirst') . '&nbsp;' .
-            FORM::textInput(
+            $this->form->textInput(
                 false,
                 'cite_creatorSepFirstBetween',
                 $betweenFirst,
                 7,
                 255
-            ) . MISC::br() .
-            MISC::p($this->messages->text('style', 'sepCreatorsNext') . MISC::br() .
+            ) . $this->misc->br() .
+            $this->misc->p($this->messages->text('style', 'sepCreatorsNext') . $this->misc->br() .
             $this->messages->text('style', 'creatorSepBetween') . '&nbsp;' .
-            FORM::textInput(false, 'cite_creatorSepNextBetween', $betweenNext, 7, 255) .
+            $this->form->textInput(false, 'cite_creatorSepNextBetween', $betweenNext, 7, 255) .
             $this->messages->text('style', 'creatorSepLast') . '&nbsp;' .
-            FORM::textInput(false, 'cite_creatorSepNextLast', $last, 7, 255));
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
+            $this->form->textInput(false, 'cite_creatorSepNextLast', $last, 7, 255));
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
         // List abbreviation
         $example = [$this->messages->text('style', 'creatorListFull'),
             $this->messages->text('style', 'creatorListLimit')];
@@ -524,21 +594,21 @@ class ADMINSTYLE
         $listAbbreviation = stripslashes(base64_decode($this->session->getVar('cite_creatorListAbbreviation')));
         $italic = base64_decode($this->session->getVar('cite_creatorListAbbreviationItalic')) ?
             true : false;
-        $td .= MISC::b($this->messages->text('cite', 'creatorList')) .
-            MISC::p(FORM::selectedBoxValue(
+        $td .= $this->misc->b($this->messages->text('cite', 'creatorList')) .
+            $this->misc->p($this->form->selectedBoxValue(
                 false,
                 'cite_creatorList',
                 $example,
                 $list,
                 2
-            ) . MISC::br() .
+            ) . $this->misc->br() .
             $this->messages->text('style', 'creatorListIf') . ' ' .
-            FORM::textInput(false, 'cite_creatorListMore', $listMore, 3) .
+            $this->form->textInput(false, 'cite_creatorListMore', $listMore, 3) .
             $this->messages->text('style', 'creatorListOrMore') . ' ' .
-            FORM::textInput(false, 'cite_creatorListLimit', $listLimit, 3) . MISC::br() .
+            $this->form->textInput(false, 'cite_creatorListLimit', $listLimit, 3) . $this->misc->br() .
             $this->messages->text('style', 'creatorListAbbreviation') . ' ' .
-            FORM::textInput(false, 'cite_creatorListAbbreviation', $listAbbreviation, 15) . ' ' .
-            FORM::checkbox(false, 'cite_creatorListAbbreviationItalic', $italic) . ' ' .
+            $this->form->textInput(false, 'cite_creatorListAbbreviation', $listAbbreviation, 15) . ' ' .
+            $this->form->checkbox(false, 'cite_creatorListAbbreviationItalic', $italic) . ' ' .
             $this->messages->text('style', 'italics'));
         $list = base64_decode($this->session->getVar('cite_creatorListSubsequent'));
         $listMore = stripslashes(base64_decode($this->session->getVar('cite_creatorListSubsequentMore')));
@@ -548,49 +618,49 @@ class ADMINSTYLE
         ));
         $italic = base64_decode($this->session->getVar('cite_creatorListSubsequentAbbreviationItalic')) ?
             true : false;
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= MISC::b($this->messages->text('cite', 'creatorListSubsequent')) .
-            MISC::p(FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->misc->b($this->messages->text('cite', 'creatorListSubsequent')) .
+            $this->misc->p($this->form->selectedBoxValue(
                 false,
                 'cite_creatorListSubsequent',
                 $example,
                 $list,
                 2
-            ) . MISC::br() .
+            ) . $this->misc->br() .
             $this->messages->text('style', 'creatorListIf') . ' ' .
-            FORM::textInput(false, 'cite_creatorListSubsequentMore', $listMore, 3) .
+            $this->form->textInput(false, 'cite_creatorListSubsequentMore', $listMore, 3) .
             $this->messages->text('style', 'creatorListOrMore') . ' ' .
-            FORM::textInput(false, 'cite_creatorListSubsequentLimit', $listLimit, 3) . MISC::br() .
+            $this->form->textInput(false, 'cite_creatorListSubsequentLimit', $listLimit, 3) . $this->misc->br() .
             $this->messages->text('style', 'creatorListAbbreviation') . ' ' .
-            FORM::textInput(false, 'cite_creatorListSubsequentAbbreviation', $listAbbreviation, 15) . ' ' .
-            FORM::checkbox(false, 'cite_creatorListSubsequentAbbreviationItalic', $italic) . ' ' .
+            $this->form->textInput(false, 'cite_creatorListSubsequentAbbreviation', $listAbbreviation, 15) . ' ' .
+            $this->form->checkbox(false, 'cite_creatorListSubsequentAbbreviationItalic', $italic) . ' ' .
             $this->messages->text('style', 'italics'));
-        $pString .= TABLE::td($td, false, false, 'top');
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
+        $pString .= $this->table->td($td, false, false, 'top');
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
         // Miscellaneous citation formatting
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
 
         $firstChars = stripslashes(base64_decode($this->session->getVar('cite_firstChars')));
         $template = stripslashes(base64_decode($this->session->getVar('cite_template')));
         $lastChars = stripslashes(base64_decode($this->session->getVar('cite_lastChars')));
-        $td = $this->messages->text('cite', 'enclosingCharacters') . MISC::br() .
-            FORM::textInput(false, 'cite_firstChars', $firstChars, 3, 255) . ' ... ' .
-            FORM::textInput(false, 'cite_lastChars', $lastChars, 3, 255);
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
+        $td = $this->messages->text('cite', 'enclosingCharacters') . $this->misc->br() .
+            $this->form->textInput(false, 'cite_firstChars', $firstChars, 3, 255) . ' ... ' .
+            $this->form->textInput(false, 'cite_lastChars', $lastChars, 3, 255);
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
 
-        $availableFields = implode(', ', $this->map->citation);
+        $availableFields = implode(', ', $this->map->getCitation());
         $td .= $this->messages->text('cite', 'template') . ' ' .
-            FORM::textInput(false, 'cite_template', $template, 40, 255) .
-            ' ' . MISC::span('*', 'required') .
-            MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-            MISC::br() . $availableFields, 'small');
+            $this->form->textInput(false, 'cite_template', $template, 40, 255) .
+            ' ' . $this->misc->span('*', 'required') .
+            $this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+            $this->misc->br() . $availableFields, 'small');
 
         $replaceYear = stripslashes(base64_decode($this->session->getVar('cite_replaceYear')));
-        $td .= MISC::p(FORM::textInput(
+        $td .= $this->misc->p($this->form->textInput(
             $this->messages->text('cite', 'replaceYear'),
             'cite_replaceYear',
             $replaceYear,
@@ -600,127 +670,127 @@ class ADMINSTYLE
 
         $td .= $this->messages->text('cite', 'followCreatorTemplate');
         $template = stripslashes(base64_decode($this->session->getVar('cite_followCreatorTemplate')));
-        $td .= MISC::p($this->messages->text('cite', 'template') . ' ' .
-            FORM::textInput(false, 'cite_followCreatorTemplate', $template, 40, 255)) .
-            MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-            MISC::br() . $availableFields, 'small');
+        $td .= $this->misc->p($this->messages->text('cite', 'template') . ' ' .
+            $this->form->textInput(false, 'cite_followCreatorTemplate', $template, 40, 255)) .
+            $this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+            $this->misc->br() . $availableFields, 'small');
 
         $pageSplit = base64_decode($this->session->getVar('cite_followCreatorPageSplit')) ?
             true : false;
-        $td .= MISC::P($this->messages->text('cite', 'followCreatorPageSplit') . '&nbsp;&nbsp;' .
-            FORM::checkbox(false, 'cite_followCreatorPageSplit', $pageSplit));
+        $td .= $this->misc->P($this->messages->text('cite', 'followCreatorPageSplit') . '&nbsp;&nbsp;' .
+            $this->form->checkbox(false, 'cite_followCreatorPageSplit', $pageSplit));
 
         $consecutiveSep = stripslashes(base64_decode($this->session->getVar('cite_consecutiveCitationSep')));
-        $td .= MISC::p($this->messages->text('cite', 'consecutiveCitationSep') . ' ' .
-            FORM::textInput(false, 'cite_consecutiveCitationSep', $consecutiveSep, 7));
+        $td .= $this->misc->p($this->messages->text('cite', 'consecutiveCitationSep') . ' ' .
+            $this->form->textInput(false, 'cite_consecutiveCitationSep', $consecutiveSep, 7));
 
         // Consecutive citations by same author(s)
         $consecutiveSep = stripslashes(base64_decode($this->session->getVar('cite_consecutiveCreatorSep')));
         $template = stripslashes(base64_decode($this->session->getVar('cite_consecutiveCreatorTemplate')));
-        $availableFields = implode(', ', $this->map->citation);
-        $td .= MISC::p($this->messages->text('cite', 'consecutiveCreator'));
+        $availableFields = implode(', ', $this->map->getCitation());
+        $td .= $this->misc->p($this->messages->text('cite', 'consecutiveCreator'));
         $td .= $this->messages->text('cite', 'template') . ' ' .
-            FORM::textInput(false, 'cite_consecutiveCreatorTemplate', $template, 40, 255) .
-            MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-            MISC::br() . $availableFields, 'small');
+            $this->form->textInput(false, 'cite_consecutiveCreatorTemplate', $template, 40, 255) .
+            $this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+            $this->misc->br() . $availableFields, 'small');
         $td .= $this->messages->text('cite', 'consecutiveCreatorSep') . ' ' .
-            FORM::textInput(false, 'cite_consecutiveCreatorSep', $consecutiveSep, 7);
+            $this->form->textInput(false, 'cite_consecutiveCreatorSep', $consecutiveSep, 7);
 
         // Subsequent citations by same author(s)
         $template = stripslashes(base64_decode($this->session->getVar('cite_subsequentCreatorTemplate')));
-        $td .= MISC::p($this->messages->text('cite', 'subsequentCreator'));
+        $td .= $this->misc->p($this->messages->text('cite', 'subsequentCreator'));
         $td .= $this->messages->text('cite', 'template') . ' ' .
-            FORM::textInput(false, 'cite_subsequentCreatorTemplate', $template, 40, 255) .
-            MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-            MISC::br() . $availableFields, 'small');
+            $this->form->textInput(false, 'cite_subsequentCreatorTemplate', $template, 40, 255) .
+            $this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+            $this->misc->br() . $availableFields, 'small');
 
-        $pString .= TABLE::td($td, false, false, 'top');
+        $pString .= $this->table->td($td, false, false, 'top');
 
         $example = ['132-9', '132-39', '132-139'];
         $input = base64_decode($this->session->getVar('cite_pageFormat'));
-        $td = FORM::selectedBoxValue(
+        $td = $this->form->selectedBoxValue(
             $this->messages->text('style', 'pageFormat'),
             'cite_pageFormat',
             $example,
             $input,
             3
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
         $example = ['1998', "'98", '98'];
         $year = base64_decode($this->session->getVar('cite_yearFormat'));
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('cite', 'yearFormat'),
             'cite_yearFormat',
             $example,
             $year,
             3
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
         $example = [$this->messages->text('style', 'titleAsEntered'),
             'Wikindx bibliographic management system'];
         $titleCapitalization = base64_decode($this->session->getVar('cite_titleCapitalization'));
-        $td .= MISC::p($this->messages->text('style', 'titleCapitalization') . MISC::br() .
-            FORM::selectedBoxValue(false, 'cite_titleCapitalization', $example, $titleCapitalization, 2));
+        $td .= $this->misc->p($this->messages->text('style', 'titleCapitalization') . $this->misc->br() .
+            $this->form->selectedBoxValue(false, 'cite_titleCapitalization', $example, $titleCapitalization, 2));
 
         // Ambiguous citations
         $ambiguous = base64_decode($this->session->getVar('cite_ambiguous'));
         $example = [$this->messages->text('cite', 'ambiguousUnchanged'),
             $this->messages->text('cite', 'ambiguousYear'), $this->messages->text('cite', 'ambiguousTitle')];
         $template = stripslashes(base64_decode($this->session->getVar('cite_ambiguousTemplate')));
-        $td .= MISC::p(FORM::selectedBoxValue(
-            MISC::b($this->messages->text('cite', 'ambiguous')),
+        $td .= $this->misc->p($this->form->selectedBoxValue(
+            $this->misc->b($this->messages->text('cite', 'ambiguous')),
             'cite_ambiguous',
             $example,
             $ambiguous,
             3
         ));
-        $availableFields = implode(', ', $this->map->citation);
+        $availableFields = implode(', ', $this->map->getCitation());
         $td .= $this->messages->text('cite', 'template') . ' ' .
-            FORM::textInput(false, 'cite_ambiguousTemplate', $template, 40, 255) .
-            MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-            MISC::br() . $availableFields, 'small');
+            $this->form->textInput(false, 'cite_ambiguousTemplate', $template, 40, 255) .
+            $this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+            $this->misc->br() . $availableFields, 'small');
 
-        $pString .= TABLE::td($td, false, false, 'top');
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
+        $pString .= $this->table->td($td, false, false, 'top');
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
         // Endnote style citations
-        $pString .= MISC::h($this->messages->text('cite', 'citationFormat') . ' (' .
+        $pString .= $this->misc->h($this->messages->text('cite', 'citationFormat') . ' (' .
             $this->messages->text('cite', 'citationFormatEndnote') . ')');
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
-        $td = MISC::p(MISC::b($this->messages->text('cite', 'endnoteFormat1')));
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
+        $td = $this->misc->p($this->misc->b($this->messages->text('cite', 'endnoteFormat1')));
         $firstChars = stripslashes(base64_decode($this->session->getVar('cite_firstCharsEndnoteInText')));
         $lastChars = stripslashes(base64_decode($this->session->getVar('cite_lastCharsEndnoteInText')));
-        $td .= $this->messages->text('cite', 'enclosingCharacters') . MISC::br() .
-            FORM::textInput(false, 'cite_firstCharsEndnoteInText', $firstChars, 3, 255) . ' ... ' .
-            FORM::textInput(false, 'cite_lastCharsEndnoteInText', $lastChars, 3, 255);
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
+        $td .= $this->messages->text('cite', 'enclosingCharacters') . $this->misc->br() .
+            $this->form->textInput(false, 'cite_firstCharsEndnoteInText', $firstChars, 3, 255) . ' ... ' .
+            $this->form->textInput(false, 'cite_lastCharsEndnoteInText', $lastChars, 3, 255);
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
 
         $template = stripslashes(base64_decode($this->session->getVar('cite_templateEndnoteInText')));
-        $availableFields = implode(', ', $this->map->citationEndnoteInText);
+        $availableFields = implode(', ', $this->map->getCitationEndnoteInText());
         $td .= $this->messages->text('cite', 'template') . ' ' .
-            FORM::textInput(false, 'cite_templateEndnoteInText', $template, 40, 255) .
-            ' ' . MISC::span('*', 'required') .
-            MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-            MISC::br() . $availableFields, 'small');
+            $this->form->textInput(false, 'cite_templateEndnoteInText', $template, 40, 255) .
+            ' ' . $this->misc->span('*', 'required') .
+            $this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+            $this->misc->br() . $availableFields, 'small');
 
         $citeFormat = [$this->messages->text('cite', 'normal'),
             $this->messages->text('cite', 'superscript'), $this->messages->text('cite', 'subscript')];
         $input = base64_decode($this->session->getVar('cite_formatEndnoteInText'));
-        $td .= MISC::p(FORM::selectedBoxValue(false, 'cite_formatEndnoteInText', $citeFormat, $input, 3));
+        $td .= $this->misc->p($this->form->selectedBoxValue(false, 'cite_formatEndnoteInText', $citeFormat, $input, 3));
 
         $consecutiveSep = stripslashes(base64_decode(
             $this->session->getVar('cite_consecutiveCitationEndnoteInTextSep')
         ));
-        $td .= MISC::p($this->messages->text('cite', 'consecutiveCitationSep') . ' ' .
-            FORM::textInput(false, 'cite_consecutiveCitationEndnoteInTextSep', $consecutiveSep, 7));
+        $td .= $this->misc->p($this->messages->text('cite', 'consecutiveCitationSep') . ' ' .
+            $this->form->textInput(false, 'cite_consecutiveCitationEndnoteInTextSep', $consecutiveSep, 7));
 
         $endnoteStyleArray = [$this->messages->text('cite', 'endnoteStyle1'),
             $this->messages->text('cite', 'endnoteStyle2'), $this->messages->text('cite', 'endnoteStyle3')];
         $endnoteStyle = base64_decode($this->session->getVar('cite_endnoteStyle'));
-        $td .= MISC::p(FORM::selectedBoxValue(
+        $td .= $this->misc->p($this->form->selectedBoxValue(
             $this->messages->text('cite', 'endnoteStyle'),
             'cite_endnoteStyle',
             $endnoteStyleArray,
@@ -728,202 +798,205 @@ class ADMINSTYLE
             3
         ));
 
-        $pString .= TABLE::td($td);
+        $pString .= $this->table->td($td);
 
-        $td = MISC::p(MISC::b($this->messages->text('cite', 'endnoteFormat2')));
-        $td .= MISC::p($this->messages->text('cite', 'endnoteFieldFormat'), 'small');
+        $td = $this->misc->p($this->misc->b($this->messages->text('cite', 'endnoteFormat2')));
+        $td .= $this->misc->p($this->messages->text('cite', 'endnoteFieldFormat'), 'small');
         $template = stripslashes(base64_decode($this->session->getVar('cite_templateEndnote')));
-        $availableFields = implode(', ', $this->map->citationEndnote);
+        $availableFields = implode(', ', $this->map->getCitationEndnote());
         $td .= $this->messages->text('cite', 'template') . ' ' .
-            FORM::textInput(false, 'cite_templateEndnote', $template, 40, 255) . ' ' .
-            MISC::span('*', 'required') .
-            MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-            MISC::br() . $availableFields, 'small');
+            $this->form->textInput(false, 'cite_templateEndnote', $template, 40, 255) . ' ' .
+            $this->misc->span('*', 'required') .
+            $this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+            $this->misc->br() . $availableFields, 'small');
 
-        $availableFields = implode(', ', $this->map->citationEndnote);
+        $availableFields = implode(', ', $this->map->getCitationEndnote());
         $ibid = stripslashes(base64_decode($this->session->getVar('cite_ibid')));
-        $td .= FORM::textInput($this->messages->text('cite', 'ibid'), 'cite_ibid', $ibid, 40, 255);
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
+        $td .= $this->form->textInput($this->messages->text('cite', 'ibid'), 'cite_ibid', $ibid, 40, 255);
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
         $idem = stripslashes(base64_decode($this->session->getVar('cite_idem')));
-        $td .= FORM::textInput($this->messages->text('cite', 'idem'), 'cite_idem', $idem, 40, 255);
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
+        $td .= $this->form->textInput($this->messages->text('cite', 'idem'), 'cite_idem', $idem, 40, 255);
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
         $opCit = stripslashes(base64_decode($this->session->getVar('cite_opCit')));
-        $td .= FORM::textInput($this->messages->text('cite', 'opCit'), 'cite_opCit', $opCit, 40, 255) .
-            MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-            MISC::br() . $availableFields, 'small');
+        $td .= $this->form->textInput($this->messages->text('cite', 'opCit'), 'cite_opCit', $opCit, 40, 255) .
+            $this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+            $this->misc->br() . $availableFields, 'small');
 
         $firstChars = stripslashes(base64_decode($this->session->getVar('cite_firstCharsEndnoteID')));
         $lastChars = stripslashes(base64_decode($this->session->getVar('cite_lastCharsEndnoteID')));
-        $td .= MISC::p($this->messages->text('cite', 'endnoteIDEnclose') . MISC::br() .
-            FORM::textInput(false, 'cite_firstCharsEndnoteID', $firstChars, 3, 255) . ' ... ' .
-            FORM::textInput(false, 'cite_lastCharsEndnoteID', $lastChars, 3, 255));
-        $pString .= TABLE::td($td);
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
+        $td .= $this->misc->p($this->messages->text('cite', 'endnoteIDEnclose') . $this->misc->br() .
+            $this->form->textInput(false, 'cite_firstCharsEndnoteID', $firstChars, 3, 255) . ' ... ' .
+            $this->form->textInput(false, 'cite_lastCharsEndnoteID', $lastChars, 3, 255));
+        $pString .= $this->table->td($td);
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
 
         // Creator formatting for footnotes
-        $pString .= MISC::h($this->messages->text('cite', 'citationFormatFootnote'));
+        $pString .= $this->misc->h($this->messages->text('cite', 'citationFormatFootnote'));
         $pString .= $this->creatorFormatting('footnote', true);
 
         // bibliography order
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::h($this->messages->text('cite', 'orderBib1'));
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
-        $heading = MISC::p($this->messages->text('cite', 'orderBib2'));
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->h($this->messages->text('cite', 'orderBib1'));
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
+        $heading = $this->misc->p($this->messages->text('cite', 'orderBib2'));
         $sameIdOrderBib = base64_decode($this->session->getVar('cite_sameIdOrderBib')) ? true : false;
-        $heading .= MISC::P($this->messages->text('cite', 'orderBib3') . '&nbsp;&nbsp;' .
-            FORM::checkbox(false, 'cite_sameIdOrderBib', $sameIdOrderBib));
+        $heading .= $this->misc->P($this->messages->text('cite', 'orderBib3') . '&nbsp;&nbsp;' .
+            $this->form->checkbox(false, 'cite_sameIdOrderBib', $sameIdOrderBib));
         $order1 = base64_decode($this->session->getVar('cite_order1'));
         $order2 = base64_decode($this->session->getVar('cite_order2'));
         $order3 = base64_decode($this->session->getVar('cite_order3'));
         $radio = !base64_decode($this->session->getVar('cite_order1desc')) ?
             $this->messages->text('powerSearch', 'ascending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order1desc', 0, true) . MISC::br() .
+            $this->form->radioButton(false, 'cite_order1desc', 0, true) . $this->misc->br() .
             $this->messages->text('powerSearch', 'descending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order1desc', 1) :
+            $this->form->radioButton(false, 'cite_order1desc', 1) :
             $this->messages->text('powerSearch', 'ascending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order1desc', 0) . MISC::br() .
+            $this->form->radioButton(false, 'cite_order1desc', 0) . $this->misc->br() .
             $this->messages->text('powerSearch', 'descending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order1desc', 1, true);
+            $this->form->radioButton(false, 'cite_order1desc', 1, true);
         $orderArray = [$this->messages->text('list', 'creator'),
             $this->messages->text('list', 'year'), $this->messages->text('list', 'title')];
-        $pString .= TABLE::td($heading . FORM::selectedBoxValue(
+        $pString .= $this->table->td($heading . $this->form->selectedBoxValue(
             $this->messages->text('powerSearch', 'order1'),
             'cite_order1',
             $orderArray,
             $order1,
             3
-        ) . MISC::p($radio));
+        ) . $this->misc->p($radio));
         $radio = !base64_decode($this->session->getVar('cite_order2desc')) ?
             $this->messages->text('powerSearch', 'ascending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order2desc', 0, true) . MISC::br() .
+            $this->form->radioButton(false, 'cite_order2desc', 0, true) . $this->misc->br() .
             $this->messages->text('powerSearch', 'descending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order2desc', 1) :
+            $this->form->radioButton(false, 'cite_order2desc', 1) :
             $this->messages->text('powerSearch', 'ascending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order2desc', 0) . MISC::br() .
+            $this->form->radioButton(false, 'cite_order2desc', 0) . $this->misc->br() .
             $this->messages->text('powerSearch', 'descending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order2desc', 1, true);
-        $pString .= TABLE::td(FORM::selectedBoxValue(
+            $this->form->radioButton(false, 'cite_order2desc', 1, true);
+        $pString .= $this->table->td($this->form->selectedBoxValue(
             $this->messages->text('powerSearch', 'order2'),
             'cite_order2',
             $orderArray,
             $order2,
             3
-        ) . MISC::p($radio), false, false, 'bottom');
+        ) . $this->misc->p($radio), false, false, 'bottom');
         $radio = !base64_decode($this->session->getVar('cite_order3desc')) ?
             $this->messages->text('powerSearch', 'ascending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order3desc', 0, true) . MISC::br() .
+            $this->form->radioButton(false, 'cite_order3desc', 0, true) . $this->misc->br() .
             $this->messages->text('powerSearch', 'descending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order3desc', 1) :
+            $this->form->radioButton(false, 'cite_order3desc', 1) :
             $this->messages->text('powerSearch', 'ascending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order3desc', 0) . MISC::br() .
+            $this->form->radioButton(false, 'cite_order3desc', 0) . $this->misc->br() .
             $this->messages->text('powerSearch', 'descending') . '&nbsp;&nbsp;' .
-            FORM::radioButton(false, 'cite_order3desc', 1, true);
-        $pString .= TABLE::td(FORM::selectedBoxValue(
+            $this->form->radioButton(false, 'cite_order3desc', 1, true);
+        $pString .= $this->table->td($this->form->selectedBoxValue(
             $this->messages->text('powerSearch', 'order3'),
             'cite_order3',
             $orderArray,
             $order3,
             3
-        ) . MISC::p($radio), false, false, 'bottom');
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
+        ) . $this->misc->p($radio), false, false, 'bottom');
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
         return $pString;
     }
-// display the style form for both adding and editing
-    public function displayStyleForm($type)
+
+    /**
+     * display the style form for both adding and editing
+     */
+    public function displayStyleForm(string $type)
     {
-        include_once('TABLE.php');
-        include_once('../STYLEMAP.php');
+        include_once(__DIR__ . '/TABLE.php');
+        include_once(__DIR__ . '/../STYLEMAP.php');
         $this->map = new STYLEMAP();
-        $types = array_keys($this->map->types);
+        $types = array_keys($this->map->getTypes());
         if ($type == 'add') {
-            $pString = FORM::formHeader('adminStyleAdd');
+            $pString = $this->form->formHeader('adminStyleAdd');
         } elseif ($type == 'edit') {
-            $pString = FORM::formHeader('adminStyleEdit');
+            $pString = $this->form->formHeader('adminStyleEdit');
         } else { // copy
-            $pString = FORM::formHeader('adminStyleAdd');
+            $pString = $this->form->formHeader('adminStyleAdd');
         }
-        $pString .= TABLE::tableStart();
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->tableStart();
+        $pString .= $this->table->trStart();
         $input = stripslashes($this->session->getVar('style_shortName'));
         if ($type == 'add') {
-            $pString .= TABLE::td(FORM::textInput(
+            $pString .= $this->table->td($this->form->textInput(
                 $this->messages->text('style', 'shortName'),
                 'styleShortName',
                 $input,
                 20,
                 255
-            ) . ' ' . MISC::span('*', 'required') .
-                MISC::br() . $this->messages->text('hint', 'styleShortName'));
+            ) . ' ' . $this->misc->span('*', 'required') .
+                $this->misc->br() . $this->messages->text('hint', 'styleShortName'));
         } elseif ($type == 'edit') {
-            $pString .= FORM::hidden('editStyleFile', $this->vars['editStyleFile']) .
-                FORM::hidden('styleShortName', $input) .
-                TABLE::td(
-                    MISC::b($this->vars['editStyleFile'] . ':&nbsp;&nbsp;'),
+            $pString .= $this->form->hidden('editStyleFile', $this->vars['editStyleFile']) .
+                $this->form->hidden('styleShortName', $input) .
+                $this->table->td(
+                    $this->misc->b($this->vars['editStyleFile'] . ':&nbsp;&nbsp;'),
                     false,
                     false,
                     'top'
                 );
         } else { // copy
-            $pString .= TABLE::td(FORM::textInput(
+            $pString .= $this->table->td($this->form->textInput(
                 $this->messages->text('style', 'shortName'),
                 'styleShortName',
                 $input,
                 20,
                 255
-            ) . ' ' . MISC::span('*', 'required') .
-                MISC::br() . $this->messages->text('hint', 'styleShortName'));
+            ) . ' ' . $this->misc->span('*', 'required') .
+                $this->misc->br() . $this->messages->text('hint', 'styleShortName'));
         }
         $input = stripslashes(base64_decode($this->session->getVar('style_longName')));
-        $pString .= TABLE::td(FORM::textInput(
+        $pString .= $this->table->td($this->form->textInput(
             $this->messages->text('style', 'longName'),
             'styleLongName',
             $input,
             50,
             255
-        ) . ' ' . MISC::span('*', 'required'));
+        ) . ' ' . $this->misc->span('*', 'required'));
         $input = base64_decode($this->session->getVar('cite_citationStyle'));
         $example = [$this->messages->text('cite', 'citationFormatInText'),
             $this->messages->text('cite', 'citationFormatEndnote')];
-        $pString .= TABLE::td(FORM::selectedBoxValue(
+        $pString .= $this->table->td($this->form->selectedBoxValue(
             $this->messages->text('cite', 'citationFormat'),
             'cite_citationStyle',
             $example,
             $input,
             2
-        ) . ' ' . MISC::span('*', 'required'));
+        ) . ' ' . $this->misc->span('*', 'required'));
 
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::p(MISC::hr());
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->p($this->misc->hr());
         $pString .= $this->displayCiteForm('copy');
-        $pString .= MISC::p(MISC::hr() . MISC::hr());
-        $pString .= MISC::h($this->messages->text('style', 'bibFormat'));
+        $pString .= $this->misc->p($this->misc->hr() . $this->misc->hr());
+        $pString .= $this->misc->h($this->messages->text('style', 'bibFormat'));
 
         // Creator formatting for bibliography
         $pString .= $this->creatorFormatting('style');
         // Editor replacements
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
         $switch = base64_decode($this->session->getVar('style_editorSwitch'));
         $editorSwitchIfYes = stripslashes(base64_decode($this->session->getVar('style_editorSwitchIfYes')));
         $example = [$this->messages->text('style', 'no'), $this->messages->text('style', 'yes')];
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'editorSwitchHead')) . MISC::br() .
-            FORM::selectedBoxValue(
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'editorSwitchHead')) . $this->misc->br() .
+            $this->form->selectedBoxValue(
                 $this->messages->text('style', 'editorSwitch'),
                 'style_editorSwitch',
                 $example,
                 $switch,
                 2
             ));
-        $pString .= TABLE::td(
-            FORM::textInput(
+        $pString .= $this->table->td(
+            $this->form->textInput(
                 $this->messages->text('style', 'editorSwitchIfYes'),
                 'style_editorSwitchIfYes',
                 $editorSwitchIfYes,
@@ -934,94 +1007,93 @@ class ADMINSTYLE
             false,
             'bottom'
         );
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
         // Title capitalization, edition, day and month, runningTime and page formats
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
         $example = [$this->messages->text('style', 'titleAsEntered'),
             'Wikindx bibliographic management system'];
         $input = base64_decode($this->session->getVar('style_titleCapitalization'));
-        $td = MISC::p(MISC::b($this->messages->text('style', 'titleCapitalization')) . MISC::br() .
-            FORM::selectedBoxValue(false, 'style_titleCapitalization', $example, $input, 2));
-        $pString .= TABLE::td($td);
+        $td = $this->misc->p($this->misc->b($this->messages->text('style', 'titleCapitalization')) . $this->misc->br() .
+            $this->form->selectedBoxValue(false, 'style_titleCapitalization', $example, $input, 2));
+        $pString .= $this->table->td($td);
         $example = ['3', '3.', '3rd'];
         $input = base64_decode($this->session->getVar('style_editionFormat'));
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'editionFormat')) . MISC::br() .
-            FORM::selectedBoxValue(false, 'style_editionFormat', $example, $input, 3));
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'editionFormat')) . $this->misc->br() .
+            $this->form->selectedBoxValue(false, 'style_editionFormat', $example, $input, 3));
         $example = ['132-9', '132-39', '132-139'];
         $input = base64_decode($this->session->getVar('style_pageFormat'));
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'pageFormat')) . MISC::br() .
-            FORM::selectedBoxValue(false, 'style_pageFormat', $example, $input, 3));
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'pageFormat')) . $this->misc->br() .
+            $this->form->selectedBoxValue(false, 'style_pageFormat', $example, $input, 3));
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
         $example = ['10', '10.', '10th'];
         $input = base64_decode($this->session->getVar('style_dayFormat'));
         $leadingZero = base64_decode($this->session->getVar('style_dayLeadingZero')) ?
             true : false;
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'dayFormat')) . MISC::br() .
-            FORM::selectedBoxValue(false, 'style_dayFormat', $example, $input, 3) .
-            MISC::P(FORM::checkbox(
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'dayFormat')) . $this->misc->br() .
+            $this->form->selectedBoxValue(false, 'style_dayFormat', $example, $input, 3) .
+            $this->misc->P($this->form->checkbox(
                 $this->messages->text('style', 'dayLeadingZero'),
                 'style_dayLeadingZero',
                 $leadingZero
             )));
         $example = ['Feb', 'February', $this->messages->text('style', 'userMonthSelect')];
         $input = base64_decode($this->session->getVar('style_monthFormat'));
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'monthFormat')) . MISC::br() .
-            FORM::selectedBoxValue(false, 'style_monthFormat', $example, $input, 3));
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'monthFormat')) . $this->misc->br() .
+            $this->form->selectedBoxValue(false, 'style_monthFormat', $example, $input, 3));
         $example = ['Day Month', 'Month Day'];
         $input = base64_decode($this->session->getVar('style_dateFormat'));
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'dateFormat')) . MISC::br() .
-            FORM::selectedBoxValue(false, 'style_dateFormat', $example, $input, 2));
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'dateFormat')) . $this->misc->br() .
+            $this->form->selectedBoxValue(false, 'style_dateFormat', $example, $input, 2));
 
         $input = base64_decode($this->session->getVar('style_dateMonthNoDay'));
         $inputString = stripslashes(base64_decode($this->session->getVar('style_dateMonthNoDayString')));
         $example = [$this->messages->text('style', 'dateMonthNoDay1'),
             $this->messages->text('style', 'dateMonthNoDay2')];
-        $pString .= TABLE::td(FORM::selectedBoxValue(
+        $pString .= $this->table->td($this->form->selectedBoxValue(
             $this->messages->text('style', 'dateMonthNoDay'),
             'style_dateMonthNoDay',
             $example,
             $input,
             2
-        ) . MISC::br() .
-            FORM::textInput(false, 'style_dateMonthNoDayString', $inputString, 30, 255) . MISC::br() .
-            MISC::span($this->messages->text('style', 'dateMonthNoDayHint'), 'hint'));
+        ) . $this->misc->br() .
+            $this->form->textInput(false, 'style_dateMonthNoDayString', $inputString, 30, 255) . $this->misc->br() .
+            $this->misc->span($this->messages->text('style', 'dateMonthNoDayHint'), 'hint'));
 
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->trStart();
         $monthString = '';
         for ($i = 1; $i <= 12; $i++) {
             $input = stripslashes(base64_decode($this->session->getVar("style_userMonth_$i")));
             if ($i == 7) {
-                $monthString .= MISC::br() . "$i:&nbsp;&nbsp;" .
-                FORM::textInput(false, "style_userMonth_$i", $input, 15, 255);
+                $monthString .= $this->misc->br() . "$i:&nbsp;&nbsp;" .
+                $this->form->textInput(false, "style_userMonth_$i", $input, 15, 255);
             } else {
                 $monthString .= "$i:&nbsp;&nbsp;" .
-                FORM::textInput(false, "style_userMonth_$i", $input, 15, 255);
+                $this->form->textInput(false, "style_userMonth_$i", $input, 15, 255);
             }
         }
-        $pString .= TABLE::td($this->messages->text('style', 'userMonths') . MISC::br() .
+        $pString .= $this->table->td($this->messages->text('style', 'userMonths') . $this->misc->br() .
             $monthString, false, false, false, 5);
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
 
         // Date range formatting
-        $pString .= MISC::b($this->messages->text('style', 'dateRange')) . MISC::br();
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->misc->b($this->messages->text('style', 'dateRange')) . $this->misc->br();
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
         $input = stripslashes(base64_decode($this->session->getVar('style_dateRangeDelimit1')));
-        $input = stripslashes(base64_decode($this->session->getVar('style_dateRangeDelimit1')));
-        $pString .= TABLE::td(FORM::textInput(
+        $pString .= $this->table->td($this->form->textInput(
             $this->messages->text('style', 'dateRangeDelimit1'),
             'style_dateRangeDelimit1',
             $input,
@@ -1029,59 +1101,59 @@ class ADMINSTYLE
             255
         ));
         $input = base64_decode($this->session->getVar('style_dateRangeDelimit2'));
-        $pString .= TABLE::td(FORM::textInput(
+        $pString .= $this->table->td($this->form->textInput(
             $this->messages->text('style', 'dateRangeDelimit2'),
             'style_dateRangeDelimit2',
             $input,
             6,
             255
         ));
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->trStart();
         $input = base64_decode($this->session->getVar('style_dateRangeSameMonth'));
         $example = [$this->messages->text('style', 'dateRangeSameMonth1'),
             $this->messages->text('style', 'dateRangeSameMonth2')];
-        $pString .= TABLE::td(FORM::selectedBoxValue(
+        $pString .= $this->table->td($this->form->selectedBoxValue(
             $this->messages->text('style', 'dateRangeSameMonth'),
             'style_dateRangeSameMonth',
             $example,
             $input,
             2
         ), false, false, false, 2);
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
 
-        $pString .= TABLE::tableStart('styleTable', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->tableStart('styleTable', 1, false, 5);
+        $pString .= $this->table->trStart();
         $example = ["3'45\"", '3:45', '3,45', '3 hours, 45 minutes', '3 hours and 45 minutes'];
         $input = base64_decode($this->session->getVar('style_runningTimeFormat'));
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'runningTimeFormat')) . MISC::br() .
-            FORM::selectedBoxValue(false, 'style_runningTimeFormat', $example, $input, 5));
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::br() . MISC::hr() . MISC::br();
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'runningTimeFormat')) . $this->misc->br() .
+            $this->form->selectedBoxValue(false, 'style_runningTimeFormat', $example, $input, 5));
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->br() . $this->misc->hr() . $this->misc->br();
 
         // print some basic advice
-        $pString .= MISC::p(
+        $pString .= $this->misc->p(
             $this->messages->text('style', 'templateHelp1') .
-            MISC::br() . $this->messages->text('style', 'templateHelp2') .
-            MISC::br() . $this->messages->text('style', 'templateHelp3') .
-            MISC::br() . $this->messages->text('style', 'templateHelp4') .
-            MISC::br() . $this->messages->text('style', 'templateHelp5'),
+            $this->misc->br() . $this->messages->text('style', 'templateHelp2') .
+            $this->misc->br() . $this->messages->text('style', 'templateHelp3') .
+            $this->misc->br() . $this->messages->text('style', 'templateHelp4') .
+            $this->misc->br() . $this->messages->text('style', 'templateHelp5'),
             'small'
         );
 
         $generic = ['genericBook' => $this->messages->text('resourceType', 'genericBook'),
             'genericArticle' => $this->messages->text('resourceType', 'genericArticle'),
             'genericMisc' => $this->messages->text('resourceType', 'genericMisc')];
-        $availableFieldsCitation = implode(', ', $this->map->citation);
+        $availableFieldsCitation = implode(', ', $this->map->getCitation());
         // Resource types
         foreach ($types as $key) {
             if (($key == 'genericBook') || ($key == 'genericArticle') || ($key == 'genericMisc')) {
-                $required = MISC::span('*', 'required');
+                $required = $this->misc->span('*', 'required');
                 $fallback = false;
                 $citationString = false;
             } else {
@@ -1089,7 +1161,7 @@ class ADMINSTYLE
                 $formElementName = 'style_' . $key . '_generic';
                 $input = $this->session->issetVar($formElementName) ?
                     base64_decode($this->session->getVar($formElementName)) : 'genericMisc';
-                $fallback = FORM::selectedBoxValue(
+                $fallback = $this->form->selectedBoxValue(
                     $this->messages->text('style', 'fallback'),
                     $formElementName,
                     $generic,
@@ -1102,21 +1174,21 @@ class ADMINSTYLE
                 $input = stripslashes(base64_decode($this->session->getVar($citationStringName)));
                 $notAdd = base64_decode($this->session->getVar($citationNotInBibliography)) ? true : false;
                 $checkBox = '&nbsp;&nbsp;' . $this->messages->text('cite', 'notInBibliography') .
-                '&nbsp;' . FORM::checkbox(false, $citationNotInBibliography, $notAdd);
-                $citationString = MISC::p(FORM::textInput(
+                '&nbsp;' . $this->form->checkbox(false, $citationNotInBibliography, $notAdd);
+                $citationString = $this->misc->p($this->form->textInput(
                     $this->messages->text('cite', 'typeReplace'),
                     $citationStringName,
                     $input,
                     60,
                     255
-                ) . $checkBox . MISC::br() .
-                    MISC::i($this->messages->text('style', 'availableFields')) .
-                    MISC::br() . $availableFieldsCitation, 'small');
+                ) . $checkBox . $this->misc->br() .
+                    $this->misc->i($this->messages->text('style', 'availableFields')) .
+                    $this->misc->br() . $availableFieldsCitation, 'small');
             }
             // Footnote template
             $footnoteTemplateName = 'footnote_' . $key . 'Template';
             $input = stripslashes(base64_decode($this->session->getVar($footnoteTemplateName)));
-            $footnoteTemplate = MISC::p(FORM::textareaInput(
+            $footnoteTemplate = $this->misc->p($this->form->textareaInput(
                 $this->messages->text('cite', 'footnoteTemplate'),
                 $footnoteTemplateName,
                 $input,
@@ -1124,20 +1196,20 @@ class ADMINSTYLE
                 3
             ));
             $rewriteCreatorString = $this->rewriteCreators($key, $this->map->$key);
-            $pString .= MISC::br() . MISC::hr() . MISC::br();
-            $pString .= TABLE::tableStart();
-            $pString .= TABLE::trStart();
+            $pString .= $this->misc->br() . $this->misc->hr() . $this->misc->br();
+            $pString .= $this->table->tableStart();
+            $pString .= $this->table->trStart();
             $keyName = 'style_' . $key;
-            $preview = MISC::a(
+            $preview = $this->misc->a(
                 'link linkCiteHidden',
                 'preview',
                 "javascript:openPopUpStylePreview('index.php?action=previewStyle',
 				'100', '750', '$keyName')"
             );
             $input = stripslashes(base64_decode($this->session->getVar($keyName)));
-            $heading = MISC::b($this->messages->text('resourceType', $key)) . MISC::br() .
+            $heading = $this->misc->b($this->messages->text('resourceType', $key)) . $this->misc->br() .
                 $this->messages->text('style', 'bibTemplate') . $required;
-            $pString .= TABLE::td(FORM::textareaInput(
+            $pString .= $this->table->td($this->form->textareaInput(
                 $heading,
                 $keyName,
                 $input,
@@ -1151,28 +1223,31 @@ class ADMINSTYLE
             if (array_search('pages', $this->map->$key) === false) {
                 $availableFields .= ', ' . $this->messages->text('style', 'footnotePageField');
             }
-            $pString .= TABLE::td(MISC::p(MISC::i($this->messages->text('style', 'availableFields')) .
-                MISC::br() . $availableFields . MISC::br() .
-                $this->messages->text('hint', 'caseSensitive'), 'small') . MISC::p($fallback));
-            $pString .= TABLE::trEnd();
-            $pString .= TABLE::tableEnd();
-            $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
+            $pString .= $this->table->td($this->misc->p($this->misc->i($this->messages->text('style', 'availableFields')) .
+                $this->misc->br() . $availableFields . $this->misc->br() .
+                $this->messages->text('hint', 'caseSensitive'), 'small') . $this->misc->p($fallback));
+            $pString .= $this->table->trEnd();
+            $pString .= $this->table->tableEnd();
+            $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
         }
         if (($type == 'add') || ($type == 'copy')) {
-            $pString .= MISC::p(FORM::formSubmit('Add'));
+            $pString .= $this->misc->p($this->form->formSubmit('Add'));
         } else {
-            $pString .= MISC::p(FORM::formSubmit('Edit'));
+            $pString .= $this->misc->p($this->form->formSubmit('Edit'));
         }
-        $pString .= FORM::formEnd();
+        $pString .= $this->form->formEnd();
         return $pString;
     }
-// display creator formatting options for bibliographies and footnotes
+
+    /**
+     * display creator formatting options for bibliographies and footnotes
+     */
     public function creatorFormatting($prefix, $footnote = false)
     {
         // Display general options for creator limits, formats etc.
         // 1st., creator style
-        $pString = TABLE::tableStart($prefix . 'Table', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString = $this->table->tableStart($prefix . 'Table', 1, false, 5);
+        $pString .= $this->table->trStart();
         $exampleName = ['Joe Bloggs', 'Bloggs, Joe', 'Bloggs Joe',
             $this->messages->text('cite', 'lastName')];
         $exampleInitials = ['T. U. ', 'T.U.', 'T U ', 'TU'];
@@ -1182,32 +1257,32 @@ class ADMINSTYLE
         $otherStyle = base64_decode($this->session->getVar($prefix . '_primaryCreatorOtherStyle'));
         $initials = base64_decode($this->session->getVar($prefix . '_primaryCreatorInitials'));
         $firstName = base64_decode($this->session->getVar($prefix . '_primaryCreatorFirstName'));
-        $td = MISC::b($this->messages->text('style', 'primaryCreatorStyle')) . MISC::br() .
-            FORM::selectedBoxValue(
+        $td = $this->misc->b($this->messages->text('style', 'primaryCreatorStyle')) . $this->misc->br() .
+            $this->form->selectedBoxValue(
                 $this->messages->text('style', 'creatorFirstStyle'),
                 $prefix . '_primaryCreatorFirstStyle',
                 $exampleName,
                 $firstStyle,
                 4
             );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorOthers'),
             $prefix . '_primaryCreatorOtherStyle',
             $exampleName,
             $otherStyle,
             4
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorInitials'),
             $prefix . '_primaryCreatorInitials',
             $exampleInitials,
             $initials,
             4
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorFirstName'),
             $prefix . '_primaryCreatorFirstName',
             $example,
@@ -1216,7 +1291,7 @@ class ADMINSTYLE
         );
         $uppercase = base64_decode($this->session->getVar($prefix . '_primaryCreatorUppercase')) ?
             true : false;
-        $td .= MISC::P(FORM::checkbox(
+        $td .= $this->misc->P($this->form->checkbox(
             $this->messages->text('style', 'uppercaseCreator'),
             $prefix . '_primaryCreatorUppercase',
             $uppercase
@@ -1225,18 +1300,18 @@ class ADMINSTYLE
         $exampleRepeat = [$this->messages->text('style', 'repeatCreators1'),
             $this->messages->text('style', 'repeatCreators2'),
             $this->messages->text('style', 'repeatCreators3')];
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'repeatCreators'),
             $prefix . '_primaryCreatorRepeat',
             $exampleRepeat,
             $repeat,
             3
-        ) . MISC::br();
+        ) . $this->misc->br();
         $repeatString = stripslashes(base64_decode(
             $this->session->getVar($prefix . '_primaryCreatorRepeatString')
         ));
-        $td .= FORM::textInput(false, $prefix . '_primaryCreatorRepeatString', $repeatString, 15, 255);
-        $pString .= TABLE::td($td);
+        $td .= $this->form->textInput(false, $prefix . '_primaryCreatorRepeatString', $repeatString, 15, 255);
+        $pString .= $this->table->td($td);
         //		if(!$footnote)
         //		{
         // Other creators (editors, translators etc.)
@@ -1244,32 +1319,32 @@ class ADMINSTYLE
         $otherStyle = base64_decode($this->session->getVar($prefix . '_otherCreatorOtherStyle'));
         $initials = base64_decode($this->session->getVar($prefix . '_otherCreatorInitials'));
         $firstName = base64_decode($this->session->getVar($prefix . '_otherCreatorFirstName'));
-        $td = MISC::b($this->messages->text('style', 'otherCreatorStyle')) . MISC::br() .
-            FORM::selectedBoxValue(
+        $td = $this->misc->b($this->messages->text('style', 'otherCreatorStyle')) . $this->misc->br() .
+            $this->form->selectedBoxValue(
                 $this->messages->text('style', 'creatorFirstStyle'),
                 $prefix . '_otherCreatorFirstStyle',
                 $exampleName,
                 $firstStyle,
                 4
             );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorOthers'),
             $prefix . '_otherCreatorOtherStyle',
             $exampleName,
             $otherStyle,
             4
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorInitials'),
             $prefix . '_otherCreatorInitials',
             $exampleInitials,
             $initials,
             4
         );
-        $td .= MISC::br() . '&nbsp;' . MISC::br();
-        $td .= FORM::selectedBoxValue(
+        $td .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $td .= $this->form->selectedBoxValue(
             $this->messages->text('style', 'creatorFirstName'),
             $prefix . '_otherCreatorFirstName',
             $example,
@@ -1278,21 +1353,21 @@ class ADMINSTYLE
         );
         $uppercase = base64_decode($this->session->getVar($prefix . '_otherCreatorUppercase')) ?
             true : false;
-        $td .= MISC::P(FORM::checkbox(
+        $td .= $this->misc->P($this->form->checkbox(
             $this->messages->text('style', 'uppercaseCreator'),
             $prefix . '_otherCreatorUppercase',
             $uppercase
         ));
-        $pString .= TABLE::td($td);
+        $pString .= $this->table->td($td);
         //		}
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
 
         // 2nd., creator delimiters
-        $pString .= TABLE::tableStart($prefix . 'Table', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->tableStart($prefix . 'Table', 1, false, 5);
+        $pString .= $this->table->trStart();
         $twoCreatorsSep = stripslashes(base64_decode($this->session->getVar(
             $prefix . '_primaryTwoCreatorsSep'
         )));
@@ -1303,17 +1378,17 @@ class ADMINSTYLE
             $prefix . '_primaryCreatorSepNextBetween'
         )));
         $last = stripslashes(base64_decode($this->session->getVar($prefix . '_primaryCreatorSepNextLast')));
-        $pString .= TABLE::td(
-            MISC::b($this->messages->text('style', 'primaryCreatorSep')) .
-            MISC::p($this->messages->text('style', 'ifOnlyTwoCreators') . '&nbsp;' .
-            FORM::textInput(false, $prefix . '_primaryTwoCreatorsSep', $twoCreatorsSep, 7, 255)) .
+        $pString .= $this->table->td(
+            $this->misc->b($this->messages->text('style', 'primaryCreatorSep')) .
+            $this->misc->p($this->messages->text('style', 'ifOnlyTwoCreators') . '&nbsp;' .
+            $this->form->textInput(false, $prefix . '_primaryTwoCreatorsSep', $twoCreatorsSep, 7, 255)) .
             $this->messages->text('style', 'sepCreatorsFirst') . '&nbsp;' .
-            FORM::textInput(false, $prefix . '_primaryCreatorSepFirstBetween', $betweenFirst, 7, 255) .
-            MISC::br() . MISC::p($this->messages->text('style', 'sepCreatorsNext') . MISC::br() .
+            $this->form->textInput(false, $prefix . '_primaryCreatorSepFirstBetween', $betweenFirst, 7, 255) .
+            $this->misc->br() . $this->misc->p($this->messages->text('style', 'sepCreatorsNext') . $this->misc->br() .
             $this->messages->text('style', 'creatorSepBetween') . '&nbsp;' .
-            FORM::textInput(false, $prefix . '_primaryCreatorSepNextBetween', $betweenNext, 7, 255) .
+            $this->form->textInput(false, $prefix . '_primaryCreatorSepNextBetween', $betweenNext, 7, 255) .
             $this->messages->text('style', 'creatorSepLast') . '&nbsp;' .
-            FORM::textInput(false, $prefix . '_primaryCreatorSepNextLast', $last, 7, 255)),
+            $this->form->textInput(false, $prefix . '_primaryCreatorSepNextLast', $last, 7, 255)),
             false,
             false,
             'bottom'
@@ -1326,29 +1401,29 @@ class ADMINSTYLE
             $prefix . '_otherCreatorSepNextBetween'
         )));
         $last = stripslashes(base64_decode($this->session->getVar($prefix . '_otherCreatorSepNextLast')));
-        $pString .= TABLE::td(
-            MISC::b($this->messages->text('style', 'otherCreatorSep')) .
-            MISC::p($this->messages->text('style', 'ifOnlyTwoCreators') . '&nbsp;' .
-            FORM::textInput(false, $prefix . '_otherTwoCreatorsSep', $twoCreatorsSep, 7, 255)) .
+        $pString .= $this->table->td(
+            $this->misc->b($this->messages->text('style', 'otherCreatorSep')) .
+            $this->misc->p($this->messages->text('style', 'ifOnlyTwoCreators') . '&nbsp;' .
+            $this->form->textInput(false, $prefix . '_otherTwoCreatorsSep', $twoCreatorsSep, 7, 255)) .
             $this->messages->text('style', 'sepCreatorsFirst') . '&nbsp;' .
-            FORM::textInput(false, $prefix . '_otherCreatorSepFirstBetween', $betweenFirst, 7, 255) .
-            MISC::p($this->messages->text('style', 'sepCreatorsNext') . MISC::br() .
+            $this->form->textInput(false, $prefix . '_otherCreatorSepFirstBetween', $betweenFirst, 7, 255) .
+            $this->misc->p($this->messages->text('style', 'sepCreatorsNext') . $this->misc->br() .
             $this->messages->text('style', 'creatorSepBetween') . '&nbsp;' .
-            FORM::textInput(false, $prefix . '_otherCreatorSepNextBetween', $betweenNext, 7, 255) .
+            $this->form->textInput(false, $prefix . '_otherCreatorSepNextBetween', $betweenNext, 7, 255) .
             $this->messages->text('style', 'creatorSepLast') . '&nbsp;' .
-            FORM::textInput(false, $prefix . '_otherCreatorSepNextLast', $last, 7, 255)),
+            $this->form->textInput(false, $prefix . '_otherCreatorSepNextLast', $last, 7, 255)),
             false,
             false,
             'bottom'
         );
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
 
         // 3rd., creator list limits
-        $pString .= TABLE::tableStart($prefix . 'Table', 1, false, 5);
-        $pString .= TABLE::trStart();
+        $pString .= $this->table->tableStart($prefix . 'Table', 1, false, 5);
+        $pString .= $this->table->trStart();
         $example = [$this->messages->text('style', 'creatorListFull'),
             $this->messages->text('style', 'creatorListLimit')];
         $list = base64_decode($this->session->getVar($prefix . '_primaryCreatorList'));
@@ -1359,21 +1434,21 @@ class ADMINSTYLE
         )));
         $italic = base64_decode($this->session->getVar($prefix . '_primaryCreatorListAbbreviationItalic')) ?
             true : false;
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'primaryCreatorList')) . MISC::br() .
-            FORM::selectedBoxValue(
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'primaryCreatorList')) . $this->misc->br() .
+            $this->form->selectedBoxValue(
                 false,
                 $prefix . '_primaryCreatorList',
                 $example,
                 $list,
                 2
-            ) . MISC::br() .
+            ) . $this->misc->br() .
             $this->messages->text('style', 'creatorListIf') . ' ' .
-            FORM::textInput(false, $prefix . '_primaryCreatorListMore', $listMore, 3) .
+            $this->form->textInput(false, $prefix . '_primaryCreatorListMore', $listMore, 3) .
             $this->messages->text('style', 'creatorListOrMore') . ' ' .
-            FORM::textInput(false, $prefix . '_primaryCreatorListLimit', $listLimit, 3) . MISC::br() .
+            $this->form->textInput(false, $prefix . '_primaryCreatorListLimit', $listLimit, 3) . $this->misc->br() .
             $this->messages->text('style', 'creatorListAbbreviation') . ' ' .
-            FORM::textInput(false, $prefix . '_primaryCreatorListAbbreviation', $listAbbreviation, 15) . ' ' .
-            FORM::checkbox(false, $prefix . '_primaryCreatorListAbbreviationItalic', $italic) . ' ' .
+            $this->form->textInput(false, $prefix . '_primaryCreatorListAbbreviation', $listAbbreviation, 15) . ' ' .
+            $this->form->checkbox(false, $prefix . '_primaryCreatorListAbbreviationItalic', $italic) . ' ' .
             $this->messages->text('style', 'italics'));
         $list = base64_decode($this->session->getVar($prefix . '_otherCreatorList'));
         $listMore = stripslashes(base64_decode($this->session->getVar($prefix . '_otherCreatorListMore')));
@@ -1383,32 +1458,36 @@ class ADMINSTYLE
         )));
         $italic = base64_decode($this->session->getVar($prefix . '_otherCreatorListAbbreviationItalic')) ?
             true : false;
-        $pString .= TABLE::td(MISC::b($this->messages->text('style', 'otherCreatorList')) . MISC::br() .
-            FORM::selectedBoxValue(
+        $pString .= $this->table->td($this->misc->b($this->messages->text('style', 'otherCreatorList')) . $this->misc->br() .
+            $this->form->selectedBoxValue(
                 false,
                 $prefix . '_otherCreatorList',
                 $example,
                 $list,
                 2
-            ) . MISC::br() .
+            ) . $this->misc->br() .
             $this->messages->text('style', 'creatorListIf') . ' ' .
-            FORM::textInput(false, $prefix . '_otherCreatorListMore', $listMore, 3) .
+            $this->form->textInput(false, $prefix . '_otherCreatorListMore', $listMore, 3) .
             $this->messages->text('style', 'creatorListOrMore') . ' ' .
-            FORM::textInput(false, $prefix . '_otherCreatorListLimit', $listLimit, 3) . MISC::br() .
+            $this->form->textInput(false, $prefix . '_otherCreatorListLimit', $listLimit, 3) . $this->misc->br() .
             $this->messages->text('style', 'creatorListAbbreviation') . ' ' .
-            FORM::textInput(false, $prefix . '_otherCreatorListAbbreviation', $listAbbreviation, 15) . ' ' .
-            FORM::checkbox(false, $prefix . '_otherCreatorListAbbreviationItalic', $italic) . ' ' .
+            $this->form->textInput(false, $prefix . '_otherCreatorListAbbreviation', $listAbbreviation, 15) . ' ' .
+            $this->form->checkbox(false, $prefix . '_otherCreatorListAbbreviationItalic', $italic) . ' ' .
             $this->messages->text('style', 'italics'));
-        $pString .= TABLE::trEnd();
-        $pString .= TABLE::tableEnd();
-        $pString .= TABLE::tdEnd() . TABLE::trEnd() . TABLE::trStart() . TABLE::tdStart();
-        $pString .= MISC::br() . '&nbsp;' . MISC::br();
+        $pString .= $this->table->trEnd();
+        $pString .= $this->table->tableEnd();
+        $pString .= $this->table->tdEnd() . $this->table->trEnd() . $this->table->trStart() . $this->table->tdStart();
+        $pString .= $this->misc->br() . '&nbsp;' . $this->misc->br();
         return $pString;
     }
-// Re-write creator(s) portion of templates to handle styles such as DIN 1505.
-    public function rewriteCreators($key, $availableFields)
+
+    /**
+     * Re-write creator(s) portion of templates to handle styles such as DIN 1505.
+     * @return bool|string
+     */
+    public function rewriteCreators(string $key, array $availableFields)
     {
-        $heading = MISC::p(MISC::b($this->messages->text('style', 'rewriteCreator1')), 'small');
+        $heading = $this->misc->p($this->misc->b($this->messages->text('style', 'rewriteCreator1')), 'small');
         foreach ($this->creators as $creatorField) {
             if (!array_key_exists($creatorField, $availableFields)) {
                 continue;
@@ -1421,14 +1500,14 @@ class ADMINSTYLE
         $pString = false;
         foreach ($fields as $creatorField => $value) {
             $basicField = 'style_' . $key . '_' . $creatorField;
-            $field = TABLE::td(MISC::p(MISC::i($value), 'small'), false, false, 'middle');
+            $field = $this->table->td($this->misc->p($this->misc->i($value), 'small'), false, false, 'middle');
             $formString = $basicField . '_firstString';
             $string = stripslashes(base64_decode($this->session->getVar($formString)));
             $formCheckbox = $basicField . '_firstString_before';
             $checkbox = base64_decode($this->session->getVar($formCheckbox)) ? true : false;
-            $firstCheckbox = MISC::br() . $this->messages->text('style', 'rewriteCreator4') .
-                '&nbsp;' . FORM::checkbox(false, $formCheckbox, $checkbox);
-            $first = TABLE::td(MISC::p(FORM::textInput(
+            $firstCheckbox = $this->misc->br() . $this->messages->text('style', 'rewriteCreator4') .
+                '&nbsp;' . $this->form->checkbox(false, $formCheckbox, $checkbox);
+            $first = $this->table->td($this->misc->p($this->form->textInput(
                 $this->messages->text('style', 'rewriteCreator2'),
                 $formString,
                 $string,
@@ -1439,39 +1518,44 @@ class ADMINSTYLE
             $string = stripslashes(base64_decode($this->session->getVar($formString)));
             $formCheckbox = $basicField . '_remainderString_before';
             $checkbox = base64_decode($this->session->getVar($formCheckbox)) ? true : false;
-            $remainderCheckbox = MISC::br() . $this->messages->text('style', 'rewriteCreator4') .
-                '&nbsp;' . FORM::checkbox(false, $formCheckbox, $checkbox);
+            $remainderCheckbox = $this->misc->br() . $this->messages->text('style', 'rewriteCreator4') .
+                '&nbsp;' . $this->form->checkbox(false, $formCheckbox, $checkbox);
             $formCheckbox = $basicField . '_remainderString_each';
             $checkbox = base64_decode($this->session->getVar($formCheckbox)) ? true : false;
             $remainderCheckbox .= ',&nbsp;&nbsp;&nbsp;' . $this->messages->text('style', 'rewriteCreator5') .
-                '&nbsp;' . FORM::checkbox(false, $formCheckbox, $checkbox);
-            $remainder = TABLE::td(MISC::p(FORM::textInput(
+                '&nbsp;' . $this->form->checkbox(false, $formCheckbox, $checkbox);
+            $remainder = $this->table->td($this->misc->p($this->form->textInput(
                 $this->messages->text('style', 'rewriteCreator3'),
                 $formString,
                 $string,
                 20,
                 255
             ) . $remainderCheckbox, 'small'), false, false, 'bottom');
-            $pString .= TABLE::trStart() . $field . $first . $remainder . TABLE::trEnd();
+            $pString .= $this->table->trStart() . $field . $first . $remainder . $this->table->trEnd();
         }
-        return $heading . TABLE::tableStart('styleTable', 1, false, 5) . $pString . TABLE::tableEnd();
+        return $heading . $this->table->tableStart('styleTable', 1, false, 5) . $pString . $this->table->tableEnd();
     }
-// parse input into array
-    public function parseStringToArray($type, $subject, $map = false)
+
+    /**
+     * parse input into array
+     */
+    public function parseStringToArray(string $type, string $subjectToParse, ?STYLEMAP $map = null): array
     {
-        if (!$subject) {
+        if (!$subjectToParse) {
             return [];
         }
-        if ($map) {
-            $this->map = $map;
+        if (!$map) {
+            return [];
         }
+        $final = [];
+        $this->map = $map;
         $search = implode('|', $this->map->$type);
         // footnotes can have pages field
         if ($this->footnotePages && !array_key_exists('pages', $this->map->$type)) {
             $search .= '|' . 'pages';
         }
-        $subjectArray = split("\|", $subject);
-        $sizeSubject = count($subjectArray);
+        $subjectArray = mb_split("\|", $subjectToParse);
+        //$sizeSubject = count($subjectArray);
         // Loop each field string
         $index = 0;
         $subjectIndex = 0;
@@ -1486,6 +1570,8 @@ class ADMINSTYLE
                     $possiblePreliminaryText = $subject;
                     continue;
                 }
+                // 2022-12-23#SP $independent is not defined here, commented out
+                /*
                 if (isset($independent) && ($subjectIndex == $sizeSubject) &&
                     array_key_exists('independent_' . $index, $independent)) {
                     $ultimate = $subject;
@@ -1496,6 +1582,8 @@ class ADMINSTYLE
                         $independent['independent_' . $index] = $subject;
                     }
                 }
+                */
+                $independent['independent_' . $index] = $subject;
                 continue;
             }
             // At this stage, [2] is the fieldName, [1] is what comes before and [3] is what comes after.
@@ -1580,7 +1668,7 @@ class ADMINSTYLE
                 $final['preliminaryText'] = $possiblePreliminaryText;
             }
         }
-        if (!isset($final)) { // presumably no field names...
+        if ($final) { // presumably no field names...
             $this->badInput($this->errors->text('inputError', 'invalid'), $this->errorDisplay);
         }
         if (isset($independent)) {
@@ -1614,34 +1702,45 @@ class ADMINSTYLE
                     $final['ultimate'] = array_shift($independent);
                 }
             }
+            // $ultimate is not never defined
+            /*
             if (isset($ultimate) && !array_key_exists('ultimate', $final)) {
                 $final['ultimate'] = $ultimate;
             }
+            */
+            // $preliminaryText is never defined
+            /*
             if (isset($preliminaryText) && !array_key_exists('preliminaryText', $final)) {
                 $final['preliminaryText'] = $preliminaryText;
             }
+            */
             if (!empty($independent)) {
                 $final['independent'] = $independent;
             }
         }
         return $final;
     }
-// write the styles to file.
-// If !$fileName, this is called from add() and we create folder/filename immediately before writing to file.
-// If $fileName, this comes from edit()
-    public function writeFile($fileName = false)
+
+    /**
+     * write the styles to file.
+     * If !$fileName, this is called from add() and we create folder/filename immediately before writing to file.
+     * If $fileName, this comes from edit()
+     *
+     * @todo $fileName is optional parameter, should be required parameter
+     */
+    public function writeFile(string $fileName = '')
     {
         if ($fileName) {
             $this->errorDisplay = 'editInit';
         } else {
             $this->errorDisplay = 'addInit';
         }
-        include_once('TABLE.php');
-        include_once('../STYLEMAP.php');
+        include_once(__DIR__ . '/TABLE.php');
+        include_once(__DIR__ . '/../STYLEMAP.php');
         $this->map = new STYLEMAP();
-        include_once('../UTF8.php');
+        include_once(__DIR__ . '/../UTF8.php');
         $this->utf8 = new UTF8();
-        $types = array_keys($this->map->types);
+        $types = array_keys($this->map->getTypes());
         // Start XML
         $fileString = '<?xml version="1.0" encoding="utf-8"?>';
         $fileString .= '<style xml:lang="en">';
@@ -1652,7 +1751,7 @@ class ADMINSTYLE
              . '</description>';
         // Temporary place holder
         $fileString .= '<language>English</language>';
-        $fileString .= "<osbibVersion>$this->osbibVersion</osbibVersion>";
+        $fileString .= '<osbibVersion>' . self::OSBIB_VERSION . '</osbibVersion>';
         $fileString .= '</info>';
         // Start citation definition
         $fileString .= '<citation>';
@@ -1678,7 +1777,7 @@ class ADMINSTYLE
         ];
         foreach ($inputArray as $input) {
             if (isset($this->vars[$input])) {
-                $split = split('_', $input, 2);
+                $split = mb_split('_', $input, 2);
                 $elementName = $split[1];
                 $fileString .= "<$elementName>" .
                     htmlspecialchars(stripslashes($this->vars[$input])) . "</$elementName>";
@@ -1702,7 +1801,7 @@ class ADMINSTYLE
         // Footnote creator formatting
         $fileString .= '<footnote>';
         $inputArray = [
-// foot note creator formatting
+        // foot note creator formatting
             'footnote_primaryCreatorFirstStyle', 'footnote_primaryCreatorOtherStyle',
             'footnote_primaryCreatorList', 'footnote_primaryCreatorFirstName',
             'footnote_primaryCreatorListAbbreviationItalic', 'footnote_primaryCreatorInitials',
@@ -1721,7 +1820,7 @@ class ADMINSTYLE
         ];
         foreach ($inputArray as $input) {
             if (isset($this->vars[$input])) {
-                $split = split('_', $input, 2);
+                $split = mb_split('_', $input, 2);
                 $elementName = $split[1];
                 $fileString .= "<$elementName>" .
                     htmlspecialchars(stripslashes($this->vars[$input])) . "</$elementName>";
@@ -1736,7 +1835,7 @@ class ADMINSTYLE
             // remove newlines etc.
             $input = preg_replace("/\r|\n|\015|\012/", '', $input);
             $fileString .= "<resource name=\"$key\">";
-            $fileString .= $this->arrayToXML($this->parseStringToArray($key, $input), $name, true);
+            $fileString .= $this->arrayToXML($this->parseStringToArray($key, $input), $name);
             $fileString .= '</resource>';
         }
         $fileString .= '</footnote>';
@@ -1746,7 +1845,7 @@ class ADMINSTYLE
         // Common section defining how authors, titles etc. are formatted
         $fileString .= '<common>';
         $inputArray = [
-// style
+        // style
             'style_titleCapitalization', 'style_monthFormat', 'style_editionFormat', 'style_dateFormat',
 
             'style_primaryCreatorFirstStyle', 'style_primaryCreatorOtherStyle', 'style_primaryCreatorInitials',
@@ -1773,7 +1872,7 @@ class ADMINSTYLE
         ];
         foreach ($inputArray as $input) {
             if (isset($this->vars[$input])) {
-                $split = split('_', $input, 2);
+                $split = mb_split('_', $input, 2);
                 $elementName = $split[1];
                 $fileString .= "<$elementName>" .
                     htmlspecialchars(stripslashes($this->vars[$input])) . "</$elementName>";
@@ -1822,10 +1921,13 @@ class ADMINSTYLE
         $this->session->clearArray('cite');
         $this->session->clearArray('style');
     }
-// create attribute strings for XML <resource> element for creators
-    public function creatorXMLAttributes($type)
+
+    /**
+     * create attribute strings for XML <resource> element for creators
+     */
+    public function creatorXMLAttributes(string $type): string
     {
-        $attributes = false;
+        $attributes = '';
         foreach ($this->creators as $creatorField) {
             $basic = $type . '_' . $creatorField;
             $field = $basic . '_firstString';
@@ -1856,8 +1958,13 @@ class ADMINSTYLE
         }
         return $attributes;
     }
-// Parse array to XML
-    public function arrayToXML($array, $type)
+
+    /**
+     * Parse array to XML
+     *
+     * @todo $type not used
+     */
+    public function arrayToXML(array $array, string $type): string
     {
         $fileString = '';
         foreach ($array as $key => $value) {
@@ -1871,8 +1978,12 @@ class ADMINSTYLE
         }
         return $fileString;
     }
-// validate input
-    public function validateInput($type)
+
+    /**
+     * validate input
+     * @return string|bool
+     */
+    public function validateInput(string $type)
     {
         $error = false;
         if (($type == 'add') || ($type == 'edit')) {
@@ -1884,24 +1995,22 @@ class ADMINSTYLE
                 'style_otherCreatorList', 'style_monthFormat', 'style_editionFormat',
                 'style_runningTimeFormat', 'style_editorSwitch', 'style_primaryCreatorRepeat',
                 'style_dateRangeSameMonth', 'style_dateMonthNoDay',
-        'cite_creatorStyle', 'cite_creatorOtherStyle', 'cite_creatorInitials', 'cite_creatorFirstName',
-        'cite_twoCreatorsSep', 'cite_creatorSepFirstBetween', 'cite_creatorListSubsequentAbbreviation',
-        'cite_creatorSepNextBetween', 'cite_creatorSepNextLast',
-        'cite_creatorList', 'cite_creatorListMore', 'cite_creatorListLimit', 'cite_creatorListAbbreviation',
-        'cite_creatorListSubsequent', 'cite_creatorListSubsequentMore', 'cite_creatorListSubsequentLimit',
-        'cite_template', 'cite_templateEndnoteInText', 'cite_templateEndnote',
-        'cite_consecutiveCitationSep', 'cite_yearFormat', 'cite_pageFormat',
-        'cite_titleCapitalization', 'cite_citationStyle', 'cite_formatEndnoteInText', 'cite_ambiguous',
-
-            'footnote_primaryCreatorFirstStyle',
-            'footnote_primaryCreatorOtherStyle', 'footnote_primaryCreatorInitials',
-            'footnote_primaryCreatorFirstName',
-            'footnote_primaryCreatorList',  'footnote_primaryCreatorRepeat',
-// Probably not required but code left here in case (see creatorsFormatting())
-            'footnote_otherCreatorFirstStyle', 'footnote_otherCreatorFirstName',
-            'footnote_otherCreatorOtherStyle', 'footnote_otherCreatorInitials', 'footnote_otherCreatorList',
-
-        ];
+                'cite_creatorStyle', 'cite_creatorOtherStyle', 'cite_creatorInitials', 'cite_creatorFirstName',
+                'cite_twoCreatorsSep', 'cite_creatorSepFirstBetween', 'cite_creatorListSubsequentAbbreviation',
+                'cite_creatorSepNextBetween', 'cite_creatorSepNextLast',
+                'cite_creatorList', 'cite_creatorListMore', 'cite_creatorListLimit', 'cite_creatorListAbbreviation',
+                'cite_creatorListSubsequent', 'cite_creatorListSubsequentMore', 'cite_creatorListSubsequentLimit',
+                'cite_template', 'cite_templateEndnoteInText', 'cite_templateEndnote',
+                'cite_consecutiveCitationSep', 'cite_yearFormat', 'cite_pageFormat',
+                'cite_titleCapitalization', 'cite_citationStyle', 'cite_formatEndnoteInText', 'cite_ambiguous',
+                'footnote_primaryCreatorFirstStyle',
+                'footnote_primaryCreatorOtherStyle', 'footnote_primaryCreatorInitials',
+                'footnote_primaryCreatorFirstName',
+                'footnote_primaryCreatorList',  'footnote_primaryCreatorRepeat',
+                // Probably not required but code left here in case (see creatorsFormatting())
+                'footnote_otherCreatorFirstStyle', 'footnote_otherCreatorFirstName',
+                'footnote_otherCreatorOtherStyle', 'footnote_otherCreatorInitials', 'footnote_otherCreatorList',
+            ];
             $this->writeSession($array);
             if (!trim($this->vars['styleShortName'])) {
                 $error = $this->errors->text('inputError', 'missing');
@@ -1927,7 +2036,7 @@ class ADMINSTYLE
             if ($this->vars['cite_citationStyle'] == 1) { // endnotes
                 // Must also have a bibliography template for the resource if a footnote template is defined
                 if ($this->vars['cite_endnoteStyle'] == 2) { // footnotes
-                    $types = array_keys($this->map->types);
+                    $types = array_keys($this->map->getTypes());
                     foreach ($types as $key) {
                         $type = 'footnote_' . $key . 'Template';
                         $name = 'footnote_' . $key;
@@ -2040,13 +2149,13 @@ class ADMINSTYLE
         // FALSE means validated input
         return false;
     }
-// Write session
-    public function writeSession($array)
+
+    public function writeSession(array $array): void
     {
-        include_once('TABLE.php');
-        include_once('../STYLEMAP.php');
+        include_once(__DIR__ . '/TABLE.php');
+        include_once(__DIR__ . '/../STYLEMAP.php');
         $this->map = new STYLEMAP();
-        $types = array_keys($this->map->types);
+        $types = array_keys($this->map->getTypes());
         if (trim($this->vars['styleLongName'])) {
             $this->session->setVar(
                 'style_longName',
@@ -2202,12 +2311,10 @@ class ADMINSTYLE
             }
         }
     }
-// bad Input function
-    public function badInput($error, $method)
+
+    public function badInput(string $error, string $method): void
     {
-        include_once('CLOSE.php');
+        include_once(__DIR__ . '/CLOSE.php');
         new CLOSE($this->$method($error));
     }
 }
-?>
-

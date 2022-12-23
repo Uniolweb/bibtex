@@ -21,13 +21,13 @@ class LOADSTYLE
     * be within its own folder within $stylesDir.  This folder name should match the first part of the XML file name e.g.
     * apa/APA.xml or chicago/CHICAGO.xml
     *
-    * @author	Mark Grimshaw
-    * @version	1
+    * @author Mark Grimshaw
+    * @version 1
     *
-    * @param	$stylesDir	Path to styles directory
-    * @return	Sorted assoc. array - keys = filename (less '.xml'), values = Style description.
+    * @param string $stylesDir to styles directory
+    * @return array Sorted assoc. array - keys = filename (less '.xml'), values = Style description.
     */
-    public function loadDir($stylesDir)
+    public function loadDir(string $stylesDir): array
     {
         $handle = opendir($stylesDir);
         while (false !== ($dir = readdir($handle))) {

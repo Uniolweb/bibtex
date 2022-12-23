@@ -14,15 +14,16 @@ http://bibliophile.sourceforge.net
 */
 // For a quick command-line test (php -f PARSECREATORS.php) after installation, uncomment these lines:
 
-/***********************
+/**
     $authors = "Mark N. Grimshaw and Bush III, G.W. & M. C. Hammer Jr. and von Frankenstein, Ferdinand Cecil, P.H. & Charles Louis Xavier Joseph de la Vallee Poussin";
     $creator = new PARSECREATORS();
     $creatorArray = $creator->parse($authors);
     print_r($creatorArray);
-***********************/
-
+*/
 class PARSECREATORS
 {
+    protected array $prefix = [];
+
     /** Create writer arrays from bibtex input.
      * 'author field can be (delimiters between authors are 'and' or '&'):
      * 1. <first-tokens> <von-tokens> <last-tokens>
@@ -83,12 +84,12 @@ class PARSECREATORS
     /**
      * grab firstname and initials which may be of form "A.B.C." or "A. B. C. " or " A B C " etc.
      */
-    public function grabFirstnameInitials($remainder)
+    public function grabFirstnameInitials(string $remainder): array
     {
         $firstname = $initials = '';
         $array = mb_split(' ', $remainder);
         foreach ($array as $value) {
-            $firstChar = substr($value, 0, 1);
+            $firstChar = mb_substr($value, 0, 1);
             if ((ord($firstChar) >= 97) && (ord($firstChar) <= 122)) {
                 $this->prefix[] = $value;
             } elseif (preg_match('/[a-zA-Z]{2,}/', trim($value))) {
@@ -107,14 +108,17 @@ class PARSECREATORS
         }
         return [$firstname, $initials];
     }
-    // surname may have title such as 'den', 'von', 'de la' etc. - characterised by first character lowercased.  Any
-    // uppercased part means lowercased parts following are part of the surname (e.g. Van den Bussche)
-    public function grabSurname($input)
+
+    /**
+     * surname may have title such as 'den', 'von', 'de la' etc. - characterised by first character lowercased.  Any
+     * uppercased part means lowercased parts following are part of the surname (e.g. Van den Bussche)
+     */
+    public function grabSurname(string $input): array
     {
         $surnameArray = mb_split(' ', $input);
         $noPrefix = $surname = false;
         foreach ($surnameArray as $value) {
-            $firstChar = substr($value, 0, 1);
+            $firstChar = mb_substr($value, 0, 1);
             if (!$noPrefix && (ord($firstChar) >= 97) && (ord($firstChar) <= 122)) {
                 $prefix[] = $value;
             } else {

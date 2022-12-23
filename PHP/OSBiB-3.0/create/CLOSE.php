@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /********************************
 OSBib:
 A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
@@ -15,16 +17,22 @@ Adapted from WIKINDX: http://wikindx.sourceforge.net
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
-/*****
+
+/**
 * CLOSE class
 *
 * Close tidily and print HTML.
 *
 *	$Header: /cvsroot/bibliophile/OSBib/create/CLOSE.php,v 1.4 2005/06/29 20:22:05 sirfragalot Exp $
-*
-*****/
+*/
 class CLOSE
 {
+    protected ?MESSAGES $messages = null;
+
+    /**
+     * @param string|bool $pString
+     * @param string|bool $helpLink
+     */
     public function __construct($pString = false, $helpLink = true)
     {
         include_once('MESSAGES.php');
@@ -35,10 +43,11 @@ class CLOSE
         ob_end_flush();
         die;
     }
-/**
-* Print HTML header information
-*/
-    public function header()
+
+    /**
+    * Print HTML header information
+    */
+    public function header(): string
     {
         return <<< END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -55,10 +64,11 @@ class CLOSE
 
 END;
     }
-/**
-* Open HTML body and print title table
-*/
-    public function openBody($helpLinkDisplay)
+
+    /**
+    * Open HTML body and print title table
+    */
+    public function openBody(bool $helpLinkDisplay): string
     {
         $helpLink = $this->messages->text('heading', 'helpStyles');
         $pString = <<< END1
@@ -100,10 +110,11 @@ END3;
 
         return $pString;
     }
-/**
-* Close HTML body and print result
-*/
-    public function closeBody($pString)
+
+    /**
+    * Close HTML body and print result
+    */
+    public function closeBody(string $pString): string
     {
         return <<< END
 <table class="mainTable" border="0" cellspacing="0" cellpadding="0" align="center">

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /********************************
 OSBib:
 A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
@@ -15,43 +17,73 @@ Adapted from WIKINDX: http://wikindx.sourceforge.net
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
+
 /**
-*	HTML FORM elements
-*
-*	@author Mark Grimshaw
-*
-*	$Header: /cvsroot/bibliophile/OSBib/create/FORM.php,v 1.1 2005/06/20 22:26:51 sirfragalot Exp $
+ * HTML FORM elements
+ *
+ * @author Mark Grimshaw
+ *
+ * $Header: /cvsroot/bibliophile/OSBib/create/FORM.php,v 1.1 2005/06/20 22:26:51 sirfragalot Exp $
 */
 class FORM
 {
+    protected string $phpSelfScript = '';
+
+    /**
+     * @param string $phpSelfScript Can be used to override PHP_SELF script,
+     *   instead of using $_SERVER['PHP_SELF']
+     */
+    public function __construct(string $phpSelfScript = '')
+    {
+        $this->phpSelfScript = $phpSelfScript;
+    }
+
+    /**
+     * PHP_SELF is a variable that returns the current script being executed.
+     * It also uses htmlentities to guard against PHP_SELF exploits.
+     */
+    public function getPhpSelf(): string
+    {
+        return htmlentities($this->phpSelfScript ?: $_SERVER['PHP_SELF']);
+    }
+
     /**
      * print form header with hidden action field
      */
-    public function formHeader($action)
+    public function formHeader(string $action): string
     {
-        global $PHP_SELF;
+        $phpSelf = $this->getPhpSelf();
         $pString = <<< END
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$phpSelf">
 <input type="hidden" name="action" value="$action" />
 END;
         return $pString . "\n";
     }
-// end a form
-    public function formEnd()
+
+    /**
+     * end a form
+     */
+    public function formEnd(): string
     {
         return "</form>\n";
     }
-// print form header with hidden action field for multi-part upload forms
-    public function formMultiHeader($action)
+
+    /**
+     * print form header with hidden action field for multi-part upload forms
+     */
+    public function formMultiHeader(string $action): string
     {
-        global $PHP_SELF;
+        $phpSelf = $this->getPhpSelf();
         $pString = <<< END
-<form enctype="multipart/form-data" method="post" action="$PHP_SELF">
+<form enctype="multipart/form-data" method="post" action="$phpSelf">
 <input type="hidden" name="action" value="$action" />
 END;
         return $pString . "\n";
     }
-// print form footer with submit field
+
+    /**
+     * print form footer with submit field
+     */
     public function formSubmit($value = false)
     {
         include_once('MESSAGES.php');
@@ -66,7 +98,10 @@ END;
 END;
         return $pString . "\n";
     }
-// print form reset button
+
+    /**
+     * print form reset button
+     */
     public function formReset()
     {
         include_once('MESSAGES.php');

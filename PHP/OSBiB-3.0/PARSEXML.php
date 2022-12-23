@@ -19,10 +19,16 @@ http://bibliophile.sourceforge.net
 
 class PARSEXML
 {
+    protected array $nodeStack = [];
+    /** @var array|bool */
+    protected $entries = [];
+
+    protected ?XMLParser $parser = null;
+
     /**
      * Grab a complete XML entry
      */
-    public function getEntry($entries)
+    public function getEntry(array $entries): void
     {
         // entries now elements in $entries array
         foreach ($entries as $entry) {
@@ -45,6 +51,7 @@ class PARSEXML
     {
         $this->entries = [];
         $info = [];
+        $types = [];
 
         while (!feof($fh)) {
             $line = fgets($fh);
@@ -93,10 +100,9 @@ class PARSEXML
         return [$info, $citation, $footnote, $common, $types];
     }
 
-    public function parse($xmlString='')
+    public function parse(string $xmlString='')
     {
         // set up a new XML parser to do all the work for us
-        ////		$this->parser = xml_parser_create();
         $this->parser = xml_parser_create('UTF-8');
         xml_set_object($this->parser, $this);
         xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, false);
@@ -111,8 +117,10 @@ class PARSEXML
         return $rnode['_ELEMENTS'][0];
     }
 
-// create a node
-    public function startElement($parser, $name, $attrs)
+    /**
+     * create a node
+     */
+    public function startElement($parser, string $name, $attrs): void
     {
         $node = [];
         $node['_NAME'] = $name;
@@ -125,7 +133,7 @@ class PARSEXML
         array_push($this->nodeStack, $node);
     }
 
-    public function endElement($parser, $name)
+    public function endElement($parser, $name): void
     {
         // pop this element off the node stack.....
         $node = array_pop($this->nodeStack);
@@ -142,8 +150,10 @@ class PARSEXML
         array_push($this->nodeStack[$lastnode - 1]['_ELEMENTS'], $node);
     }
 
-// Collect the data onto the end of the current chars.
-    public function characterData($parser, $data)
+    /**
+     * Collect the data onto the end of the current chars.
+     */
+    public function characterData($parser, string $data): void
     {
         // add this data to the last node in the stack...
         $lastnode = count($this->nodeStack);

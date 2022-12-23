@@ -16,27 +16,35 @@ http://bibliophile.sourceforge.net
 
 class PARSESTYLE
 {
+    protected ?STYLEMAP $styleMap = null;
+
     /**
      * parse input into array
+     * @todo function very long and complex, unclear what it does, split up and write tests and comments!
      */
-    public function parseStringToArray($type, $subject, $map = false, $date = false)
+    public function parseStringToArray(string $type, string $subjectString, ?STYLEMAP $styleMap = null, bool $date = false): array
     {
-        if (!$subject) {
+        $ultimate = '';
+        $lastSubject = '';
+        $independent = [];
+
+        if (!$subjectString) {
             return [];
         }
-        if ($map) {
-            $this->map = $map;
+        if ($styleMap) {
+            $this->styleMap = $styleMap;
         }
-        $search = implode('|', $this->map->$type);
+        $search = implode('|', $this->styleMap->$type);
         if ($date) {
             $search .= '|' . 'date';
         }
-        $subjectArray = split("\|", $subject);
+        $subjectArray = mb_split("\|", $subjectString);
         $sizeSubject = count($subjectArray);
         // Loop each field string
         $index = 0;
         $subjectIndex = 0;
         foreach ($subjectArray as $subject) {
+            $lastSubject = $subject;
             ++$subjectIndex;
             $dependentPre = $dependentPost = $dependentPreAlternative =
                 $dependentPostAlternative = $singular = $plural = false;
@@ -47,11 +55,11 @@ class PARSESTYLE
                     $possiblePreliminaryText = $subject;
                     continue;
                 }
-                if (isset($independent) && ($subjectIndex == $sizeSubject) &&
+                if ($independent && ($subjectIndex == $sizeSubject) &&
                     array_key_exists('independent_' . $index, $independent)) {
                     $ultimate = $subject;
                 } else {
-                    if (isset($independent) && (count($independent) % 2)) {
+                    if ($independent && (count($independent) % 2)) {
                         $independent['independent_' . ($index - 1)] = $subject;
                     } else {
                         $independent['independent_' . $index] = $subject;
@@ -63,7 +71,7 @@ class PARSESTYLE
             $pre = $array[1];
             $fieldName = $array[2];
             if ($date && ($fieldName == 'date')) {
-                $fieldName = $this->map->{$type}['date'];
+                $fieldName = $this->styleMap->{$type}['date'];
             }
             $post = $array[3];
             // Anything in $pre enclosed in '%' characters is only to be printed if the resource has something in the
@@ -134,21 +142,19 @@ class PARSESTYLE
             $final[$fieldName]['pre'] = str_replace('`', '', $pre);
             $final[$fieldName]['post'] = str_replace('`', '', $post);
             $index++;
-            //			$final[$fieldName]['pre'] = $pre;
-            //			$final[$fieldName]['post'] = $post;
         }
         if (isset($possiblePreliminaryText)) {
-            if (isset($independent)) {
+            if ($independent) {
                 $independent = ['independent_0' => $possiblePreliminaryText] + $independent;
             } else {
                 $final['preliminaryText'] = $possiblePreliminaryText;
             }
         }
         if (!isset($final)) { // presumably no field names... so assume $subject is standalone text and return
-            $final['preliminaryText'] = $subject;
+            $final['preliminaryText'] = $lastSubject ?: $subjectString;
             return $final;
         }
-        if (isset($independent)) {
+        if ($independent) {
             $size = count($independent);
             // If $size == 3 and exists 'independent_0', this is preliminaryText
             // If $size == 3 and exists 'independent_' . $index, this is ultimate
@@ -179,12 +185,15 @@ class PARSESTYLE
                     $final['ultimate'] = array_shift($independent);
                 }
             }
-            if (isset($ultimate) && !array_key_exists('ultimate', $final)) {
+            if (($ultimate ?? false) && !array_key_exists('ultimate', $final)) {
                 $final['ultimate'] = $ultimate;
             }
+            // todo $preliminaryText is never initialized!
+            /*
             if (isset($preliminaryText) && !array_key_exists('preliminaryText', $final)) {
                 $final['preliminaryText'] = $preliminaryText;
             }
+            */
             if (!empty($independent)) {
                 $final['independent'] = $independent;
             }
@@ -192,6 +201,3 @@ class PARSESTYLE
         return $final;
     }
 }
-
-?>
-

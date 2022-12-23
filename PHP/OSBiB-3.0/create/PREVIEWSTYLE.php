@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /********************************
 OSBib:
 A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
@@ -15,26 +17,43 @@ Adapted from WIKINDX: http://wikindx.sourceforge.net
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
-/*****
-*	TEMPLATE PREVIEW class.
+
+/**
+* TEMPLATE PREVIEW class.
 *
-*	Preview bibliographic style templates.
+* Preview bibliographic style templates.
 *
-*	$Header: /cvsroot/bibliophile/OSBib/create/PREVIEWSTYLE.php,v 1.4 2005/11/14 06:38:15 sirfragalot Exp $
-*****/
+* $Header: /cvsroot/bibliophile/OSBib/create/PREVIEWSTYLE.php,v 1.4 2005/11/14 06:38:15 sirfragalot Exp $
+*/
 class PREVIEWSTYLE
 {
+    protected bool $footnotePages = false;
+    protected bool $pages = false;
+    protected array $vars = [];
+    protected array $row = [];
+    protected array $creator1 = [];
+    protected array $creator2 = [];
+    protected array $creator3 = [];
+    protected array $creator4 = [];
+    protected array $creator5 = [];
+    protected ?MESSAGES $messages = null;
+    protected ?ERRORS $errors = null;
+    protected ?BIBFORMAT $bibformat = null;
+    protected ?STYLEMAP $map = null;
+    protected ?MISC $misc = null;
+    protected ?ADMINSTYLE $adminStyle = null;
+
     public function __construct($vars)
     {
         $this->vars = $vars;
         include_once(__DIR__ . '/../format/BIBFORMAT.php');
         include_once(__DIR__ . '/MISC.php');
+        $this->misc = new MISC();
         include_once(__DIR__ . '/MESSAGES.php');
         $this->messages = new MESSAGES();
         include_once(__DIR__ . '/ERRORS.php');
         $this->errors = new ERRORS();
-        $this->bibformat = new BIBFORMAT(false, false, true);
-        $this->bibformat->wikindx = false;
+        $this->bibformat = new BIBFORMAT('', false, true, false);
         $this->footnotePages = false;
     }
 
@@ -46,9 +65,10 @@ class PREVIEWSTYLE
     public function display()
     {
         include_once(__DIR__ . '/ADMINSTYLE.php');
+        $this->adminStyle = new ADMINSTYLE($this->vars);
         include_once(__DIR__ . '../STYLEMAP.php');
         $map = new STYLEMAP();
-        $templateNameArray = split('_', stripslashes($this->vars['templateName']), 2);
+        $templateNameArray = mb_split('_', stripslashes($this->vars['templateName']), 2);
         $type = $templateNameArray[1];
         $templateString = preg_replace(
             "/%u(\d+)/",
@@ -58,26 +78,46 @@ class PREVIEWSTYLE
         if (!$templateString) {
             return $this->errors->text('inputError', 'missing');
         }
-        $templateArray = ADMINSTYLE::parseStringToArray($type, $templateString, $map, true);
+        $templateArray = $this->adminStyle->parseStringToArray($type, $templateString, $map);
         if (!$templateArray) {
             return $this->errors->text('inputError', 'invalid');
         }
-        $style= unserialize(stripslashes(urldecode($this->vars['style'])));
+
+        /**
+         * @todo get rid of unserialize
+         * "Warning: Do not pass untrusted user input to unserialize() regardless of the options value of
+         * allowed_classes. Unserialization can result in code being loaded and executed due to object instantiation
+         * and autoloading, and a malicious user may be able to exploit this. Use a safe, standard data interchange
+         * format such as JSON (via json_decode() and json_encode()) if you need to pass serialized data to the user."
+         * https://www.php.net/manual/en/function.unserialize.php
+         */
+        $style = unserialize(stripslashes(urldecode($this->vars['style'])));
         foreach ($style as $key => $value) {
             // Convert javascript unicode e.g. %u2014 to HTML entities
             $value = preg_replace("/%u(\d+)/", '&#x$1;', str_replace('__WIKINDX__SPACE__', ' ', $value));
-            $this->bibformat->style[str_replace('style_', '', $key)] = $value;
+            //$this->bibformat->style[str_replace('style_', '', $key)] = $value;
+            $this->bibformat->setStyleEntry(str_replace('style_', '', $key), $value);
         }
         $this->bibformat->loadArrays();
         if (array_key_exists('independent', $templateArray)) {
             $temp = $templateArray['independent'];
+            $independent = [];
             foreach ($temp as $key => $value) {
-                $split = split('_', $key);
+                $split = mb_split('_', $key);
                 $independent[$split[1]] = $value;
             }
             $templateArray['independent'] = $independent;
         }
         $this->bibformat->$type = $templateArray;
+
+        /**
+         * @todo get rid of unserialize
+         * "Warning: Do not pass untrusted user input to unserialize() regardless of the options value of
+         * allowed_classes. Unserialization can result in code being loaded and executed due to object instantiation
+         * and autoloading, and a malicious user may be able to exploit this. Use a safe, standard data interchange
+         * format such as JSON (via json_decode() and json_encode()) if you need to pass serialized data to the user."
+         * https://www.php.net/manual/en/function.unserialize.php
+         */
         $rewriteCreator = unserialize(stripslashes(urldecode($this->vars['rewriteCreator'])));
         foreach ($rewriteCreator as $key => $value) {
             // Convert javascript unicode e.g. %u2014 to HTML entities
@@ -86,10 +126,13 @@ class PREVIEWSTYLE
         }
         $this->loadArrays($type);
         $pString = $this->process($type);
-        return MISC::b($this->messages->text('resourceType', $type) . ':') . MISC::br() . $pString;
+        return $this->misc->b($this->messages->text('resourceType', $type) . ':') . $this->misc->br() . $pString;
     }
-// Process the example.
-    public function process($type)
+
+    /**
+     * Process the example.
+     */
+    public function process(string $type)
     {
         // For WIKINDX, if type == book or book article and there exists both 'year1' and 'year2' in $row (entered as
         // publication year and reprint year respectively), then switch these around as 'year1' is
@@ -106,37 +149,37 @@ class PREVIEWSTYLE
         }
         $this->row = $this->bibformat->preProcess($type, $this->row);
         // Return $type is the OSBib resource type ($this->book, $this->web_article etc.) as used in STYLEMAP
-        $type = $this->bibformat->type;
+        $type = $this->bibformat->getType();
         // Various types of creator
         for ($index = 1; $index <= 5; $index++) {
             $nameType = 'creator' . $index;
-            if (array_key_exists($nameType, $this->bibformat->styleMap->$type)) {
+            if (array_key_exists($nameType, $this->bibformat->getStyleMap()->$type)) {
                 $this->bibformat->formatNames($this->$nameType, $nameType);
             }
         }
         // The title of the resource
         $this->createTitle();
         // edition
-        if ($editionKey = array_search('edition', $this->bibformat->styleMap->$type)) {
+        if ($editionKey = array_search('edition', $this->bibformat->getStyleMap()->$type)) {
             $this->createEdition($editionKey);
         }
-// pageStart and pageEnd
+        // pageStart and pageEnd
         $this->pages = false; // indicates not yet created pages for articles
-        if (array_key_exists('pages', $this->bibformat->styleMap->$type)) {
+        if (array_key_exists('pages', $this->bibformat->getStyleMap()->$type)) {
             $this->createPages();
         }
         // Date
-        if (array_key_exists('date', $this->bibformat->styleMap->$type)) {
+        if (array_key_exists('date', $this->bibformat->getStyleMap()->$type)) {
             $this->createDate();
         }
         // runningTime for film/broadcast
-        if (array_key_exists('runningTime', $this->bibformat->styleMap->$type)) {
+        if (array_key_exists('runningTime', $this->bibformat->getStyleMap()->$type)) {
             $this->createRunningTime();
         }
         // web_article URL
-        if (array_key_exists('URL', $this->bibformat->styleMap->$type) &&
+        if (array_key_exists('URL', $this->bibformat->getStyleMap()->$type) &&
             ($itemElement = $this->createUrl())) {
-            $this->bibformat->addItem($itemElement, 'URL', false);
+            $this->bibformat->addItem($itemElement, 'URL');
         }
         // the rest...  All other database resource fields that do not require special formatting/conversion.
         $this->bibformat->addAllOtherItems($this->row);
@@ -151,34 +194,46 @@ class PREVIEWSTYLE
         // remove extraneous {...}
         return preg_replace('/{(.*)}/U', '$1', $pString);
     }
-// callback for ordinals above
-    public function ordinals($matches)
+
+    /**
+     * callback for ordinals above
+     */
+    public function ordinals(array $matches): string
     {
         return $matches[1] . '<sup>' . $matches[2] . '</sup>';
     }
-// Create the resource title
-    public function createTitle()
+
+    /**
+     * Create the resource title
+     */
+    public function createTitle(): void
     {
-        $pString = stripslashes($this->row['noSort']) . ' ' .
-            stripslashes($this->row['title']);
-        if ($this->row['subtitle']) {
-            $pString .= $this->bibformat->titleSubtitleSeparator . stripslashes($this->row['subtitle']);
+        $pString = stripslashes($this->row['noSort'] ?? '') . ' ' .
+            stripslashes($this->row['title'] ?? '');
+        if ($this->row['subtitle'] ?? false) {
+            $pString .= $this->bibformat->getTitleSubtitleSeparator() . stripslashes($this->row['subtitle']);
         }
         // anything enclosed in {...} is to be left as is
         $this->bibformat->formatTitle($pString, '{', '}');
     }
-// Create the URL
-    public function createUrl()
+
+    /**
+     * Create the URL
+     */
+    public function createUrl(): string
     {
-        if (!$this->row['url']) {
-            return false;
+        if (!($this->row['url'] ?? false)) {
+            return '';
         }
         $url = htmlspecialchars(stripslashes($this->row['url']));
         unset($this->row['url']);
-        return MISC::a('rLink', $url, $url, '_blank');
+        return $this->misc->a('rLink', $url, $url, '_blank');
     }
-// Create date
-    public function createDate()
+
+    /**
+     * Create date
+     */
+    public function createDate(): void
     {
         $startDay = isset($this->row['miscField2']) ? stripslashes($this->row['miscField2']) : false;
         $startMonth = isset($this->row['miscField3']) ? stripslashes($this->row['miscField3']) : false;
@@ -197,8 +252,11 @@ class PREVIEWSTYLE
         $endMonth = ($endMonth == 0) ? false : $endMonth;
         $this->bibformat->formatDate($startDay, $startMonth, $endDay, $endMonth);
     }
-// Create runningTime for film/broadcast
-    public function createRunningTime()
+
+    /**
+     * Create runningTime for film/broadcast
+     */
+    public function createRunningTime(): void
     {
         $minutes = stripslashes($this->row['miscField1']);
         $hours = stripslashes($this->row['miscField4']);
@@ -210,8 +268,11 @@ class PREVIEWSTYLE
         }
         $this->bibformat->formatRunningTime($minutes, $hours);
     }
-// Create the edition number
-    public function createEdition($editionKey)
+
+    /**
+     * Create the edition number
+     */
+    public function createEdition(string $editionKey)
     {
         if (!$this->row[$editionKey]) {
             return false;
@@ -219,8 +280,11 @@ class PREVIEWSTYLE
         $edition = stripslashes($this->row[$editionKey]);
         $this->bibformat->formatEdition($edition);
     }
-// Create page start and page end
-    public function createPages()
+
+    /**
+     * Create page start and page end
+     */
+    public function createPages(): void
     {
         if (!$this->row['pageStart'] || $this->pages) { // empty field or page format already done
             $this->pages = true;
@@ -231,57 +295,58 @@ class PREVIEWSTYLE
         $end = $this->row['pageEnd'] ? trim(stripslashes($this->row['pageEnd'])) : false;
         $this->bibformat->formatPages($start, $end);
     }
-/**
-* Example values for  resources and creators
-*/
-    public function loadArrays($type)
+
+    /**
+    * Example values for  resources and creators
+    */
+    public function loadArrays(string $type): void
     {
         // Some of these default values may be overridden depending on the resource type.
         // The values here are the keys of resource type arrays in STYLEMAP.php
         $this->row = [
-                    'noSort'			=>				'The',
-                    'title' 			=>				'{OSBib System}',
-                    'subtitle'			=>				'Bibliographic formatting as it should be',
-                    'year1'				=>				'2003', // publicationYear
-                    'year2'				=>				'2004', // reprintYear
-                    'year3'				=>				'2001-2003', // volume set publication year(s)
-                    'pageStart'			=>				'109',
-                    'pageEnd'			=>				'122',
-                    'miscField2'		=>				'21', // start day
-                    'miscField3'		=>				'8', // start month
-                    'miscField4'		=>				'12', // numberOfVolumes
-                    'field1'			=>				'The Software Series', // seriesTitle
-                    'field2'			=>				'3', // edition
-                    'field3'			=>				'9', // seriesNumber
-                    'field4'			=>				'III', // volumeNumber
-                    'field5'			=>				'35', // umber
-                    'url'				=>				'http://bibliophile.sourceforge.net',
-                    'isbn'				=>				'0-9876-123456',
-                    'publisherName'		=>				'Botswana Books',
-                    'publisherLocation'	=>				'Selebi Phikwe',
-                    'collectionTitle'	=>				'The Best of Open Source Software',
-                    'collectionTitleShort'	=>			'Best_OSS',
-                    ];
+            'noSort'			=>				'The',
+            'title' 			=>				'{OSBib System}',
+            'subtitle'			=>				'Bibliographic formatting as it should be',
+            'year1'				=>				'2003', // publicationYear
+            'year2'				=>				'2004', // reprintYear
+            'year3'				=>				'2001-2003', // volume set publication year(s)
+            'pageStart'			=>				'109',
+            'pageEnd'			=>				'122',
+            'miscField2'		=>				'21', // start day
+            'miscField3'		=>				'8', // start month
+            'miscField4'		=>				'12', // numberOfVolumes
+            'field1'			=>				'The Software Series', // seriesTitle
+            'field2'			=>				'3', // edition
+            'field3'			=>				'9', // seriesNumber
+            'field4'			=>				'III', // volumeNumber
+            'field5'			=>				'35', // umber
+            'url'				=>				'http://bibliophile.sourceforge.net',
+            'isbn'				=>				'0-9876-123456',
+            'publisherName'		=>				'Botswana Books',
+            'publisherLocation'	=>				'Selebi Phikwe',
+            'collectionTitle'	=>				'The Best of Open Source Software',
+            'collectionTitleShort'	=>			'Best_OSS',
+        ];
         $authors = [
-                    0	=>	[
+                    0 => [
                             'surname'		=>			'Grimshaw',
                             'firstname'		=>			'Mark',
                             'initials'		=>			'N',
                             'prefix'		=>			'',
                             ],
-                    1	=>	[
+                    1 => [
                             'surname'		=>			'Boulanger',
                             'firstname'		=>			'Christian',
                             'initials'		=>			'',
                             'prefix'		=>			'',
                             ],
-                    2	=>	[
+                    2 => [
                             'surname'		=>			'Rossato',
                             'firstname'		=>			'Andrea',
                             'initials'		=>			'',
                             'prefix'		=>			'',
                             ],
-                    4	=>	[
+                    4 => [
                             'surname'		=>			'Guillaume',
                             'firstname'		=>			'Gardey',
                             'initials'		=>			'',
@@ -289,13 +354,13 @@ class PREVIEWSTYLE
                             ],
                     ];
         $editors = [
-                    0	=>	[
+                    0 => [
                             'surname'		=>			'Mouse',
                             'firstname'		=>			'Mickey',
                             'initials'		=>			'',
                             'prefix'		=>			'',
                             ],
-                    1	=>	[
+                    1 => [
                             'surname'		=>			'Duck',
                             'firstname'		=>			'Donald',
                             'initials'		=>			'D D',
@@ -303,7 +368,7 @@ class PREVIEWSTYLE
                             ],
                     ];
         $revisers = [
-                    0	=>	[
+                    0 => [
                             'surname'		=>			'Bush',
                             'firstname'		=>			'George',
                             'initials'		=>			'W',
@@ -311,7 +376,7 @@ class PREVIEWSTYLE
                             ],
                     ];
         $translators = [
-                    0	=>	[
+                    0 => [
                             'surname'		=>			'Lenin',
                             'firstname'		=>			'V I',
                             'initials'		=>			'',
@@ -319,7 +384,7 @@ class PREVIEWSTYLE
                             ],
                     ];
         $seriesEditors = [
-                    0	=>	[
+                    0 => [
                             'surname'		=>			'Freud',
                             'firstname'		=>			'S',
                             'initials'		=>			'',
@@ -327,7 +392,7 @@ class PREVIEWSTYLE
                             ],
                     ];
         $composers = [
-                    0	=>	[
+                    0 => [
                             'surname'		=>			'Mozart',
                             'firstname'		=>			'Wolfgang Amadeus',
                             'initials'		=>			'',
@@ -335,7 +400,7 @@ class PREVIEWSTYLE
                             ],
                     ];
         $performers = [
-                    0	=>	[
+                    0 => [
                             'surname'		=>			'Led Zeppelin',
                             'firstname'		=>			'',
                             'initials'		=>			'',
@@ -343,7 +408,7 @@ class PREVIEWSTYLE
                             ],
                     ];
         $artists = [
-                    0	=>	[
+                    0 => [
                             'surname'		=>			'Vinci',
                             'firstname'		=>			'Leonardo',
                             'initials'		=>			'',
@@ -372,7 +437,6 @@ class PREVIEWSTYLE
             $this->row['miscField6'] = '8'; // end month
         } elseif ($type == 'journal_article') {
             $this->row['field1'] = '23'; // volume number
-//			$this->row['miscField2'] = '';
             $this->row['miscField6'] = '9'; // end month
         } elseif ($type == 'newspaper_article') {
             $this->row['field1'] = 'G2'; // section

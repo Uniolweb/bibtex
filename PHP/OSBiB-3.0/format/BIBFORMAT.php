@@ -1,5 +1,7 @@
 <?php
-/********************************
+
+declare(strict_types=1);
+/**
 OSBib:
 A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
 using the OSBib standard.
@@ -12,21 +14,98 @@ so that your improvements can be added to the release package.
 
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
-********************************/
+*/
 
 /** Description of class BIBFORMAT
 * Format a bibliographic resource for output.
 *
-* @author	Mark Grimshaw
-* @version	1
+* @author Mark Grimshaw
+* @version 1
 */
 class BIBFORMAT
 {
+    protected bool $wikindx = false;
+    protected bool $bibtex = false;
+    protected bool $preview = false;
+    protected bool $dateMonthDay = false;
+    protected bool $dateMonthNoDay = false;
+    protected bool $pages_plural = false;
+    /**
+     * @var bool|string
+     */
+    protected $patternHighlight = '';
+
+    /**
+     *  Convert the bibTeX special characters to produce utf8
+     *  Default: 'FALSE', we assume that the entries are already clean
+     */
+    protected bool $cleanEntry = false;
+    protected bool $citationFootnote = false;
+
+    /** bool? */
+    protected $patterns = false;
+
+    /**
+     * @var string|int
+     * @todo $this->$type is used in several places to access class properties, use different mechanism to make
+     *   type checking possible.
+     */
+    protected $type = '';
+    protected string $titleSubtitleSeparator = '';
+    protected string $previousCreator = '';
+    protected string $footnoteType = '';
+    protected string $dir = '';
+    protected string $bibtexParsePath = '';
+    protected string $output = '';
+
+    /**
+     * @var string
+     * @todo is never set to anything except empty string?
+     */
+    protected string $footnotePages = '';
+
+    /** @var string|object|null  */
+    protected $wikindxLanguageClass;
+    protected array $style = [];
+    protected array $shortMonth = [];
+    protected array $longMonth = [];
+    protected array $item = [];
+    protected array $dateArray = [];
+    protected array $footnoteStyle = [];
+    protected array $fallback = [];
+    protected array $footnoteTypeArray = [];
+    protected array $book = [];
+    protected array $book_article = [];
+    protected array $backup = [];
+    protected array $creators = [];
+
+    /**
+     * @var array|bool
+     * @todo uncertain which type is correct, may be accessed with $this->$type
+     */
+    protected $editorSwitch = false;
+
+    protected ?StyleMapInterface $styleMap = null;
+    protected ?UTF8 $utf8 = null;
+    protected ?BIBTEXCONFIG $config = null;
+    protected ?PARSESTYLE $parseStyle = null;
+
     /**
     * $dir is the path to STYLEMAP.php etc.
     */
-    public function __construct($dir = false, $bibtex = false, $preview = false)
+    public function __construct(
+        string $dir = '',
+        bool $bibtex = false,
+        bool $preview = false,
+        bool $wikindx = false,
+        bool $cleanEntry = false
+    )
     {
+        include_once(__DIR__ . '/PARSESTYLE.php');
+        $this->parseStyle = new PARSESTYLE();
+
+        $this->cleanEntry = $cleanEntry;
+
         //05/05/2005 G.GARDEY: add a last "/" to $stylePath if not present.
         $this->preview = $preview;
         if (!$this->preview) { // Not javascript preview
@@ -44,6 +123,8 @@ class BIBFORMAT
             $this->dir = __DIR__ . '/';
         }
         $this->bibtex = $bibtex;
+        include_once(__DIR__ . '/../StyleMapInterface.php');
+        include_once(__DIR__ . '/../AbstractStyleMap.php');
         if ($this->bibtex) {
             include_once(__DIR__ . '/../STYLEMAPBIBTEX.php');
             $this->styleMap = new STYLEMAPBIBTEX();
@@ -54,15 +135,16 @@ class BIBFORMAT
         include_once(__DIR__ . '/../UTF8.php');
         $this->utf8 = new UTF8();
         /**
-        * Highlight preg pattern and CSS class for HTML display
-        */
+         * Highlight preg pattern and CSS class for HTML display
+         * @todo $this->patterns not used?
+         */
         $this->patterns = false;
-        $this->patternHighlight = false;
+        $this->patternHighlight = '';
         /**
         * Output medium:
         * 'html', 'rtf', or 'plain'
         */
-        $this->output = 'html'; // default
+        $this->output = 'html';
         $this->previousCreator = '';
         /**
         * Switch editor and author positions in the style definition for a book in which there are only editors
@@ -72,29 +154,183 @@ class BIBFORMAT
         // Some styles require different templates and formatting of creator names for a citation in a footnote as opposed to a full bibliography.  Setting this to TRUE (set
         // externally in CITEFORMAT) loads a different set of templates and settings for footnotes.  The default FALSE is for full bibliography.
         $this->citationFootnote = false;
-        $this->footnotePages = false;
-        $this->footnoteType = false;
-        /**
-         *  Convert the bibTeX special characters to produce utf8
-         *  Defaut: 'FALSE', we assume that the entries are already clean
-         */
-        $this->cleanEntry = false;
-        // WIKINDX-specific
-        $this->wikindx = false;
+        $this->footnotePages = '';
+        $this->footnoteType = '';
+        $this->wikindx = $wikindx;
+        $this->titleSubtitleSeparator = ': ';
+    }
+
+    public function getUtf8(): ?UTF8
+    {
+        return $this->utf8;
+    }
+
+    /**
+     * @param string $propertyName
+     * @return string|array
+     */
+    public function getDynamicProperty(string $propertyName)
+    {
+        return $this->$propertyName;
+    }
+
+    public function getDynamicPropertyArrayElement(string $propertyName, string $arrayElement): string
+    {
+        return $this->$propertyName[$arrayElement];
+    }
+
+    public function getFootnoteTypeArray(): array
+    {
+        return $this->footnoteTypeArray;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCitationFootnote(): bool
+    {
+        return $this->citationFootnote;
+    }
+
+    public function setCitationFootnote(bool $citationFootnote): void
+    {
+        $this->citationFootnote = $citationFootnote;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOutput(): string
+    {
+        return $this->output;
+    }
+
+    /**
+     * @param string $output
+     */
+    public function setOutput(string $output): void
+    {
+        $this->output = $output;
+    }
+
+    /**
+     * @param string|bool $patternHighlight
+     */
+    public function setPatternHighlight($patternHighlight): void
+    {
+        $this->patternHighlight = $patternHighlight;
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getPatternHighlight()
+    {
+        return $this->patternHighlight;
+    }
+
+    /**
+     * @param bool $wikindx
+     */
+    public function setWikindx(bool $wikindx): void
+    {
+        $this->wikindx = $wikindx;
+    }
+
+    /**
+     * If cleanEntry is true, convert BibTeX (and LaTeX) special characters to UTF-8
+     *
+     * @return bool
+     */
+    public function isCleanEntry(): bool
+    {
+        return $this->cleanEntry;
+    }
+
+    /**
+     * If cleanEntry is true, convert BibTeX (and LaTeX) special characters to UTF-8
+     *
+     * @param bool $cleanEntry
+     */
+    public function setCleanEntry(bool $cleanEntry): void
+    {
+        $this->cleanEntry = $cleanEntry;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPatterns(): bool
+    {
+        return $this->patterns;
+    }
+
+    public function getTitleSubtitleSeparator(): string
+    {
+        return $this->titleSubtitleSeparator;
+    }
+
+    public function getStyleMap(): ?StyleMapInterface
+    {
+        return $this->styleMap;
+    }
+
+    public function setStyleEntry(string $key, string $value): void
+    {
+        $this->style[$key] = $value;
+    }
+
+    /**
+     * @return int|string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param int|string $type
+     */
+    public function setType($type): void
+    {
+        $this->type = $type;
+    }
+
+    /**
+     * Read the chosen bibliographic style and create arrays based on resource type.
+     * !!! The returned array changed!
+     *
+     * @author Mark Grimshaw
+     * @version 4.0
+     *
+     * @param string $stylePath The path where the styles are.
+     * @param string $style The requested bibliographic output style.
+     * @return array
+     */
+    public function loadStyle(string $stylePath, string $style): array
+    {
+        $namedArray = $this->loadStyleAsNamedArray($stylePath, $style);
+        return [
+            $namedArray['info'] ?? [],
+            $namedArray['citation'] ?? [],
+            $namedArray['footnote'] ?? [],
+            $namedArray['common'] ?? [],
+            $namedArray['types'] ?? [],
+        ];
     }
 
     /**
     * Read the chosen bibliographic style and create arrays based on resource type.
     * !!! The returned array changed!
     *
-    * @author	Mark Grimshaw
-    * @version	4.0
+    * @author Mark Grimshaw
+    * @version 4.0
     *
-    * @param	$stylePath	The path where the styles are.
-    * @param	$style		The requested bibliographic output style.
-    * @return	array
+    * @param string $stylePath The path where the styles are.
+    * @param string $style The requested bibliographic output style.
+    * @return array
     */
-    public function loadStyle($stylePath, $style): array
+    public function loadStyleAsNamedArray(string $stylePath, string $style): array
     {
         //05/05/2005 G.GARDEY: add a last "/" to $stylePath if not present.
         $stylePath = trim($stylePath);
@@ -114,29 +350,30 @@ class BIBFORMAT
             ];
         }
         include_once(__DIR__ . '/../PARSEXML.php');
-        $parseXML = new PARSEXML($this);
+        $parseXML = new PARSEXML();
         list($info, $citation, $footnote, $common, $types) = $parseXML->extractEntries($fh);
         fclose($fh);
         // return array($info, $citation, $footnote, $common, $types);
         return [
-            'info' => $info,
-            'citation' => $citation,
-            'footnote' => $footnote,
-            'common' => $common,
-            'types' => $types,
+            'info' => $info ?? [],
+            'citation' => $citation ?? [],
+            'footnote' => $footnote ?? [],
+            'common' => $common ?? [],
+            'types' => $types ?? [],
         ];
     }
-/**
-* Transform the raw data from the XML file into usable arrays
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$common		Array of global formatting data
-* @param	$types		Array of style definitions for each resource type
-* @param	$footnote		Array of style definitions for footnote creators
-*/
-    public function getStyle($common, $types, $footnote = [])
+
+    /**
+    * Transform the raw data from the XML file into usable arrays
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    *
+    * @param array $common Array of global formatting data
+    * @param array $types Array of style definitions for each resource type
+    * @param array $footnote Array of style definitions for footnote creators
+    */
+    public function getStyle(array $common, array $types, array $footnote = [])
     {
         $this->commonToArray($common);
         $this->footnoteToArray($footnote);
@@ -146,18 +383,20 @@ class BIBFORMAT
         */
         $this->loadArrays();
     }
-/**
-* Reformat the array representation of common styling into a more useable format.
-* 'common' styling refers to formatting that is common to all resource types such as creator formatting, title
-* capitalization etc.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$common		nodal array representation of XML data
-* @return	flattened array representation for easier use.
-*/
-    public function commonToArray($common)
+
+    /**
+     * Reformat the array representation of common styling into a more useable format.
+     * 'common' styling refers to formatting that is common to all resource types such as creator formatting, title
+     * capitalization etc.
+     *
+     * Creates a flattened array representation for easier use.
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param array $common nodal array representation of XML data
+     */
+    public function commonToArray(array $common): void
     {
         foreach ($common as $array) {
             if (array_key_exists('_NAME', $array) && array_key_exists('_DATA', $array)) {
@@ -165,12 +404,13 @@ class BIBFORMAT
             }
         }
     }
-/**
-* Reformat the array representation of resource types into arrays based on the type.
-*
-* @param	$types		nodal array representation of XML data
-*/
-    public function typesToArray($types)
+
+    /**
+     * Reformat the array representation of resource types into arrays based on the type.
+     *
+     * @param array $types nodal array representation of XML data
+     */
+    public function typesToArray(array $types): void
     {
         foreach ($types as $resourceArray) {
             // The resource type which will be our array name
@@ -185,20 +425,20 @@ class BIBFORMAT
                         break;
                     }
                     if ($array['_NAME'] == 'ultimate') {
-                        $this->{$type}['ultimate'] = $array['_DATA'];
+                        $this->$type['ultimate'] = $array['_DATA'];
                         continue;
                     }
                     if ($array['_NAME'] == 'preliminaryText') {
-                        $this->{$type}['preliminaryText'] = $array['_DATA'];
+                        $this->$type['preliminaryText'] = $array['_DATA'];
                         continue;
                     }
                     foreach ($array['_ELEMENTS'] as $elements) {
                         $data = $elements['_DATA'];
                         if ($array['_NAME'] == 'independent') {
                             $split = mb_split('_', $elements['_NAME']);
-                            $this->{$type}[$array['_NAME']][$split[1]] = $data;
+                            $this->$type[$array['_NAME']][$split[1]] = $data;
                         } else {
-                            $this->{$type}[$array['_NAME']][$elements['_NAME']] = $data;
+                            $this->$type[$array['_NAME']][$elements['_NAME']] = $data;
                         }
                     }
                 }
@@ -212,16 +452,17 @@ class BIBFORMAT
             }
         }
     }
-/**
-* Reformat the array representation of footnote resource styling into a more useable format.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$footnote		nodal array representation of XML data
-* @return	flattened array representation for easier use.
-*/
-    public function footnoteToArray($footnote)
+
+    /**
+     * Reformat the array representation of footnote resource styling into a more useable format.
+     *
+     * Creates a flattened array representation for easier use.
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param array $footnote nodal array representation of XML data
+     */
+    public function footnoteToArray(array $footnote): void
     {
         foreach ($footnote as $array) {
             if (array_key_exists('_NAME', $array) && array_key_exists('_DATA', $array)) {
@@ -252,67 +493,70 @@ class BIBFORMAT
             }
         }
     }
-/**
-* Add resource-specific rewrite creator fields to $this->$type array
-*
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function rewriteCreatorsToArray($type, $array)
+
+    /**
+    * Add resource-specific rewrite creator fields to $this->$type array
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    */
+    public function rewriteCreatorsToArray(string $type, array $array): void
     {
         foreach ($this->creators as $creatorField) {
             $name = $creatorField . '_firstString';
             if (array_key_exists($name, $array['_ATTRIBUTES'])) {
-                $this->{$type}[$name] = $array['_ATTRIBUTES'][$name];
+                $this->$type[$name] = $array['_ATTRIBUTES'][$name];
             }
             $name = $creatorField . '_firstString_before';
             if (array_key_exists($name, $array['_ATTRIBUTES'])) {
-                $this->{$type}[$name] = $array['_ATTRIBUTES'][$name];
+                $this->$type[$name] = $array['_ATTRIBUTES'][$name];
             }
             $name = $creatorField . '_remainderString';
             if (array_key_exists($name, $array['_ATTRIBUTES'])) {
-                $this->{$type}[$name] = $array['_ATTRIBUTES'][$name];
+                $this->$type[$name] = $array['_ATTRIBUTES'][$name];
             }
             $name = $creatorField . '_remainderString_before';
             if (array_key_exists($name, $array['_ATTRIBUTES'])) {
-                $this->{$type}[$name] = $array['_ATTRIBUTES'][$name];
+                $this->$type[$name] = $array['_ATTRIBUTES'][$name];
             }
             $name = $creatorField . '_remainderString_each';
             if (array_key_exists($name, $array['_ATTRIBUTES'])) {
-                $this->{$type}[$name] = $array['_ATTRIBUTES'][$name];
+                $this->$type[$name] = $array['_ATTRIBUTES'][$name];
             }
         }
     }
-/**
-* Restore each $this->type array from $this->backup
-*
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function restoreTypes()
+
+    /**
+     * Restore each $this->type array from $this->backup
+     *
+     * @author Mark Grimshaw
+     * @version	1
+     */
+    public function restoreTypes(): void
     {
         foreach ($this->backup as $type => $array) {
             $this->$type = $array;
         }
     }
-/**
-* Perform pre-processing on the raw SQL array
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$type	The resource type
-* @param	$row	Associate array of raw SQL data
-* @return	$row	Processed row of raw SQL data
-*/
-    public function preProcess($type, $row)
+
+    /**
+     * Perform pre-processing on the raw SQL array
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param string $type The resource type
+     * @param array $row Associate array of raw SQL data
+     * @return array $row Processed row of raw SQL data
+     */
+    public function preProcess(string $type, array $row): array
     {
         /**
         * Ensure that $this->item is empty for each resource!!!!!!!!!!
         */
         $this->item = [];
         // Map this system's resource type to OSBib's resource type
-        $this->type = array_search($type, $this->styleMap->types);
+        $this->type = array_search($type, $this->styleMap->getTypes());
         if ($this->bibtex && array_key_exists('author', $row)) {
             $row['creator1'] = $row['author'];
             unset($row['author']);
@@ -330,21 +574,20 @@ class BIBFORMAT
             $row['creator1'] = $row['creator2'];
             $row['creator2'] = false;
             include_once($this->dir . 'PARSESTYLE.php');
-            $editorArray = PARSESTYLE::parseStringToArray(
+            $editorArray = $this->parseStyle->parseStringToArray(
                 $type,
                 $this->style['editorSwitchIfYes'],
                 $this->styleMap
             );
             if (!empty($editorArray) && array_key_exists('editor', $editorArray)) {
-                $this->{$type}['author'] = $editorArray['editor'];
-                unset($this->{$type}['editor']);
+                $this->$type['author'] = $editorArray['editor'];
+                unset($this->$type['editor']);
                 $this->editorSwitch = true;
             }
         }
-        if (($this->style['dateMonthNoDay'] ?? false) && array_key_exists('date', $this->styleMap->$type) &&
+        if (($this->style['dateMonthNoDay'] ?? false) && array_key_exists('date', $this->styleMap->getDynamicProperty($type)) &&
             array_key_exists('dateMonthNoDayString', $this->style) && $this->style['dateMonthNoDayString']) {
-            include_once(__DIR__ . '/PARSESTYLE.php');
-            $this->dateArray = PARSESTYLE::parseStringToArray(
+            $this->dateArray = $this->parseStyle->parseStringToArray(
                 $type,
                 $this->style['dateMonthNoDayString'],
                 $this->styleMap,
@@ -366,12 +609,12 @@ class BIBFORMAT
         * Ensure that for theses types, the first letter of type and label are capitalized (e.g. 'Master's Thesis').
         */
         if ($type == 'thesis') {
-            if (($key = array_search('type', $this->styleMap->$type)) !== false) {
+            if (($key = array_search('type', $this->styleMap->getDynamicProperty($type))) !== false) {
                 if (isset($row[$key])) {
                     $row[$key] = ucfirst($row[$key]);
                 }
             }
-            if (($key = array_search('label', $this->styleMap->$type)) !== false) {
+            if (($key = array_search('label', $this->styleMap->getDynamicProperty($type))) !== false) {
                 if (isset($row[$key])) {
                     $row[$key] = ucfirst($row[$key]);
                 }
@@ -414,26 +657,28 @@ class BIBFORMAT
         */
         if ($this->bibtex) {
             foreach ($row as $field => $value) {
-                if (array_key_exists($field, $this->styleMap->$type) &&
-                    !array_key_exists($this->styleMap->{$type}[$field], $this->item)) {
+                if (array_key_exists($field, $this->styleMap->getDynamicProperty($type)) &&
+                    !array_key_exists($this->styleMap->getDynamicPropertyArrayElement($type, $field), $this->item)) {
                     $this->addItem($row[$field], $field);
                 }
             }
         }
         return $row;
     }
-/**
-* Preprocess BibTeX-type entries
-* @author Mark Grimshaw
-* @version 1
-*
-* @param assoc. array of elements for one bibtex entry
-* @param string resource type
-* @return string resource type
-* @return array resource assoc. array of elements for one bibtex entry
-*/
-    public function preProcessBibtex(&$row, $type)
+
+    /**
+     * Preprocess BibTeX-type entries
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param array $row assoc. array of elements for one bibtex entry
+     * @param string $type resource type
+     * @return array resource assoc. array of elements for one bibtex entry
+     */
+    public function preProcessBibtex(array &$row, string $type): array
     {
+        $temp = [];
+
         //05/05/2005 G.GARDEY: change bibtexParse name.
         /**
         * This set of includes is for the OSBib public release and should be uncommented for that and
@@ -446,15 +691,6 @@ class BIBFORMAT
         include_once($this->bibtexParsePath . '/PARSEPAGE.php');
         $parsePages = new PARSEPAGE();
 
-        // WIKINDX naming of above files
-        /*
-                include_once($this->bibtexParsePath . "/BIBTEXCREATORPARSE.php");
-                $parseCreator = new BIBTEXCREATORPARSE();
-                include_once($this->bibtexParsePath . "/BIBTEXMONTHPARSE.php");
-                $parseDate = new BIBTEXMONTHPARSE();
-                include_once($this->bibtexParsePath . "/BIBTEXPAGEPARSE.php");
-                $parsePages = new BIBTEXPAGEPARSE();
-        */
         // Added by Christophe Ambroise: convert the bibtex entry to utf8 (for storage or printing)
         if ($this->cleanEntry) {
             $row = $this->convertEntry($row);
@@ -484,7 +720,8 @@ class BIBFORMAT
         * 'article' could be journal, newspaper or magazine article
         */
         elseif ($type == 'journal_article') {
-            if (array_key_exists('month', $row) && array_key_exists('date', $this->styleMap->$type)) {
+            // @todo 'date' is not in STYLEMAPBIBTEX::journal_article
+            if (array_key_exists('month', $row) && array_key_exists('date', $this->styleMap->getDynamicProperty('journal_article'))) {
                 list($startMonth, $startDay, $endMonth, $endDay) = $parseDate->init($row['month']);
                 if ($startDay) {
                     $type = 'newspaper_article';
@@ -492,8 +729,6 @@ class BIBFORMAT
                     $type = 'magazine_article';
                 }
                 $this->formatDate($startDay, $startMonth, $endDay, $endMonth);
-            } else {
-                $type = 'journal_article';
             }
         }
         /**
@@ -507,53 +742,58 @@ class BIBFORMAT
         }
         $this->type = $type;
         if (array_key_exists('creator1', $row) && $row['creator1'] &&
-            array_key_exists('creator1', $this->styleMap->$type)) {
+            array_key_exists('creator1', $this->styleMap->getDynamicProperty($type))) {
             $creators = $parseCreator->parse($row['creator1']);
             foreach ($creators as $cArray) {
                 $temp[] = [
-                        'surname'	=>	trim($cArray[2]),
-                        'firstname'	=>	trim($cArray[0]),
-                        'initials'	=>	trim($cArray[1]),
-                        'prefix'	=>	trim($cArray[3]),
+                        'surname'   => trim($cArray[2]),
+                        'firstname' => trim($cArray[0]),
+                        'initials'  => trim($cArray[1]),
+                        'prefix'    => trim($cArray[3]),
                     ];
             }
             $this->formatNames($temp, 'creator1');
             unset($temp);
         }
         if (array_key_exists('creator2', $row) && $row['creator2'] &&
-            array_key_exists('creator2', $this->styleMap->$type)) {
+            array_key_exists('creator2', $this->styleMap->getDynamicProperty($type))) {
             $creators = $parseCreator->parse($row['creator2']);
             foreach ($creators as $cArray) {
                 $temp[] = [
-                        'surname'	=>	trim($cArray[2]),
-                        'firstname'	=>	trim($cArray[0]),
-                        'initials'	=>	trim($cArray[1]),
-                        'prefix'	=>	trim($cArray[3]),
+                        'surname'   => trim($cArray[2]),
+                        'firstname' => trim($cArray[0]),
+                        'initials'  => trim($cArray[1]),
+                        'prefix'    => trim($cArray[3]),
                     ];
             }
-            $this->formatNames($temp, 'creator2');
+            $this->formatNames($temp ?? [], 'creator2');
         }
-        if (array_key_exists('pages', $row) && array_key_exists('pages', $this->styleMap->$type)) {
+        if (array_key_exists('pages', $row) && array_key_exists('pages', $this->styleMap->getDynamicProperty($type))) {
             list($start, $end) = $parsePages->init($row['pages']);
-            $this->formatPages(trim($start), trim($end));
+            $this->formatPages($start, $end);
         }
         if (isset($row['title'])) {
             $this->formatTitle($row['title'], '{', '}');
         }
         return [$type, $row];
     }
-/**
-* Map the $item array against the style array ($this->$type) for this resource type and produce a string ready to be
-* formatted for bold, italics etc.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$template	If called from CITEFORMAT, this is the array of template elements.
-* @return	string ready for printing to the output medium.
-*/
-    public function map($template = false)
+
+    /**
+     * Map the $item array against the style array ($this->$type) for this resource type and produce a string ready to be
+     * formatted for bold, italics etc.
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param string $template If called from CITEFORMAT, this is the array of template elements.
+     * @return string ready for printing to the output medium.
+     *
+     * @todo function too complex, split up?
+     */
+    public function map(string $template = ''): string
     {
+        $itemArray = [];
+
         /**
         * Output medium:
         * 'html', 'rtf', or 'plain'
@@ -574,7 +814,7 @@ class BIBFORMAT
         $index = 0;
         $previousFieldExists = $nextFieldExists = true;
         if (array_key_exists('independent', $this->$type)) {
-            $independent = $this->{$type}['independent'];
+            $independent = $this->$type['independent'];
         }
         /**
         * For dependency on next field, we must grab array keys of $this->$type, shift the first element then, in the loop,
@@ -643,13 +883,14 @@ class BIBFORMAT
             } else {
                 $post = preg_replace('/__DEPENDENT_ON_NEXT_FIELD__/', '', $post);
             }
+
             /**
             * Deal with __SINGULAR_PLURAL__ for creator lists and pages
-            */            if ($styleKey = array_search($key, $this->styleMap->$pluralType)) {
+            */
+            if ($styleKey = array_search($key, $this->styleMap->getDynamicProperty($pluralType))) {
                 $pluralKey = $styleKey . '_plural';
-            }
-            // For use with generic footnote templates which uses generic 'creator' field
-            else {
+            } else {
+                // For use with generic footnote templates which uses generic 'creator' field
                 $pluralKey = 'creator_plural';
             }
             if (isset($this->$pluralKey) && $this->$pluralKey) { // plural alternative for this key
@@ -732,6 +973,12 @@ class BIBFORMAT
                 /**
                 * Strip backticks used in template
                 */
+                if (!$preAlternative) {
+                    $preAlternative = '';
+                }
+                if (!$postAlternative) {
+                    $postAlternative = '';
+                }
                 $preAlternative = str_replace('`', '', $preAlternative);
                 $postAlternative = str_replace('`', '', $postAlternative);
                 $firstKey = array_shift($independentKeys);
@@ -761,7 +1008,7 @@ class BIBFORMAT
                 }
             }
         }
-        $pString = implode('', $itemArray ?? []);
+        $pString = implode('', $itemArray);
         /**
         * if last character is punctuation (which it may be with missing fields etc.), and $ultimate is also
         * punctuation, set $ultimate to empty string.
@@ -782,30 +1029,42 @@ class BIBFORMAT
         }
         return $this->export->format($preliminary . trim($pString) . $ultimate);
     }
-/**
-* Format creator name lists (authors, editors, etc.)
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$creators	Multi-associative array of creator names e.g. this array might be of
-* the primary authors:
-* <pre>
-*	array([0] => array(['surname'] => 'Grimshaw', ['firstname'] => Mark, ['initials'] => 'N', ['prefix'] => ),
-*	   [1] => array(['surname'] => 'Witt', ['firstname'] => Jan, ['initials'] => , ['prefix'] => 'de'))
-* </pre>
-* @param	$nameType	'creator1', 'creator2' etc.
-* @param	$shortFootnote.  If TRUE, this is being used for just the primary creator names in a footnote style citation using Ibid, Idem, op cit. etc.
-* @return	Optional if $nameType == 'citation': formatted string of all creator names in the input array.
-*/
-    public function formatNames($creators, $nameType, $shortFootnote = false)
+
+    /**
+     * Format creator name lists (authors, editors, etc.)
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param array $creators Multi-associative array of creator names e.g. this array might be of
+     * the primary authors:
+     * <pre>
+     * array([0] => array(['surname'] => 'Grimshaw', ['firstname'] => Mark, ['initials'] => 'N', ['prefix'] => ),
+     *    [1] => array(['surname'] => 'Witt', ['firstname'] => Jan, ['initials'] => , ['prefix'] => 'de'))
+     * </pre>
+     * @param string $nameType 'creator1', 'creator2' etc.
+     * @param bool $shortFootnote.  If TRUE, this is being used for just the primary creator names in a footnote style citation using Ibid, Idem, op cit. etc.
+     *   return is optional if $nameType == 'citation': formatted string of all creator names in the input array.
+     *
+     * @todo optional return, always return something?
+     * @todo split up function, is too complex
+     */
+    public function formatNames(array $creators, string $nameType, bool $shortFootnote = false)
     {
+        /** @var array $style */
         $style = $this->citationFootnote ? $this->footnoteStyle : $this->style;
+        /**
+         * @var bool $first
+         * @todo $first is always true. Possible bug?
+         */
         $first = true;
+        $cArray = [];
+        $creatorIds = [];
+
         /**
         * Citation creators
         */
-        if ($nameType == 'citation') {
+        if ($nameType === 'citation') {
             $limit = 'creatorListLimit';
             $moreThan = 'creatorListMore';
             $abbreviation = 'creatorListAbbreviation';
@@ -826,7 +1085,7 @@ class BIBFORMAT
         /**
         * Primary creator
         */
-        elseif ($nameType == 'creator1') {
+        elseif ($nameType === 'creator1') {
             $limit = 'primaryCreatorListLimit';
             $moreThan = 'primaryCreatorListMore';
             $abbreviation = 'primaryCreatorListAbbreviation';
@@ -855,6 +1114,7 @@ class BIBFORMAT
             $delimitLast = 'otherCreatorSepNextLast';
             $uppercase = 'otherCreatorUppercase';
             $italics = 'otherCreatorListAbbreviationItalic';
+
             if ($first) {
                 $nameStyle = 'otherCreatorFirstStyle';
             } else {
@@ -920,29 +1180,27 @@ class BIBFORMAT
             if (array_key_exists($rewriteCreatorField, $this->$type ?? [])) {
                 if ($firstInList) {
                     if (array_key_exists($rewriteCreatorFieldBefore, $this->$type)) {
-                        $nameString = $this->{$type}[$rewriteCreatorField] . $nameString;
+                        $nameString = $this->$type[$rewriteCreatorField] . $nameString;
                     } else {
-                        $nameString .= $this->{$type}[$rewriteCreatorField];
+                        $nameString .= $this->$type[$rewriteCreatorField];
                     }
                     $firstInList = false;
                 } elseif (array_key_exists($rewriteCreatorFieldEach, $this->$type)) {
                     if (array_key_exists($rewriteCreatorFieldBefore, $this->$type)) {
-                        $nameString = $this->{$type}[$rewriteCreatorField] . $nameString;
+                        $nameString = $this->$type[$rewriteCreatorField] . $nameString;
                     } else {
-                        $nameString .= $this->{$type}[$rewriteCreatorField];
+                        $nameString .= $this->$type[$rewriteCreatorField];
                     }
-                //print "$nameString<P>";
                 } else {
                     if (!$rewriteCreatorBeforeDone && array_key_exists($rewriteCreatorFieldBefore, $this->$type)) {
-                        $nameString = $this->{$type}[$rewriteCreatorField] . $nameString;
+                        $nameString = $this->$type[$rewriteCreatorField] . $nameString;
                         $rewriteCreatorBeforeDone = true;
                     } elseif (!$rewriteCreatorBeforeDone &&
                         !array_key_exists($rewriteCreatorFieldEach, $this->$type)) {
-                        $rewriteCreatorFinal = $this->{$type}[$rewriteCreatorField];
+                        $rewriteCreatorFinal = $this->$type[$rewriteCreatorField];
                     }
                 }
             }
-            //print "$nameString<P>";
             $cArray[] = $nameString;
             $first = false;
         }
@@ -979,7 +1237,6 @@ class BIBFORMAT
         * If sizeof of $cArray > 1 or $etAl != FALSE, set this $nameType_plural to TRUE
         */
         if ((count($cArray) > 1) || $etAl) {
-            //			$pluralKey = $nameType . "_plural";
             $this->$pluralKey = true;
         }
         /**
@@ -1009,29 +1266,30 @@ class BIBFORMAT
             return [$pString, $creatorIds];
         }
         // For use with generic footnote templates, we must also place 'creator1' string (if not called 'creator') into the 'creator' slot
-        if (($nameType == 'creator1') && ($this->styleMap->{$type}[$nameType] != 'creator')) {
+        if (($nameType == 'creator1') && ($this->styleMap->getDynamicPropertyArrayElement($type, $nameType) != 'creator')) {
             $this->item['creator'] = $pString;
         }
-        $this->item[$this->styleMap->{$type}[$nameType]] = $pString;
+        $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, $nameType)] = $pString;
     }
-/**
-* Handle initials.
-* @see formatNames()
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$creator	Associative array of creator name e.g.
-* <pre>
-*	array(['surname'] => 'Grimshaw', ['firstname'] => Mark, ['initials'] => 'M N G', ['prefix'] => ))
-* </pre>
-* Initials must be space-delimited.
-*
-* @param	$initialsStyle
-* @param	$firstNameInitial
-* @return	Formatted string of initials.
-*/
-    public function checkInitials(&$creator, $initialsStyle, $firstNameInitial)
+
+    /**
+     * Handle initials.
+     * @see formatNames()
+     *
+     * @author	Mark Grimshaw
+     * @version	1
+     *
+     * @param array $creator Associative array of creator name e.g.
+     * <pre>
+     * array(['surname'] => 'Grimshaw', ['firstname'] => Mark, ['initials'] => 'M N G', ['prefix'] => ))
+     * </pre>
+     * Initials must be space-delimited.
+     *
+     * @param $initialsStyle
+     * @param $firstNameInitial
+     * @return string Formatted string of initials.
+     */
+    public function checkInitials(array &$creator, $initialsStyle, $firstNameInitial): string
     {
         /**
         * Format firstname
@@ -1062,7 +1320,7 @@ class BIBFORMAT
         * If no initials, return just the firstname or its initial in the correct format.
         */
         if (!$creator['initials']) {
-            if (isset($firstName)) {	// full first name only
+            if (isset($firstName)) { // full first name only
                 return $firstName;
             }
             if (isset($firstNameInitialMake) && $initialsStyle > 1) { // First name initial with no '.'
@@ -1097,61 +1355,67 @@ class BIBFORMAT
         }
         return $initials;
     }
-/**
-* Add an item to $this->item array
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$item		The item to be added.
-* @param	$fieldName	The database fieldName of the item to be added
-*/
-    public function addItem($item, $fieldName)
+
+    /**
+     * Add an item to $this->item array
+     *
+     * @author Mark Grimshaw
+     * @version	1
+     *
+     * @param string|bool $item The item to be added.
+     * @param string $fieldName The database fieldName of the item to be added
+     *
+     * @todo use only string for $item
+    */
+    public function addItem($item, string $fieldName): bool
     {
         $type = $this->type;
         if ($item === false) {
-            return;
+            return true;
         }
+        $item = (string)$item;
         $item = stripslashes($item);
         /**
         * This item may already exist (e.g. edition field for WIKINDX)
         */
-        if (isset($this->item) && array_key_exists($this->styleMap->{$type}[$fieldName], $this->item)) {
+        if (isset($this->item) && array_key_exists($this->styleMap->getDynamicPropertyArrayElement($type, $fieldName), $this->item)) {
             return false;
         }
-        $this->item[$this->styleMap->{$type}[$fieldName]] = $item;
+        $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, $fieldName)] = $item;
+        return true;
     }
-/**
-* Add all remaining items to $this->item array
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$row		The items to be added.
-*/
-    public function addAllOtherItems($row)
+
+    /**
+     * Add all remaining items to $this->item array
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param array $row The items to be added.
+     */
+    public function addAllOtherItems(array $row): void
     {
         $type = $this->type;
         foreach ($row as $field => $value) {
-            if (array_key_exists($field, $this->styleMap->$type) &&
-                !array_key_exists($this->styleMap->{$type}[$field], $this->item)) {
+            if (array_key_exists($field, $this->styleMap->getDynamicProperty($type)) &&
+                !array_key_exists($this->styleMap->getDynamicPropertyArrayElement($type, $field), $this->item)) {
                 $item = stripslashes($row[$field]);
                 $this->addItem($item, $field);
             }
         }
     }
-/**
-* Format a title.  Anything enclosed in $delimitLeft...$delimitRight is to be left unchanged
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$pString	Raw title string.
-* @param	$delimitLeft
-* @param	$delimitRight
-* @return	Formatted title string.
-*/
-    public function formatTitle($pString, $delimitLeft = false, $delimitRight = false)
+
+    /**
+     * Format a title.  Anything enclosed in $delimitLeft...$delimitRight is to be left unchanged
+     *
+     * @author Mark Grimshaw
+     * @version	1
+     *
+     * @param $pString Raw title string.
+     * @param $delimitLeft
+     * @param $delimitRight
+     */
+    public function formatTitle(string $pString, string $delimitLeft = '', string $delimitRight = ''): void
     {
         if (!$delimitLeft) {
             $delimitLeft = '{';
@@ -1159,12 +1423,12 @@ class BIBFORMAT
         if (!$delimitRight) {
             $delimitRight = '}';
         }
-        $delimitLeft = preg_quote($delimitLeft);
-        $delimitRight = preg_quote($delimitRight);
+        $delimitLeft = preg_quote($delimitLeft, '/');
+        $delimitRight = preg_quote($delimitRight, '/');
         $match = '/' . $delimitLeft . '/';
         $type = $this->type;
-        if (!array_key_exists('title', $this->styleMap->$type)) {
-            $this->item[$this->styleMap->{$type}['title']] = '';
+        if (!array_key_exists('title', $this->styleMap->getDynamicProperty($type))) {
+            $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'title')] = '';
         }
         /**
         * '0' == 'Osbib Bibliographic Formatting'
@@ -1197,24 +1461,32 @@ class BIBFORMAT
         }
         $pString = isset($newString) ? $newString : $pString;
         $title = $this->utf8->utf8_ucfirst(trim($pString));
-        $this->item[$this->styleMap->{$type}['title']] = $title;
+        $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'title')] = $title;
     }
-/**
-* Format pages.
-* $this->style['pageFormat']:
-* 0 == 132-9
-* 1 == 132-39
-* 2 == 132-139
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$start		Page start.
-* @param	$end		Page end.
-* @param	$citation	If called from CITEFORMAT, this is the array of citation stylings.
-* @return	string of pages.
-*/
-    public function formatPages($start, $end = false, $citation = false)
+
+    /**
+     * Format pages.
+     *
+     * !!! This is a fault tolerant functions which also handles invalid input. In case something is not formatted
+     * as expected, the original string is used.
+     * Since $start and $end might also be false, we do not do strict type checking here (yet)
+     *
+     * $this->style['pageFormat']:
+     * 0 == 132-9
+     * 1 == 132-39
+     * 2 == 132-139
+     *
+     * @author	Mark Grimshaw
+     * @version	1
+     *
+     * @param bool|int|string $start Page start.
+     * @param bool|int|string $end Page end.
+     * @param bool $citation If called from CITEFORMAT, this is the array of citation stylings.
+     *
+     * @todo Use a class for $start / $end
+     * @see PARSEPAGE::init()
+    */
+    public function formatPages($start, $end = false, bool $citation = false): void
     {
         $type = $this->type;
         $style = $citation ? $citation : $this->style;
@@ -1222,18 +1494,19 @@ class BIBFORMAT
         * Set default plural behaviour for pages
         */
         $this->pages_plural = false;
+
         /**
-        * If no page end, return just $start;
+        * If no page end, use just $start;
         */
         if (!$end) {
-            $this->item[$this->styleMap->{$type}['pages']] = $start;
+            $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'pages')] = $start;
             return;
         }
         /**
         * Pages may be in roman numeral format etc.  Return unchanged
         */
         if (!is_numeric($start)) {
-            $this->item[$this->styleMap->{$type}['pages']] = $start . 'WIKINDX_NDASH' . $end;
+            $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'pages')] = $start . 'WIKINDX_NDASH' . $end;
             return;
         }
         /**
@@ -1244,11 +1517,11 @@ class BIBFORMAT
         * They've done something wrong so give them back exactly what they entered
         */
         if (($end <= $start) || (strlen($end) < strlen($start))) {
-            $this->item[$this->styleMap->{$type}['pages']] = $start . 'WIKINDX_NDASH' . $end;
+            $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'pages')] = $start . 'WIKINDX_NDASH' . $end;
             return;
         }
         if ($style['pageFormat'] == 2) {
-            $this->item[$this->styleMap->{$type}['pages']] = $start . 'WIKINDX_NDASH' . $end;
+            $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'pages')] = $start . 'WIKINDX_NDASH' . $end;
             return;
         }
 
@@ -1273,7 +1546,7 @@ class BIBFORMAT
                 $startPop = array_pop($startArray);
                 $endSub = substr($end, $index--, 1);
                 if ($endSub == $startPop) {
-                    $this->item[$this->styleMap->{$type}['pages']]
+                    $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'pages')]
                         = $start . '-' . $endPage;
                     return;
                 }
@@ -1282,26 +1555,31 @@ class BIBFORMAT
                 }
             }
         } else {
-            $this->item[$this->styleMap->{$type}['pages']] = $start . 'WIKINDX_NDASH' . $end;
+            $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'pages')] = $start . 'WIKINDX_NDASH' . $end;
             return;
         }
 
         /**
         * We should never reach here - in case we do, give back complete range so that something at least is printed
         */
-        $this->item[$this->styleMap->{$type}['pages']] = $start . 'WIKINDX_NDASH' . $end;
+        $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'pages')] = $start . 'WIKINDX_NDASH' . $end;
     }
-/**
-* Format runningTime for film/broadcast
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$minutes
-* @param	$hours
-*/
-    public function formatRunningTime($minutes, $hours)
+
+    /**
+     * Format runningTime for film/broadcast
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param int|string|mixed $minutes
+     * @param int|string|mixed $hours
+     *
+     * @todo be more strict with types
+     */
+    public function formatRunningTime($minutes, $hours): void
     {
+        $runningTime = '';
+
         $type = $this->type;
         if ($this->style['runningTimeFormat'] == 0) { // 3'45"
             if (isset($minutes) && $minutes) {
@@ -1347,27 +1625,28 @@ class BIBFORMAT
                 $runningTime = $hours;
             }
         }
-        $this->item[$this->styleMap->{$type}['runningTime']] = $runningTime;
+        $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'runningTime')] = $runningTime;
     }
-/**
-* Format date
-*
-* @author	Mark Grimshaw
-* @version	2
-*
-* @param	int $startDay
-* @param	int $startMonth
-* @param	int $endDay
-* @param	int $sendMonth
-*/
+
+    /**
+    * Format date
+    *
+    * @author Mark Grimshaw
+    * @version 2
+    *
+    * @param int|bool $startDay
+    * @param int|bool $startMonth
+    * @param int|bool $endDay
+    * @param int|bool $endMonth
+    */
     public function formatDate($startDay, $startMonth, $endDay, $endMonth)
     {
         $type = $this->type;
         $oldStartDay = $startDay;
         $oldEndDay = $endDay;
         if ($this->dateMonthNoDay && !$startDay && !$endDay) {
-            $this->{$type}[$this->styleMap->{$type}['date']] =
-            $this->dateArray[$this->styleMap->{$type}['date']];
+            $this->$type[$this->styleMap->getDynamicPropertyArrayElement($type, 'date')] =
+            $this->dateArray[$this->styleMap->getDynamicPropertyArrayElement($type, 'date')];
         }
         if ($startDay !== false) {
             if ($this->style['dayFormat'] == 1) { // e.g. 10.
@@ -1445,18 +1724,18 @@ class BIBFORMAT
             }
             $date = $startDate . $delimit . $endDate;
         }
-        $this->item[$this->styleMap->{$type}['date']] = $date;
+        $this->item[$this->styleMap->getDynamicPropertyArrayElement($type, 'date')] = $date;
     }
-/**
-* Format edition
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	int $edition
-* @return	string of edition.
-*/
-    public function formatEdition($edition)
+
+    /**
+     * Format edition
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param int|mixed $edition
+     */
+    public function formatEdition($edition): void
     {
         $type = $this->type;
         if (!is_numeric($edition)) {
@@ -1466,18 +1745,26 @@ class BIBFORMAT
         } elseif ($this->style['editionFormat'] == 2) { // 10th
             $edition = $this->cardinalToOrdinal($edition, 'edition');
         }
-        $this->item[$this->styleMap->{$type}[array_search('edition', $this->styleMap->$type)]] = $edition;
+        $this->item[$this->styleMap->getDynamicPropertyArrayElement(
+            $type,
+            array_search(
+                'edition',
+                $this->styleMap->getDynamicProperty($type)
+            )
+        )] = $edition;
     }
-/**
-* Create ordinal number from cardinal
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$cardinal
-* @return	$ordinal
-*/
-    public function cardinalToOrdinal($cardinal, $field = false)
+
+    /**
+     * Create ordinal number from cardinal
+     *
+     * @author Mark Grimshaw
+     * @version	1
+     *
+     * @param string $cardinal
+     * @param bool|mixed $field
+     * @return string ordinal
+     */
+    public function cardinalToOrdinal(string $cardinal, $field = false): string
     {
         // WIKINDX-specific
         if ($this->wikindx && method_exists($this->wikindxLanguageClass, 'cardinalToOrdinal')) {
@@ -1500,13 +1787,15 @@ class BIBFORMAT
         if ($modulo == 3) {
             return $cardinal . 'rd';
         }
+        return '';
     }
-/**
-* Localisations etc.
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function loadArrays()
+
+    /**
+     * Localisations etc.
+     * @author Mark Grimshaw
+     * @version 1
+     */
+    public function loadArrays(): void
     {
         // WIKINDX-specific
         if ($this->wikindx) {
@@ -1528,62 +1817,67 @@ class BIBFORMAT
         }
         // Defaults
         $this->longMonth = [
-                1	=>	'January',
-                2	=>	'February',
-                3	=>	'March',
-                4	=>	'April',
-                5	=>	'May',
-                6	=>	'June',
-                7	=>	'July',
-                8	=>	'August',
-                9	=>	'September',
-                10	=>	'October',
-                11	=>	'November',
-                12	=>	'December',
+                1  => 'January',
+                2  => 'February',
+                3  => 'March',
+                4  => 'April',
+                5  => 'May',
+                6  => 'June',
+                7  => 'July',
+                8  => 'August',
+                9  => 'September',
+                10 => 'October',
+                11 => 'November',
+                12 => 'December',
             ];
         $this->shortMonth = [
-                1	=>	'Jan',
-                2	=>	'Feb',
-                3	=>	'Mar',
-                4	=>	'Apr',
-                5	=>	'May',
-                6	=>	'Jun',
-                7	=>	'Jul',
-                8	=>	'Aug',
-                9	=>	'Sep',
-                10	=>	'Oct',
-                11	=>	'Nov',
-                12	=>	'Dec',
+                1  => 'Jan',
+                2  => 'Feb',
+                3  => 'Mar',
+                4  => 'Apr',
+                5  => 'May',
+                6  => 'Jun',
+                7  => 'Jul',
+                8  => 'Aug',
+                9  => 'Sep',
+                10 => 'Oct',
+                11 => 'Nov',
+                12 => 'Dec',
             ];
         $this->titleSubtitleSeparator = ': ';
     }
-/*
- * convertEntry - convert any laTeX code and convert to UTF-8 ready for storing in the database (betex only)
- *
- * @author Mark Grimshaw, modified by Christophe Ambroise 26/10/2003
- * @param array $entry - a bibtex entry
- * @return array $entry converted to utf8
- */
-    public function convertEntry($entry)
+
+    /**
+     * convertEntry - convert any laTeX code and convert to UTF-8 ready for storing in the database (betex only)
+     *
+     * @author Mark Grimshaw, modified by Christophe Ambroise 26/10/2003
+     * @param array $entry - a bibtex entry
+     * @return array $entry converted to utf8
+     */
+    public function convertEntry(array $entry): array
     {
+        $replaceBibtex = [];
+        $matchBibtex = [];
+
+        include_once(__DIR__ . '/BIBTEXCONFIG.php');
         $this->config = new BIBTEXCONFIG();
         $this->config->bibtex();
         // Construction of the transformation filter
-        foreach ($this->config->bibtexSpCh as $key => $value) {
+        foreach ($this->config->getBibtexSpCh() as $key => $value) {
             $replaceBibtex[] = chr($key);
-            $matchBibtex[] = preg_quote("/$value/");
+            $matchBibtex[] = '/' . preg_quote("$value", '/') . '/';
         }
-        foreach ($this->config->bibtexSpChOld as $key => $value) {
+        foreach ($this->config->getBibtexSpChOld() as $key => $value) {
             $replaceBibtex[] = chr($key);
-            $matchBibtex[] = preg_quote("/$value/");
+            $matchBibtex[] = '/' . preg_quote("$value", '/') . '/';
         }
-        foreach ($this->config->bibtexSpChOld2 as $key => $value) {
+        foreach ($this->config->getBibtexSpChOld2() as $key => $value) {
             $replaceBibtex[] = chr($key);
-            $matchBibtex[] = preg_quote("/$value/");
+            $matchBibtex[] = '/' . preg_quote("$value", '/') . '/';
         }
-        foreach ($this->config->bibtexSpChLatex as $key => $value) {
+        foreach ($this->config->getBibtexSpChLatex() as $key => $value) {
             $replaceBibtex[] =  chr($key);
-            $matchBibtex[] = preg_quote("/$value/");
+            $matchBibtex[] = '/' . preg_quote("$value", '/') . '/';
         }
         // Processing of the entry
         foreach ($entry as $key => $value) {
@@ -1593,343 +1887,5 @@ class BIBFORMAT
             $entry[$key] = utf8_encode(preg_replace($matchBibtex, $replaceBibtex, $value));
         }
         return $entry;
-    }
-}
-// BIBTEXCONFIG: BibTeX Configuration class
-
-class BIBTEXCONFIG
-{
-    // Constructor
-    public function BIBTEXCONFIG()
-    {
-    }
-
-// BibTeX arrays
-    public function bibtex()
-    {
-        $this->bibtexSpCh = [
-// Deal with '{' and '}' first!
-                      0x007B	=>	'\\textbraceleft',
-                      0x007D	=>	'\\textbraceright',
-                      0x0022	=>	'{"}',
-                      0x0023	=>	"{\#}",
-                      0x0025	=>	"{\%}",
-                      0x0026	=>	"{\&}",
-                      0x003C	=>	'\\textless',
-                      0x003E	=>	'\\textgreater',
-                      0x005F	=>	"{\_}",
-                      0x00A3	=>	'\\textsterling',
-                      0x00C0	=>	"{\`A}",
-                      0x00C1	=>	"{\'A}",
-                      0x00C2	=>	"{\^A}",
-                      0x00C3	=>	"{\~A}",
-                      0x00C4	=>	'{\"A}',
-                      0x00C5	=>	"{\AA}",
-                      0x00C6	=>	"{\AE}",
-                      0x00C7	=>	"{\c{C}}",
-                      0x00C8	=>	"{\`E}",
-                      0x00C9	=>	"{\'E}",
-                      0x00CA	=>	"{\^E}",
-                      0x00CB	=>	'{\"E}',
-                      0x00CC	=>	"{\`I}",
-                      0x00CD	=>	"{\'I}",
-                      0x00CE	=>	"{\^I}",
-                      0x00CF	=>	'{\"I}',
-                      0x00D1	=>	"{\~N}",
-                      0x00D2	=>	"{\`O}",
-                      0x00D3	=>	"{\'O}",
-                      0x00D4	=>	"{\^O}",
-                      0x00D5	=>	"{\~O}",
-                      0x00D6	=>	'{\"O}',
-                      0x00D8	=>	"{\O}",
-                      0x00D9	=>	"{\`U}",
-                      0x00DA	=>	"{\'U}",
-                      0x00DB	=>	"{\^U}",
-                      0x00DC	=>	'{\"U}',
-                      0x00DD	=>	"{\'Y}",
-                      0x00DF	=>	"{\ss}",
-                      0x00E0	=>	"{\`a}",
-                      0x00E1	=>	"{\'a}",
-                      0x00E2	=>	"{\^a}",
-                      0x00E3	=>	"{\~a}",
-                      0x00E4	=>	'{\"a}',
-                      0x00E5	=>	"{\aa}",
-                      0x00E6	=>	"{\ae}",
-                      0x00E7	=>	"{\c{c}}",
-                      0x00E8	=>	"{\`e}",
-                      0x00E9	=>	"{\'e}",
-                      0x00EA	=>	"{\^e}",
-                      0x00EB	=>	'{\"e}',
-                      0x00EC	=>	"{\`\i}",
-                      0x00ED	=>	"{\'\i}",
-                      0x00EE	=>	"{\^\i}",
-                      0x00EF	=>	'{\"\i}',
-                      0x00F1	=>	"{\~n}",
-                      0x00F2	=>	"{\`o}",
-                      0x00F3	=>	"{\'o}",
-                      0x00F4	=>	"{\^o}",
-                      0x00F5	=>	"{\~o}",
-                      0x00F6	=>	'{\"o}',
-                      0x00F8	=>	"{\o}",
-                      0x00F9	=>	"{\`u}",
-                      0x00FA	=>	"{\'u}",
-                      0x00FB	=>	"{\^u}",
-                      0x00FC	=>	'{\"u}',
-                      0x00FD	=>	"{\'y}",
-                      0x00FF	=>	'{\"y}',
-                      0x00A1	=>	"{\!}",
-                      0x00BF	=>	"{\?}",
-                      ];
-        //Old style with extra {} - usually array_flipped
-        $this->bibtexSpChOld = [
-                     0x00C0	=>	"{\`{A}}",
-                     0x00C1	=>	"{\'{A}}",
-                     0x00C2	=>	"{\^{A}}",
-                     0x00C3	=>	"{\~{A}}",
-                     0x00C4	=>	'{\"{A}}',
-                     0x00C5	=>	"{\A{A}}",
-                     0x00C6	=>	"{\A{E}}",
-                     0x00C7	=>	"{\c{C}}",
-                     0x00C8	=>	"{\`{E}}",
-                     0x00C9	=>	"{\'{E}}",
-                     0x00CA	=>	"{\^{E}}",
-                     0x00CB	=>	'{\"{E}}',
-                     0x00CC	=>	"{\`{I}}",
-                     0x00CD	=>	"{\'{I}}",
-                     0x00CE	=>	"{\^{I}}",
-                     0x00CF	=>	'{\"{I}}',
-                     0x00D1	=>	"{\~{N}}",
-                     0x00D2	=>	"{\`{O}}",
-                     0x00D3	=>	"{\'{O}}",
-                     0x00D4	=>	"{\^{O}}",
-                     0x00D5	=>	"{\~{O}}",
-                     0x00D6	=>	'{\"{O}}',
-                     0x00D8	=>	"{\{O}}",
-                     0x00D9	=>	"{\`{U}}",
-                     0x00DA	=>	"{\'{U}}",
-                     0x00DB	=>	"{\^{U}}",
-                     0x00DC	=>	'{\"{U}}',
-                     0x00DD	=>	"{\'{Y}}",
-                     0x00DF	=>	"{\s{s}}",
-                     0x00E0	=>	"{\`{a}}",
-                     0x00E1	=>	"{\'{a}}",
-                     0x00E2	=>	"{\^{a}}",
-                     0x00E3	=>	"{\~{a}}",
-                     0x00E4	=>	'{\"{a}}',
-                     0x00E5	=>	"{\a{a}}",
-                     0x00E6	=>	"{\a{e}}",
-                     0x00E7	=>	"{\c{c}}",
-                     0x00E8	=>	"{\`{e}}",
-                     0x00E9	=>	"{\'{e}}",
-                     0x00EA	=>	"{\^{e}}",
-                     0x00EB	=>	'{\"{e}}',
-                     0x00EC	=>	"{\`\i}",
-                     0x00ED	=>	"{\'\i}",
-                     0x00EE	=>	"{\^\i}",
-                     0x00EF	=>	'{\"\i}',
-                     0x00F1	=>	"{\~{n}}",
-                     0x00F2	=>	"{\`{o}}",
-                     0x00F3	=>	"{\'{o}}",
-                     0x00F4	=>	"{\^{o}}",
-                     0x00F5	=>	"{\~{o}}",
-                     0x00F6	=>	'{\"{o}}',
-                     0x00F8	=>	"{\{o}}",
-                     0x00F9	=>	"{\`{u}}",
-                     0x00FA	=>	"{\'{u}}",
-                     0x00FB	=>	"{\^{u}}",
-                     0x00FC	=>	'{\"{u}}',
-                     0x00FD	=>	"{\'{y}}",
-                     0x00FF	=>	'{\"{y}}',
-                     0x00A1	=>	"{\{!}}",
-                     0x00BF	=>	"{\{?}}",
-                     ];
-        // And there's more?!?!?!?!? (This is not strict bibtex.....)
-        $this->bibtexSpChOld2 = [
-                      0x00C0	=>	"\`{A}",
-                      0x00C1	=>	"\'{A}",
-                      0x00C2	=>	"\^{A}",
-                      0x00C3	=>	"\~{A}",
-                      0x00C4	=>	'\"{A}',
-                      0x00C5	=>	"\A{A}",
-                      0x00C6	=>	"\A{E}",
-                      0x00C7	=>	"\c{C}",
-                      0x00C8	=>	"\`{E}",
-                      0x00C9	=>	"\'{E}",
-                      0x00CA	=>	"\^{E}",
-                      0x00CB	=>	'\"{E}',
-                      0x00CC	=>	"\`{I}",
-                      0x00CD	=>	"\'{I}",
-                      0x00CE	=>	"\^{I}",
-                      0x00CF	=>	'\"{I}',
-                      0x00D1	=>	"\~{N}",
-                      0x00D2	=>	"\`{O}",
-                      0x00D3	=>	"\'{O}",
-                      0x00D4	=>	"\^{O}",
-                      0x00D5	=>	"\~{O}",
-                      0x00D6	=>	'\"{O}',
-                      0x00D8	=>	"\{O}",
-                      0x00D9	=>	"\`{U}",
-                      0x00DA	=>	"\'{U}",
-                      0x00DB	=>	"\^{U}",
-                      0x00DC	=>	'\"{U}',
-                      0x00DD	=>	"\'{Y}",
-                      0x00DF	=>	"\s{s}",
-                      0x00E0	=>	"\`{a}",
-                      0x00E1	=>	"\'{a}",
-                      0x00E2	=>	"\^{a}",
-                      0x00E3	=>	"\~{a}",
-                      0x00E4	=>	'\"{a}',
-                      0x00E5	=>	"\a{a}",
-                      0x00E6	=>	"\a{e}",
-                      0x00E7	=>	"\c{c}",
-                      0x00E8	=>	"\`{e}",
-                      0x00E9	=>	"\'{e}",
-                      0x00EA	=>	"\^{e}",
-                      0x00EB	=>	'\"{e}',
-                      0x00EC	=>	"\`{i}",
-                      0x00ED	=>	"\'{i}",
-                      0x00EE	=>	"\^{i}",
-                      0x00EF	=>	'\"{i}',
-                      0x00F1	=>	"\~{n}",
-                      0x00F2	=>	"\`{o}",
-                      0x00F3	=>	"\'{o}",
-                      0x00F4	=>	"\^{o}",
-                      0x00F5	=>	"\~{o}",
-                      0x00F6	=>	'\"{o}',
-                      0x00F8	=>	"\{o}",
-                      0x00F9	=>	"\`{u}",
-                      0x00FA	=>	"\'{u}",
-                      0x00FB	=>	"\^{u}",
-                      0x00FC	=>	'\"{u}',
-                      0x00FD	=>	"\'{y}",
-                      0x00FF	=>	'\"{y}',
-                      0x00A1	=>	"\{!}",
-                      0x00BF	=>	"\{?}",
-                      ];
-        // Latex code that some bibtex users may be using
-        $this->bibtexSpChLatex = [
-                       0x00C0	=>	"\`A",
-                       0x00C1	=>	"\'A",
-                       0x00C2	=>	"\^A",
-                       0x00C3	=>	"\~A",
-                       0x00C4	=>	'\"A',
-                       0x00C5	=>	"\AA",
-                       0x00C6	=>	"\AE",
-                       0x00C7	=>	"\cC",
-                       0x00C8	=>	"\`E",
-                       0x00C9	=>	"\'E",
-                       0x00CA	=>	"\^E",
-                       0x00CB	=>	'\"E',
-                       0x00CC	=>	"\`I",
-                       0x00CD	=>	"\'I",
-                       0x00CE	=>	"\^I",
-                       0x00CF	=>	'\"I',
-                       0x00D1	=>	"\~N",
-                       0x00D2	=>	"\`O",
-                       0x00D3	=>	"\'O",
-                       0x00D4	=>	"\^O",
-                       0x00D5	=>	"\~O",
-                       0x00D6	=>	'\"O',
-                       0x00D8	=>	"\O",
-                       0x00D9	=>	"\`U",
-                       0x00DA	=>	"\'U",
-                       0x00DB	=>	"\^U",
-                       0x00DC	=>	'\"U',
-                       0x00DD	=>	"\'Y",
-                       0x00DF	=>	"\ss",
-                       0x00E0	=>	"\`a",
-                       0x00E1	=>	"\'a",
-                       0x00E2	=>	"\^a",
-                       0x00E3	=>	"\~a",
-                       0x00E4	=>	'\"a',
-                       0x00E5	=>	"\aa",
-                       0x00E6	=>	"\ae",
-                       0x00E7	=>	"\cc",
-                       0x00E8	=>	"\`e",
-                       0x00E9	=>	"\'e",
-                       0x00EA	=>	"\^e",
-                       0x00EB	=>	'\"e',
-                       0x00EC	=>	"\`i",
-                       0x00ED	=>	"\'i",
-                       0x00EE	=>	"\^i",
-                       0x00EF	=>	'\"i',
-                       0x00F1	=>	"\~n",
-                       0x00F2	=>	"\`o",
-                       0x00F3	=>	"\'o",
-                       0x00F4	=>	"\^o",
-                       0x00F5	=>	"\~o",
-                       0x00F6	=>	'\"o',
-                       0x00F8	=>	"\o",
-                       0x00F9	=>	"\`u",
-                       0x00FA	=>	"\'u",
-                       0x00FB	=>	"\^u",
-                       0x00FC	=>	'\"u',
-                       0x00FD	=>	"\'y",
-                       0x00FF	=>	'\"y',
-                       0x00A1	=>	"\!",
-                       0x00BF	=>	"\?",
-                       ];
-        $this->bibtexSpChPlain = [
-                       0x00C0	=>	'A',
-                       0x00C1	=>	'A',
-                       0x00C2	=>	'A',
-                       0x00C3	=>	'A',
-                       0x00C4	=>	'A',
-                       0x00C5	=>	'A',
-                       0x00C6	=>	'AE',
-                       0x00C7	=>	'C',
-                       0x00C8	=>	'E',
-                       0x00C9	=>	'E',
-                       0x00CA	=>	'E',
-                       0x00CB	=>	'E',
-                       0x00CC	=>	'I',
-                       0x00CD	=>	'I',
-                       0x00CE	=>	'I',
-                       0x00CF	=>	'I',
-                       0x00D1	=>	'N',
-                       0x00D2	=>	'O',
-                       0x00D3	=>	'O',
-                       0x00D4	=>	'O',
-                       0x00D5	=>	'O',
-                       0x00D6	=>	'O',
-                       0x00D8	=>	'O',
-                       0x00D9	=>	'U',
-                       0x00DA	=>	'U',
-                       0x00DB	=>	'U',
-                       0x00DC	=>	'U',
-                       0x00DD	=>	'Y',
-                       0x00DF	=>	'ss',
-                       0x00E0	=>	'a',
-                       0x00E1	=>	'a',
-                       0x00E2	=>	'a',
-                       0x00E3	=>	'a',
-                       0x00E4	=>	'a',
-                       0x00E5	=>	'aa',
-                       0x00E6	=>	'ae',
-                       0x00E7	=>	'c',
-                       0x00E8	=>	'e',
-                       0x00E9	=>	'e',
-                       0x00EA	=>	'e',
-                       0x00EB	=>	'e',
-                       0x00EC	=>	'i',
-                       0x00ED	=>	'i',
-                       0x00EE	=>	'i',
-                       0x00EF	=>	'i',
-                       0x00F1	=>	'n',
-                       0x00F2	=>	'o',
-                       0x00F3	=>	'o',
-                       0x00F4	=>	'o',
-                       0x00F5	=>	'o',
-                       0x00F6	=>	'o',
-                       0x00F8	=>	'o',
-                       0x00F9	=>	'u',
-                       0x00FA	=>	'u',
-                       0x00FB	=>	'u',
-                       0x00FC	=>	'u',
-                       0x00FD	=>	'u',
-                       0x00FF	=>	'u',
-                       0x00A1	=>	'u',
-                       0x00BF	=>	'u',
-                       ];
     }
 }

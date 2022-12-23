@@ -13,63 +13,81 @@ so that your improvements can be added to the release package.
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
-class STYLEMAP
+class STYLEMAP extends AbstractStyleMap
 {
+    protected array $unpublished = [];
+
+    protected array $music_score = [];
+    protected array $music_track = [];
+    protected array $music_album = [];
+    protected array $proceedings = [];
+    protected array $personal = [];
+    protected array $patent = [];
+    protected array $statute = [];
+    protected array $chart = [];
+    protected array $map = [];
+    protected array $manuscript = [];
+    protected array $database = [];
+    protected array $hearing = [];
+    protected array $report = [];
+    protected array $government_report = [];
+    protected array $miscellaneous = [];
+    protected array $conference_paper = [];
+    protected array $classical = [];
+    protected array $bill = [];
+    protected array $legal_ruling = [];
+    protected array $case = [];
+    protected array $audiovisual = [];
+    protected array $artwork = [];
+    protected array $software = [];
+    protected array $broadcast = [];
+    protected array $film = [];
+    protected array $web_article = [];
+    protected array $thesis = [];
+    protected array $proceedings_article = [];
+    protected array $magazine_article = [];
+    protected array $newspaper_article = [];
+    protected array $journal_article = [];
+    protected array $book_article = [];
+    protected array $book = [];
+    protected array $genericMisc = [];
+    protected array $genericArticle = [];
+    protected array $genericBook = [];
+    protected array $basic = [];
+
     public function __construct()
     {
-        $this->loadMap();
+        parent::__construct();
     }
-/**
-* loadMap: Load the map into arrays based on resource type.
-*
-* The basic() array contains database fields that are common to all types of resources.
-* The key is the database field and the value is displayed to the user to be part of the style definition.
-* e.g. if the user enters:
-* author. title. publisherName|: publisherLocation|.
-* for a style definition for a book, we know that 'author' is the database field 'creator1', 'title' is
-* the database field 'title' etc.
-* There are some exceptions as defined by WIKINDX (other systems may have different methods).  Because these may be
-* represented in different ways in different systems, you will need to explicitly define these.  See BIBSTYLE.php
-* for examples of how WIKINDX does this.  The comments below relate to how WIKINDX stores such values in its database:
-* 1/ 'originalPublicationYear doesn't exist in the database but is used to re-order publicationYear and reprintYear
-* for book and book_article resource types.
-* 2/ 'pages' doesn't exist in the database but is created on the fly in BIBSTYLE.php as an amalgamation of
-* the database fields pageStart and pageEnd.
-* 3/ 'date' doesn't exist in the database but is created on the fly in BIBSTYLE.php as an amalgamation of
-* the database fields miscField2 (day) and miscField3 (month).
-* 4/ 'runningTime' doesn't exist in the database but is created on the fly in BIBSTYLE.php as an amalgamation of
-* the database fields miscField1 (minute) and miscField4 (hour) for film/broadcast.
-*
-* @author Mark Grimshaw
-*/
+
+    /**
+    * loadMap: Load the map into arrays based on resource type.
+    *
+    * The basic() array contains database fields that are common to all types of resources.
+    * The key is the database field and the value is displayed to the user to be part of the style definition.
+    * e.g. if the user enters:
+    * author. title. publisherName|: publisherLocation|.
+    * for a style definition for a book, we know that 'author' is the database field 'creator1', 'title' is
+    * the database field 'title' etc.
+    * There are some exceptions as defined by WIKINDX (other systems may have different methods).  Because these may be
+    * represented in different ways in different systems, you will need to explicitly define these.  See BIBSTYLE.php
+    * for examples of how WIKINDX does this.  The comments below relate to how WIKINDX stores such values in its database:
+    * 1/ 'originalPublicationYear doesn't exist in the database but is used to re-order publicationYear and reprintYear
+    * for book and book_article resource types.
+    * 2/ 'pages' doesn't exist in the database but is created on the fly in BIBSTYLE.php as an amalgamation of
+    * the database fields pageStart and pageEnd.
+    * 3/ 'date' doesn't exist in the database but is created on the fly in BIBSTYLE.php as an amalgamation of
+    * the database fields miscField2 (day) and miscField3 (month).
+    * 4/ 'runningTime' doesn't exist in the database but is created on the fly in BIBSTYLE.php as an amalgamation of
+    * the database fields miscField1 (minute) and miscField4 (hour) for film/broadcast.
+    *
+    * @author Mark Grimshaw
+    */
     public function loadMap()
     {
-        /**
-        * What fields are available to the in-text citation template? This array should NOT be changed.
-        */
-        $this->citation = [
-                    'creator' => 'creator',
-                    'title'	=>	'title',
-                    'year' => 'year',
-                    'pages' => 'pages',
-                ];
-        /**
-        * What fields are available to the in-text citation template for endnote-style citations? This array should NOT be changed.
-        */
-        $this->citationEndnoteInText = [
-                    'id' => 'id',
-                    'pages' => 'pages',
-                ];
-        /**
-        * What fields are available to the endnote citation template for endnote-style citations? This array should NOT be changed.
-        */
-        $this->citationEndnote = [
-                    'citation' => 'citation',
-                    'creator' => 'creator',
-                    'title'	=>	'title',
-                    'year' => 'year',
-                    'pages' => 'pages',
-                ];
+        $this->citation = self::DEFAULT_CITATION;
+        $this->citation['ID'] = 'ID';
+
         /**
         * NB NB NB NB NB NB NB NB NB NB NB
         *
@@ -78,52 +96,52 @@ class STYLEMAP
         * does not have a particular resource type, then you should set the value to FALSE (e.g. 'film' => FALSE,)
         */
         $this->types = [
-// The generic types must be present and unchanged.  DO NOT CHANGE THE VALUE OF THESE THREE!
-            'genericBook'		=>	'genericBook',
-            'genericArticle'	=>	'genericArticle',
-            'genericMisc'		=>	'genericMisc',
-// Edit values if necessary
-            'book'			=>	'book',
-            'book_article'		=>	'book_article',
-            'journal_article'	=>	'journal_article',
-            'newspaper_article'	=>	'newspaper_article',
-            'magazine_article'	=>	'magazine_article',
-            'proceedings'		=>	'proceedings',
-            'conference_paper'	=>	'conference_paper',
-            'proceedings_article'	=>	'proceedings_article',
-            'thesis'		=>	'thesis',
-            'web_article'		=>	'web_article',
-            'film'			=>	'film',
-            'broadcast'		=>	'broadcast',
-            'music_album'		=>	'music_album',
-            'music_track'		=>	'music_track',
-            'music_score'		=>	'music_score',
-            'artwork'		=>	'artwork',
-            'software'		=>	'software',
-            'audiovisual'		=>	'audiovisual',
-            'database'		=>	'database',
-            'government_report'	=>	'government_report',
-            'report'		=>	'report',
-            'hearing'		=>	'hearing',
-            'statute'		=>	'statute',
-            'legal_ruling'		=>	'legal_ruling',
-            'case'			=>	'case',
-            'bill'			=>	'bill',
-            'patent'		=>	'patent',
-            'personal'		=>	'personal',
-            'unpublished'		=>	'unpublished',
-            'classical'		=>	'classical',
-            'manuscript'		=>	'manuscript',
-            'map'			=>	'map',
-            'chart'			=>	'chart',
-            'miscellaneous'		=>	'miscellaneous',
+            // The generic types must be present and unchanged.  DO NOT CHANGE THE VALUE OF THESE THREE!
+            'genericBook' => 'genericBook',
+            'genericArticle' => 'genericArticle',
+            'genericMisc' => 'genericMisc',
+            // Edit values if necessary
+            'book' => 'book',
+            'book_article' => 'book_article',
+            'journal_article' => 'journal_article',
+            'newspaper_article' => 'newspaper_article',
+            'magazine_article' => 'magazine_article',
+            'proceedings' => 'proceedings',
+            'conference_paper' => 'conference_paper',
+            'proceedings_article' => 'proceedings_article',
+            'thesis' => 'thesis',
+            'web_article' => 'web_article',
+            'film' => 'film',
+            'broadcast' => 'broadcast',
+            'music_album' => 'music_album',
+            'music_track' => 'music_track',
+            'music_score' => 'music_score',
+            'artwork' => 'artwork',
+            'software' => 'software',
+            'audiovisual' => 'audiovisual',
+            'database' => 'database',
+            'government_report' => 'government_report',
+            'report' => 'report',
+            'hearing' => 'hearing',
+            'statute' => 'statute',
+            'legal_ruling' => 'legal_ruling',
+            'case' => 'case',
+            'bill' => 'bill',
+            'patent' => 'patent',
+            'personal' => 'personal',
+            'unpublished' => 'unpublished',
+            'classical' => 'classical',
+            'manuscript' => 'manuscript',
+            'map' => 'map',
+            'chart' => 'chart',
+            'miscellaneous' => 'miscellaneous',
         ];
         /**
         * Basic array of elements common to all types - change the key to map the database field that stores that value.
         */
         $this->basic = [
-                    'title'		=>	'title',
-                    'year1'		=>	'publicationYear',
+                    'title' => 'title',
+                    'year1' => 'publicationYear',
             ];
         /**
         * Creator mapping.  OSBib uses 'creator1' .. 'creator5' for internally managing creator names such as

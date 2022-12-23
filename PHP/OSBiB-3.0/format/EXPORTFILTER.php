@@ -14,18 +14,25 @@ Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
 
-/** Description of class EXPORT
-* Format a bibliographic resource for output.
-*
-* @author	Andrea Rossato
-* @version	1
-*/
+/**
+ * Description of class EXPORT
+ * Format a bibliographic resource for output.
+ *
+ * @author Andrea Rossato
+ * @version 1
+ */
 class EXPORTFILTER
 {
+    protected string $newLine = '';
+    protected ?BIBFORMAT $bibformat = null;
+    protected $format;
+
     /**
-    * $dir is the path to STYLEMAP.php etc.
-    */
-    public function __construct(&$ref, $output)
+     * $dir is the path to STYLEMAP.php etc.
+     * @param CITEFORMAT|BIBFORMAT $ref
+     * @param string $output
+     */
+    public function __construct(&$ref, string $output)
     {
         $this->bibformat =& $ref;
         $this->format = $output;
@@ -38,15 +45,24 @@ class EXPORTFILTER
             $this->newLine = "\n";
         }
     }
+
     /**
-    * Format for HTML or RTF/plain?
-    *
-    * @author	Mark Grimshaw
-    * @version	1
-    *
-    * @param	$data	Input string
-    */
-    public function format($data)
+     * @return string
+     */
+    public function getNewLine(): string
+    {
+        return $this->newLine;
+    }
+
+    /**
+     * Format for HTML or RTF/plain?
+     *
+     * @author	Mark Grimshaw
+     * @version	1
+     *
+     * @param $data Input string
+     */
+    public function format(string $data): string
     {
         if ($this->format == 'html') {
             /**
@@ -65,10 +81,10 @@ class EXPORTFILTER
             $data = str_replace('<', '&lt;', $data);
             $data = str_replace('>', '&gt;', $data);
             $data = preg_replace('/&(?![a-zA-Z0-9#]+?;)/', '&amp;', $data);
-            $data = $this->bibformat->patterns ?
+            $data = $this->bibformat->isPatterns() ?
                 preg_replace(
-                    $this->bibformat->patterns,
-                    '<span class="' . $this->bibformat->patternHighlight . '">$1</span>',
+                    $this->bibformat->isPatterns(),
+                    '<span class="' . $this->bibformat->getPatternHighlight() . '">$1</span>',
                     $data
                 ) : $data;
             $data = preg_replace("/\[b\](.*?)\[\/b\]/is", '<strong>$1</strong>', $data);
@@ -98,7 +114,7 @@ class EXPORTFILTER
         * OpenOffice-1.x.
         */
         elseif ($this->format == 'sxw') {
-            $data = $this->bibformat->utf8->decodeUtf8($data);
+            $data = $this->bibformat->getUtf8()->decodeUtf8($data);
             $data = str_replace('"', '&quot;', $data);
             $data = str_replace('<', '&lt;', $data);
             $data = str_replace('>', '&gt;', $data);

@@ -1,6 +1,3 @@
-# todo: also scan osbibtex directories
-
-
 # default phpstan configuration
 #
 # Run phpstan
@@ -49,7 +46,7 @@ parameters:
   paths:
     - ../../Classes
     - ../../Tests
-    #- ../../PHP/OSBiB-3.0
+    - ../../PHP/OSBiB-3.0
   # use these paths (but do not check)
   scanDirectories:
     - ../../.Build/Web/typo3/sysext
@@ -60,6 +57,9 @@ parameters:
 
   excludePaths:
     - ../../ext_emconf.php
+    - ../../PHP/OSBiB-3.0/format/TESTOSBIB.php
+    - ../../PHP/OSBiB-3.0/format/init_TESTOSBIB.php
+    - ../../PHP/OSBiB-3.0/format/HELPSTYLE.php
 
   editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
 

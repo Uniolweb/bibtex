@@ -1,0 +1,45 @@
+# EditorConfig is awesome: http://EditorConfig.org
+# We use most commonly used conventions for most file types
+
+# For PHP we stick to PSR guidelines:
+# https://www.php-fig.org/psr/psr-12/
+# "Code MUST use an indent of 4 spaces for each indent level, and MUST NOT use tabs for indenting."
+# PHP coding style is enforced with php-cs-fixer
+
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+# general rule, including
+# [*.bib]
+# [*.css]
+# [*.html]
+# [*.php]
+# [*.txt]
+# [*.xml]
+#
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# TS/JS-Files
+[*.{ts,js}]
+indent_style = space
+indent_size = 2
+
+# JSON-Files
+[*.json]
+indent_style = tab
+
+# Markdown-Files
+[*.md]
+max_line_length = 80
+
+# NEON-Files, e.g. phpstan.neon
+[*.neon]
+indent_style = tab

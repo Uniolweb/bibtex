@@ -13,19 +13,30 @@ so that your improvements can be added to the release package.
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
-// UTF-8 class
+
 class UTF8
 {
+    protected array $UTF8_UPPER_TO_LOWER = [];
+    protected array $UTF8_LOWER_TO_UPPER = [];
+
     public function __construct()
     {
         $this->loadVars();
     }
 
-// Decode UTF-8 ONLY if the input has been UTF-8-encoded.
-// Adapted from 'nospam' in the user contributions at:
-// http://www.php.net/manual/en/function.utf8-decode.php
-    public function smartUtf8_decode($inStr)
+    /**
+     * Decode UTF-8 ONLY if the input has been UTF-8-encoded.
+     * Adapted from 'nospam' in the user contributions at:
+     * http://www.php.net/manual/en/function.utf8-decode.php
+     *
+     * @param string|bool $inStr
+     * @todo Use onlystring for $inStr
+     */
+    public function smartUtf8_decode($inStr): string
     {
+        if ($inStr === false) {
+            $inStr = '';
+        }
         // Replace ? with a unique string
         $newStr = str_replace('?', 'w0i0k0i0n0d0x', $inStr);
         // Try the utf8_decode
@@ -40,100 +51,103 @@ class UTF8
         }
         return $newStr;
     }
-// UTF-8 encoding - PROPERLY decode UTF-8 as PHP's utf8_decode can't hack it.
-// Freely borrowed from morris_hirsch at http://www.php.net/manual/en/function.utf8-decode.php
-// bytes bits representation
-// 1  7  0bbbbbbb
-// 2  11  110bbbbb 10bbbbbb
-// 3  16  1110bbbb 10bbbbbb 10bbbbbb
-// 4  21  11110bbb 10bbbbbb 10bbbbbb 10bbbbbb
-// Each b represents a bit that can be used to store character data.
 
-// input CANNOT have single byte upper half extended ascii codes
-public function decodeUtf8($utf8_string)
-{
-    $out = '';
-    $ns = strlen($utf8_string);
-    for ($nn = 0; $nn < $ns; $nn++) {
-        $ch = $utf8_string [$nn];
-        $ii = ord($ch);
+    /**
+     * UTF-8 encoding - PROPERLY decode UTF-8 as PHP's utf8_decode can't hack it.
+     * Freely borrowed from morris_hirsch at http://www.php.net/manual/en/function.utf8-decode.php
+     * bytes bits representation
+     * 1  7  0bbbbbbb
+     * 2  11  110bbbbb 10bbbbbb
+     * 3  16  1110bbbb 10bbbbbb 10bbbbbb
+     * 4  21  11110bbb 10bbbbbb 10bbbbbb 10bbbbbb
+     * Each b represents a bit that can be used to store character data.
+     * input CANNOT have single byte upper half extended ascii codes
+     */
+    public function decodeUtf8(string $utf8_string): string
+    {
+        $out = '';
+        $ns = strlen($utf8_string);
+        for ($nn = 0; $nn < $ns; $nn++) {
+            $ch = $utf8_string [$nn];
+            $ii = ord($ch);
 
-        //1 7 0bbbbbbb (127)
+            //1 7 0bbbbbbb (127)
 
-        if ($ii < 128) {
-            $out .= $ch;
+            if ($ii < 128) {
+                $out .= $ch;
+            }
+
+            //2 11 110bbbbb 10bbbbbb (2047)
+
+            elseif ($ii >>5 == 6) {
+                $b1 = ($ii & 31);
+
+                $nn++;
+                $ch = $utf8_string [$nn];
+                $ii = ord($ch);
+                $b2 = ($ii & 63);
+
+                $ii = ($b1 * 64) + $b2;
+
+                $ent = sprintf('&#%d;', $ii);
+                $out .= $ent;
+            }
+
+            //3 16 1110bbbb 10bbbbbb 10bbbbbb
+
+            elseif ($ii >>4 == 14) {
+                $b1 = ($ii & 31);
+
+                $nn++;
+                $ch = $utf8_string [$nn];
+                $ii = ord($ch);
+                $b2 = ($ii & 63);
+
+                $nn++;
+                $ch = $utf8_string [$nn];
+                $ii = ord($ch);
+                $b3 = ($ii & 63);
+
+                $ii = ((($b1 * 64) + $b2) * 64) + $b3;
+
+                $ent = sprintf('&#%d;', $ii);
+                $out .= $ent;
+            }
+
+            //4 21 11110bbb 10bbbbbb 10bbbbbb 10bbbbbb
+
+            elseif ($ii >>3 == 30) {
+                $b1 = ($ii & 31);
+
+                $nn++;
+                $ch = $utf8_string [$nn];
+                $ii = ord($ch);
+                $b2 = ($ii & 63);
+
+                $nn++;
+                $ch = $utf8_string [$nn];
+                $ii = ord($ch);
+                $b3 = ($ii & 63);
+
+                $nn++;
+                $ch = $utf8_string [$nn];
+                $ii = ord($ch);
+                $b4 = ($ii & 63);
+
+                $ii = ((((($b1 * 64) + $b2) * 64) + $b3) * 64) + $b4;
+
+                $ent = sprintf('&#%d;', $ii);
+                $out .= $ent;
+            }
         }
-
-        //2 11 110bbbbb 10bbbbbb (2047)
-
-        elseif ($ii >>5 == 6) {
-            $b1 = ($ii & 31);
-
-            $nn++;
-            $ch = $utf8_string [$nn];
-            $ii = ord($ch);
-            $b2 = ($ii & 63);
-
-            $ii = ($b1 * 64) + $b2;
-
-            $ent = sprintf('&#%d;', $ii);
-            $out .= $ent;
-        }
-
-        //3 16 1110bbbb 10bbbbbb 10bbbbbb
-
-        elseif ($ii >>4 == 14) {
-            $b1 = ($ii & 31);
-
-            $nn++;
-            $ch = $utf8_string [$nn];
-            $ii = ord($ch);
-            $b2 = ($ii & 63);
-
-            $nn++;
-            $ch = $utf8_string [$nn];
-            $ii = ord($ch);
-            $b3 = ($ii & 63);
-
-            $ii = ((($b1 * 64) + $b2) * 64) + $b3;
-
-            $ent = sprintf('&#%d;', $ii);
-            $out .= $ent;
-        }
-
-        //4 21 11110bbb 10bbbbbb 10bbbbbb 10bbbbbb
-
-        elseif ($ii >>3 == 30) {
-            $b1 = ($ii & 31);
-
-            $nn++;
-            $ch = $utf8_string [$nn];
-            $ii = ord($ch);
-            $b2 = ($ii & 63);
-
-            $nn++;
-            $ch = $utf8_string [$nn];
-            $ii = ord($ch);
-            $b3 = ($ii & 63);
-
-            $nn++;
-            $ch = $utf8_string [$nn];
-            $ii = ord($ch);
-            $b4 = ($ii & 63);
-
-            $ii = ((((($b1 * 64) + $b2) * 64) + $b3) * 64) + $b4;
-
-            $ent = sprintf('&#%d;', $ii);
-            $out .= $ent;
-        }
+        return $out;
     }
-    return $out;
-}
-  public function encodeUtf8($str)
+
+  public function encodeUtf8(string $str): string
   {
       preg_match_all('/&#([0-9]*?);/', $str, $unicode);
       foreach ($unicode[0] as $key => $value) {
-          $str = preg_replace('/' . $value . '/', $this->code2utf8($unicode[1][$key]), $str);
+          $str = preg_replace('/' . $value . '/', $this->code2utf8((int)($unicode[1][$key])), $str);
       }
       return $str;
   }
@@ -146,13 +160,14 @@ public function decodeUtf8($utf8_string)
      * @link   http://www.randomchaos.com/document.php?source=php_and_unicode
      * @see    unicode_to_utf8()
      */
-  public function utf8_to_unicode($str)
+  public function utf8_to_unicode(string $str): array
   {
       $unicode = [];
       $values = [];
       $lookingFor = 1;
 
-      for ($i = 0; $i < strlen($str); $i++) {
+      $strlen = strlen($str);
+      for ($i = 0; $i < $strlen; $i++) {
           $thisValue = ord($str[ $i ]);
           if ($thisValue < 128) {
               $unicode[] = $thisValue;
@@ -181,7 +196,7 @@ public function decodeUtf8($utf8_string)
    * @link   http://www.randomchaos.com/document.php?source=php_and_unicode
    * @see    utf8_to_unicode()
    */
-  public function unicode_to_utf8($str)
+  public function unicode_to_utf8(array $str): string
   {
       $utf8 = '';
       foreach ($str as $unicode) {
@@ -198,7 +213,8 @@ public function decodeUtf8($utf8_string)
       }
       return $utf8;
   }
-  public function code2utf8($num)
+
+  public function code2utf8(int $num): string
   {
       if ($num<128) {
           return chr($num);
@@ -224,7 +240,7 @@ public function decodeUtf8($utf8_string)
    * @see    strtolower()
    * @see    utf8_strtoupper()
    */
-  public function utf8_strtolower($string)
+  public function utf8_strtolower(string $string): string
   {
       if (function_exists('mb_strtolower')) {
           return mb_strtolower($string, 'utf-8');
@@ -249,7 +265,7 @@ public function decodeUtf8($utf8_string)
    * @see    strtoupper()
    * @see    utf8_strtoupper()
    */
-  public function utf8_strtoupper($string)
+  public function utf8_strtoupper(string $string): string
   {
       if (function_exists('mb_strtoupper')) {
           return mb_strtoupper($string, 'utf-8');
@@ -263,6 +279,7 @@ public function decodeUtf8($utf8_string)
       }
       return $this->unicode_to_utf8($uni);
   }
+
   /**
    * This is a unicode aware replacement for substr()
    *
@@ -270,8 +287,10 @@ public function decodeUtf8($utf8_string)
    *
    * @author Andreas Gohr <andi@splitbrain.org>
    * @see    substr()
+   *
+   * @deprecated always use mb_substr
    */
-  public function utf8_substr($str, $start, $length=null)
+  public function utf8_substr(string $str, int $start, int $length=0): string
   {
       if (function_exists('mb_substr')) {
           return mb_substr($str, $start, $length, 'utf-8');
@@ -280,17 +299,19 @@ public function decodeUtf8($utf8_string)
       $uni = $this->utf8_to_unicode($str);
       return $this->unicode_to_utf8(array_slice($uni, $start, $length));
   }
+
   /**
    * This is a unicode aware replacement for ucfirst()
    *
    * @author Andrea Rossato <arossato@istitutocolli.org>
    * @see    ucfirst()
    */
-  public function utf8_ucfirst($str)
+  public function utf8_ucfirst(string $str): string
   {
-      $fc = $this->utf8_substr($str, 0, 1);
-      return $this->utf8_strtoupper($fc) . $this->utf8_substr($str, 1, $this->utf8_strlen($str));
+      $fc = mb_substr($str, 0, 1);
+      return $this->utf8_strtoupper($fc) . mb_substr($str, 1, mb_strlen($str));
   }
+
   /**
    * This is a unicode aware replacement for strlen()
    *
@@ -298,8 +319,10 @@ public function decodeUtf8($utf8_string)
    *
    * @author Andreas Gohr <andi@splitbrain.org>
    * @see    strlen()
+   *
+   * @deprecated use mb_strlen
    */
-  public function utf8_strlen($string)
+  public function utf8_strlen($string): int
   {
       if (!defined('UTF8_NOMBSTRING') && function_exists('mb_strlen')) {
           return mb_strlen($string, 'utf-8');
@@ -308,7 +331,8 @@ public function decodeUtf8($utf8_string)
       $uni = $this->utf8_to_unicode($string);
       return count($uni);
   }
-  public function utf8_htmlspecialchars($str)
+
+  public function utf8_htmlspecialchars(string $str): string
   {
       $str = str_replace('"', '&quot;', $str);
       $str = str_replace('<', '&lt;', $str);
@@ -317,7 +341,7 @@ public function decodeUtf8($utf8_string)
       return $str;
   }
 
-  public function loadVars()
+  public function loadVars(): void
   {
       /**
        * UTF-8 Case lookup table

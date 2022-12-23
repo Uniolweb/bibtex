@@ -18,31 +18,70 @@ Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-130
 The WIKINDX Team 2005
 sirfragalot@users.sourceforge.net
 **********************************************************************************/
-/*****
-*	BIBLIOGRAPHY STYLE class
-*	Format a resource for a bibliographic style.
-*
-*	$Header: /cvsroot/bibliophile/OSBib/format/BIBSTYLE.php,v 1.2 2005/10/16 03:49:34 sirfragalot Exp $
-*****/
+
+/**
+ * BIBLIOGRAPHY STYLE class
+ * Format a resource for a bibliographic style.
+ *
+ * $Header: /cvsroot/bibliophile/OSBib/format/BIBSTYLE.php,v 1.2 2005/10/16 03:49:34 sirfragalot Exp $
+ *
+ * @todo requires core classes, extract into separate package?
+ * @deprecated requires core classes, should be extracted into separate package
+ */
 class BIBSTYLE
 {
-    public function __construct($db, $output, $export = false, $style = false)
+    /**
+     * @var mixed|null
+     * @todo what type is $db?
+     */
+    protected $db;
+
+    protected bool $shortOutput = false;
+    protected bool $pages = false;
+
+    protected string $output = '';
+    protected string $setupStyle = '';
+
+    protected array $row = [];
+
+    protected ?BIBFORMAT $bibformat = null;
+    protected ?MISC $misc = null;
+    protected ?SESSION $session = null;
+
+    /**
+     * @param $db
+     * @param string $output
+     * @param bool $export
+     * @param string $style
+     *
+     * @todo what type is $db???
+     */
+    public function __construct($db, string $output, bool $export = false, string $style = '')
     {
         $this->db = $db;
         // Is our database based on BibTeX and using the same field names?
-        include_once('core/session/SESSION.php');
+        // @todo we just use the SESSION.php class in this package, no idea if this is correct ...
+        //include_once('core/session/SESSION.php');
+        include_once(__DIR__ . '/create/SESSION.php');
         $this->session = new SESSION();
-        include_once('core/styles/BIBFORMAT.php');
+        // @todo we just use the BIBFORMAT.php class in this package, no idea if this is correct ...
+        //include_once('core/styles/BIBFORMAT.php');
+        include_once(__DIR__ . '/BIBFORMAT.php');
         $this->bibformat = new BIBFORMAT();
         $this->output = $output;
-        $this->bibformat->output = $output;
+        $this->bibformat->setOutput($output);
         // WIKINDX-specific
-        $this->bibformat->wikindx = true;
+        $this->bibformat->setWikindx(true);
         /**
         * CSS class for highlighting search terms
         */
-        $this->bibformat->patternHighlight = 'highlight';
-        include_once('core/html/MISC.php');
+        $this->bibformat->setPatternHighlight('highlight');
+
+        // @todo this class does not exist here!
+        // @todo we just use the BIBFORMAT.php class in this package, no idea if this is correct ...
+        //include_once('core/html/MISC.php');
+        include_once(__DIR__ . '/create/MISC.php');
+        $this->misc = new MISC();
         // get the bibliographic style
         if ($style) {
             $this->setupStyle = $style;
@@ -68,6 +107,15 @@ class BIBSTYLE
         * force a reload of the style here.
         */
         $styleInfo = $this->session->getVar('style_name');
+
+        /**
+         * @todo get rid of unserialize
+         * "Warning: Do not pass untrusted user input to unserialize() regardless of the options value of
+         *   allowed_classes. Unserialization can result in code being loaded and executed due to object instantiation
+         *   and autoloading, and a malicious user may be able to exploit this. Use a safe, standard data interchange
+         *   format such as JSON (via json_decode() and json_encode()) if you need to pass serialized data to the user."
+         *  https://www.php.net/manual/en/function.unserialize.php
+         */
         $styleCommon = unserialize(base64_decode($this->session->getVar('style_common')));
         //print "$styleInfo:  "; print_r($styleCommon); print "<P>";
         $styleTypes = unserialize(base64_decode($this->session->getVar('style_types')));
@@ -86,11 +134,19 @@ class BIBSTYLE
         unset($this->session, $info, $citation);
         $this->bibformat->getStyle($styleCommon, $styleTypes);
         unset($styleCommon, $styleTypes);
-        //print_r($this->bibformat->style); print "<P>";
     }
-// Accept a SQL result row of raw bibliographic data and process it.
-// We build up the $bibformat->item array with formatted parts from the raw $row
-    public function process($row, $shortOutput = false)
+
+    public function getBibFormat(): BIBFORMAT
+    {
+        return $this->bibformat;
+    }
+
+    /**
+     * Accept a SQL result row of raw bibliographic data and process it.
+     * We build up the $bibformat->item array with formatted parts from the raw $row
+     * @return string|array|null
+     */
+    public function process(array $row, bool $shortOutput = false)
     {
         $this->row = $row;
         $this->shortOutput = $shortOutput;
@@ -111,7 +167,7 @@ class BIBSTYLE
         }
         $this->row = $this->bibformat->preProcess($type, $this->row);
         // Return $type is the OSBib resource type ($this->book, $this->web_article etc.) as used in STYLEMAP
-        $type = $this->bibformat->type;
+        $type = $this->bibformat->getType();
         $this->preProcess($type);
         // We now have an array for this item where the keys match the key names of $this->styleMap->$type
         // where $type is book, journal_article, thesis etc. and are now ready to map this against the defined
@@ -124,8 +180,11 @@ class BIBSTYLE
         // remove extraneous {...}
         return preg_replace('/{(.*)}/U', '$1', $pString);
     }
-// Perform some pre-processing
-    public function preProcess($type)
+
+    /**
+     * Perform some pre-processing
+     */
+    public function preProcess(string $type): void
     {
         // Various types of creator
         for ($index = 1; $index <= 5; $index++) {
@@ -133,10 +192,10 @@ class BIBSTYLE
                 break;
             }
             if (!$this->row['creator' . $index] ||
-                !array_key_exists('creator' . $index, $this->bibformat->styleMap->$type)) {
+                !array_key_exists('creator' . $index, $this->bibformat->getStyleMap()->getDynamicProperty($type))) {
                 continue;
             }
-            if (array_key_exists('creator' . $index, $this->bibformat->styleMap->$type)) {
+            if (array_key_exists('creator' . $index, $this->bibformat->getStyleMap()->getDynamicProperty($type))) {
                 $this->grabNames('creator' . $index);
             }
         }
@@ -144,26 +203,26 @@ class BIBSTYLE
         $this->createTitle();
         if (!$this->shortOutput) {
             // edition
-            if ($editionKey = array_search('edition', $this->bibformat->styleMap->$type)) {
+            if ($editionKey = array_search('edition', $this->bibformat->getStyleMap()->getDynamicProperty($type))) {
                 $this->createEdition($editionKey);
             }
-// pageStart and pageEnd
+            // pageStart and pageEnd
             $this->pages = false; // indicates not yet created pages for articles
-            if (array_key_exists('pages', $this->bibformat->styleMap->$type)) {
+            if (array_key_exists('pages', $this->bibformat->getStyleMap()->$type)) {
                 $this->createPages();
             }
             // Date
-            if (array_key_exists('date', $this->bibformat->styleMap->$type)) {
+            if (array_key_exists('date', $this->bibformat->getStyleMap()->$type)) {
                 $this->createDate();
             }
             // runningTime for film/broadcast
-            if (array_key_exists('runningTime', $this->bibformat->styleMap->$type)) {
+            if (array_key_exists('runningTime', $this->bibformat->getStyleMap()->$type)) {
                 $this->createRunningTime();
             }
             // web_article URL
-            if (array_key_exists('URL', $this->bibformat->styleMap->$type) &&
+            if (array_key_exists('URL', $this->bibformat->getStyleMap()->$type) &&
                 ($itemElement = $this->createUrl())) {
-                $this->bibformat->addItem($itemElement, 'URL', false);
+                $this->bibformat->addItem($itemElement, 'URL');
             }
             // proceedings_article can have publisher as well as organiser/location. Publisher is in 'miscField1'
             if (($type == 'proceedings_article') && $this->row['miscField1']) {
@@ -185,44 +244,59 @@ class BIBSTYLE
             $this->bibformat->addAllOtherItems($this->row);
         }
         // Add the publication year for short output.
-        elseif (array_key_exists('year1', $this->bibformat->styleMap->$type) && $this->row['year1']) {
-            $this->bibformat->addItem($this->row['year1'], 'year1', false);
+        elseif (array_key_exists('year1', $this->bibformat->getStyleMap()->$type) && $this->row['year1']) {
+            $this->bibformat->addItem($this->row['year1'], 'year1');
         }
     }
-// callback for ordinals above
-    public function ordinals($matches)
+
+    /**
+     * callback for ordinals above
+     */
+    public function ordinals(array $matches): string
     {
+        if (!isset($matches[1]) || !isset($matches[2])) {
+            return '';
+        }
+
         if ($this->output == 'html') {
             return $matches[1] . '<sup>' . $matches[2] . '</sup>';
         }
         if ($this->output == 'rtf') {
             return $matches[1] . "{{\up5 " . $matches[2] . '}}';
         }
-
         return $matches[1] . $matches[2];
     }
-// Create the resource title
-    public function createTitle()
+
+    /**
+     * Create the resource title
+     */
+    public function createTitle(): void
     {
         $pString = stripslashes($this->row['noSort']) . ' ' .
             stripslashes($this->row['title']);
         if ($this->row['subtitle']) {
-            $pString .= $this->bibformat->titleSubtitleSeparator . stripslashes($this->row['subtitle']);
+            $pString .= $this->bibformat->getTitleSubtitleSeparator() . stripslashes($this->row['subtitle']);
         }
         // anything enclosed in {...} is to be left as is
         $this->bibformat->formatTitle($pString, '{', '}');
     }
-// Create the URL
-    public function createUrl()
+
+    /**
+     * Create the URL
+     * @todo Accessing MISC::a will fail miserably, if a is not a static function !!!
+     *   this class includes a class MISC which is not in the package so we do not know
+     *   what type MISC is
+     */
+    public function createUrl(): string
     {
         if (!$this->row['url']) {
-            return false;
+            return '';
         }
         $url = ($this->output == 'html') ? htmlspecialchars(stripslashes($this->row['url'])) :
             stripslashes($this->row['url']);
         unset($this->row['url']);
         if ($this->output == 'html') {
-            return MISC::a('rLink', $url, $url, '_blank');
+            return $this->misc->a('rLink', $url, $url, '_blank');
         }
 
         return $url;
@@ -269,10 +343,14 @@ class BIBSTYLE
         $edition = stripslashes($this->row[$editionKey]);
         $this->bibformat->formatEdition($edition);
     }
-// Create page start and page end
+
+    /**
+     * Create page start and page end
+     */
     public function createPages()
     {
-        if (!$this->row['pageStart'] || $this->pages) { // empty field or page format already done
+        // empty field or page format already done
+        if (!$this->row['pageStart'] || $this->pages) {
             $this->pages = true;
             return;
         }
@@ -281,10 +359,16 @@ class BIBSTYLE
         $end = $this->row['pageEnd'] ? trim(stripslashes($this->row['pageEnd'])) : false;
         $this->bibformat->formatPages($start, $end);
     }
-// get names from database for creator, editor, translator etc.
-    public function grabNames($nameType)
+
+    /**
+     * get names from database for creator, editor, translator etc.
+     */
+    public function grabNames(string $nameType): bool
     {
-        $nameIds = split(',', $this->row[$nameType]);
+        /** @var array $conditions */
+        $conditions = [];
+
+        $nameIds = mb_split(',', $this->row[$nameType]);
         foreach ($nameIds as $nameId) {
             $conditions[] = $this->db->formatField('id') . '=' . $this->db->tidyInput($nameId);
         }
@@ -294,7 +378,11 @@ class BIBSTYLE
             'initials', 'prefix', 'id'],
             ' WHERE ' . implode(' OR ', $conditions)
         );
+        /**
+         * @todo $numNames is not used here
+         */
         $numNames = $this->db->numRows($recordset);
+
         // Reorder $row so that creator order is correct and not that returned by SQL
         $ids = explode(',', $this->row[$nameType]);
         while ($row = $this->db->loopRecordSet($recordset)) {
@@ -307,11 +395,16 @@ class BIBSTYLE
             $rowTemp[] = $rowSql[$id];
         }
         $this->bibformat->formatNames($rowTemp, $nameType);
+        return true;
     }
-// bad Input function
-    public function badInput($error)
+
+    /**
+     * bad Input function
+     */
+    public function badInput($error): void
     {
-        include_once('core/html/CLOSE.php');
+        //include_once('core/html/CLOSE.php');
+        include_once(__DIR__ . '/create/CLOSE.php');
         new CLOSE($this->db, $error);
     }
 }

@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /********************************
 OSBib:
 A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
@@ -15,12 +17,13 @@ Adapted from WIKINDX: http://wikindx.sourceforge.net
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
+
 /**
-*	Miscellaneous HTML FORM processing
-*
-*	@author Mark Grimshaw
-*
-*	$Header: /cvsroot/bibliophile/OSBib/create/FORMMISC.php,v 1.1 2005/06/20 22:26:51 sirfragalot Exp $
+ * Miscellaneous HTML FORM processing
+ *
+ * @author Mark Grimshaw
+ *
+ * $Header: /cvsroot/bibliophile/OSBib/create/FORMMISC.php,v 1.1 2005/06/20 22:26:51 sirfragalot Exp $
 */
 class FORMMISC
 {
@@ -28,9 +31,8 @@ class FORMMISC
      * reduce the size of long text (in select boxes usually) to keep web browser display tidy
      * optional $override allows the programmer to override the user set preferences
      */
-    public function reduceLongText($text, $override = false)
+    public function reduceLongText(string $text, int $limit = 40): string
     {
-        $limit = $override ? $override : 40;
         if (($limit != -1) && ($count = preg_match_all('/./', $text, $throwAway)) > $limit) {
             $start = floor(($limit/2) - 2);
             $length = $count - (2 * $start);

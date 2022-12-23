@@ -18,19 +18,28 @@ Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-130
 The WIKINDX Team 2004
 sirfragalot@users.sourceforge.net
 **********************************************************************************/
-/*****
-* BIBLIOGRAPHIC STYLE HELP class (English)
-*
-* NOTE TO TRANSLATORS:  1/  Both the class name and the constructor name should be changed to match the (case-sensitive) name of
-*				the folder your language files are in.  For example, if you are supplying a Klingon translation and
-*				your languages/ folder is languages/kn/, the class and constructor name for the file SUCCESS.php
-*				must both be SUCCESS_kn.
-*****/
+/**
+ * BIBLIOGRAPHIC STYLE HELP class (English)
+ *
+ * NOTE TO TRANSLATORS:  1/  Both the class name and the constructor name should be changed to match the (case-sensitive) name of
+ * the folder your language files are in.  For example, if you are supplying a Klingon translation and
+ * your languages/ folder is languages/kn/, the class and constructor name for the file SUCCESS.php
+ * must both be SUCCESS_kn.
+ *
+ * @todo requires core/ classes, extract into separate package?
+ * @deprecated requires core/ classes, should be extracted into separate package
+*/
 class HELPSTYLE_en
 {
+    protected ?MISC $misc = null;
+    protected ?TEMPLATE $template = null;
+    protected ?UTF8 $utf8 = null;
+    protected ?MESSAGES $messages = null;
+
     public function __construct()
     {
-        $linkSfWikindx = MISC::a(
+        $this->misc = new MISC();
+        $linkSfWikindx = $this->misc->a(
             'link',
             'WIKINDX Sourceforge Project',
             'http://sourceforge.net/projects/wikindx/',
@@ -120,65 +129,68 @@ class HELPSTYLE_en
         include_once('core/messages/UTF8.php');
         $this->utf8 = new UTF8();
     }
-// Help page
+
+    /**
+     * Help page
+     */
     public function display()
     {
         $this->template->setVar(
             'heading',
             $this->utf8->decodeUtf8($this->messages->text('heading', 'helpStyles'))
         );
-        $this->pString = MISC::aName('top');
+        $this->pString = $this->misc->aName('top');
         $this->pString .= TEXT1;
-        $this->pString .= MISC::p(TEXT2);
-        $this->pString .= MISC::p(TEXT3);
-        $this->pString .= MISC::p(TEXT4);
-        $this->pString .= MISC::p(MISC::hr());
-        $this->pString .= MISC::p(TEXT5);
-        $this->pString .= MISC::p(TEXT10);
-        $this->pString .= MISC::p(TEXT6);
-        $this->pString .= MISC::p(TEXT7);
-        $this->pString .= MISC::p(MISC::hr());
-        $this->pString .= MISC::h(SYNTAX_HEADING);
-        $this->pString .= MISC::p(SYNTAX1);
-        $this->pString .= MISC::ol(
-            MISC::li(SYNTAX2) .
-            MISC::li(SYNTAX3) .
-            MISC::li(MISC::b(SYNTAX4) . ' ' . SYNTAX5) .
-            MISC::li(SYNTAX6) .
-            MISC::li(SYNTAX7) .
-            MISC::li(SYNTAX8) .
-            MISC::li(SYNTAX9) .
-            MISC::li(SYNTAX10) .
-            MISC::li(SYNTAX11) .
-            MISC::li(SYNTAX12) .
-            MISC::li(SYNTAX13)
+        $this->pString .= $this->misc->p(TEXT2);
+        $this->pString .= $this->misc->p(TEXT3);
+        $this->pString .= $this->misc->p(TEXT4);
+        $this->pString .= $this->misc->p($this->misc->hr());
+        $this->pString .= $this->misc->p(TEXT5);
+        $this->pString .= $this->misc->p(TEXT10);
+        $this->pString .= $this->misc->p(TEXT6);
+        $this->pString .= $this->misc->p(TEXT7);
+        $this->pString .= $this->misc->p($this->misc->hr());
+        $this->pString .= $this->misc->h(SYNTAX_HEADING);
+        $this->pString .= $this->misc->p(SYNTAX1);
+        $this->pString .= $this->misc->ol(
+            $this->misc->li(SYNTAX2) .
+            $this->misc->li(SYNTAX3) .
+            $this->misc->li($this->misc->b(SYNTAX4) . ' ' . SYNTAX5) .
+            $this->misc->li(SYNTAX6) .
+            $this->misc->li(SYNTAX7) .
+            $this->misc->li(SYNTAX8) .
+            $this->misc->li(SYNTAX9) .
+            $this->misc->li(SYNTAX10) .
+            $this->misc->li(SYNTAX11) .
+            $this->misc->li(SYNTAX12) .
+            $this->misc->li(SYNTAX13)
         );
-        $this->pString .= MISC::p(TEXT11);
-        $this->pString .= MISC::p(MISC::hr());
-        $this->pString .= MISC::h(EXAMPLE_HEADING);
-        $this->pString .= MISC::p('<code>' . EXAMPLE1 . '</code>' . MISC::BR() .
-            EXAMPLE2 . '</code>' . MISC::BR() . '<code>' . EXAMPLE3 . '</code>');
-        $this->pString .= MISC::p(EXAMPLE4 . MISC::BR() . '<code>' . EXAMPLE5 . '</code>');
-        $this->pString .= MISC::hr();
-        $this->pString .= MISC::p('<code>' . EXAMPLE7 . '</code>' . MISC::BR() .
-            EXAMPLE2 . '</code>' . MISC::BR() . '<code>' . EXAMPLE8 . '</code>');
-        $this->pString .= MISC::p(EXAMPLE9 . MISC::BR() . '<code>' . EXAMPLE10 . '</code>');
-        $this->pString .= MISC::hr();
-        $this->pString .= MISC::p('<code>' . EXAMPLE11 . '</code>' . MISC::BR() .
-            EXAMPLE2 . '</code>' . MISC::BR() . '<code>' . EXAMPLE12 . '</code>');
-        $this->pString .= MISC::p(EXAMPLE13 . MISC::BR() . '<code>' . EXAMPLE14 . '</code>');
-        $this->pString .= MISC::hr();
-        $this->pString .= MISC::p(EXAMPLE15 . MISC::BR() . '<code>' . EXAMPLE16 . '</code>' . MISC::BR() .
-            EXAMPLE2 . MISC::BR() . '<code>' . EXAMPLE17 . '</code>' . MISC::br() .
-            EXAMPLE18 . MISC::br() . '<code>' . EXAMPLE19 . '</code>');
-        $this->pString .= MISC::p(EXAMPLE20 . MISC::BR() . '<code>' . EXAMPLE21 . '</code>' . MISC::BR() .
-            EXAMPLE2 . MISC::BR() . '<code>' . EXAMPLE22 . '</code>' . MISC::br() .
-            EXAMPLE23 . MISC::br() . '<code>' . EXAMPLE24 . '</code>');
-        $this->pString .= MISC::p(EXAMPLE25);
-        $this->pString .= MISC::hr();
-        $this->pString .= MISC::p(TEXT8);
-        $this->pString .= MISC::p(TEXT9);
-        $this->pString .= MISC::p(MISC::a(
+        $this->pString .= $this->misc->p(TEXT11);
+        $this->pString .= $this->misc->p($this->misc->hr());
+        $this->pString .= $this->misc->h(EXAMPLE_HEADING);
+        $this->pString .= $this->misc->p('<code>' . EXAMPLE1 . '</code>' . $this->misc->BR() .
+            EXAMPLE2 . '</code>' . $this->misc->BR() . '<code>' . EXAMPLE3 . '</code>');
+        $this->pString .= $this->misc->p(EXAMPLE4 . $this->misc->BR() . '<code>' . EXAMPLE5 . '</code>');
+        $this->pString .= $this->misc->hr();
+        $this->pString .= $this->misc->p('<code>' . EXAMPLE7 . '</code>' . $this->misc->BR() .
+            EXAMPLE2 . '</code>' . $this->misc->BR() . '<code>' . EXAMPLE8 . '</code>');
+        $this->pString .= $this->misc->p(EXAMPLE9 . $this->misc->BR() . '<code>' . EXAMPLE10 . '</code>');
+        $this->pString .= $this->misc->hr();
+        $this->pString .= $this->misc->p('<code>' . EXAMPLE11 . '</code>' . $this->misc->BR() .
+            EXAMPLE2 . '</code>' . $this->misc->BR() . '<code>' . EXAMPLE12 . '</code>');
+        $this->pString .= $this->misc->p(EXAMPLE13 . $this->misc->BR() . '<code>' . EXAMPLE14 . '</code>');
+        $this->pString .= $this->misc->hr();
+        $this->pString .= $this->misc->p(EXAMPLE15 . $this->misc->BR() . '<code>' . EXAMPLE16 . '</code>' . $this->misc->BR() .
+            EXAMPLE2 . $this->misc->BR() . '<code>' . EXAMPLE17 . '</code>' . $this->misc->br() .
+            EXAMPLE18 . $this->misc->br() . '<code>' . EXAMPLE19 . '</code>');
+        $this->pString .= $this->misc->p(EXAMPLE20 . $this->misc->BR() . '<code>' . EXAMPLE21 . '</code>' . $this->misc->BR() .
+            EXAMPLE2 . $this->misc->BR() . '<code>' . EXAMPLE22 . '</code>' . $this->misc->br() .
+            EXAMPLE23 . $this->misc->br() . '<code>' . EXAMPLE24 . '</code>');
+        $this->pString .= $this->misc->p(EXAMPLE25);
+        $this->pString .= $this->misc->hr();
+        $this->pString .= $this->misc->p(TEXT8);
+        $this->pString .= $this->misc->p(TEXT9);
+        $this->pString .= $this->misc->p($this->misc->a(
             'link',
             $this->utf8->decodeUtf8($this->messages->text('misc', 'top')),
             '#top'

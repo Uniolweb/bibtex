@@ -1,5 +1,7 @@
 <?php
-/********************************
+
+declare(strict_types=1);
+/**
 OSBib:
 A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
 using the OSBib standard.  Originally developed for WIKINDX (http://wikindx.sourceforge.net)
@@ -12,24 +14,125 @@ so that your improvements can be added to the release package.
 
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
-********************************/
-
-/** Description of class CITEFORMAT
-* Format citations.
-*
-* @author	Mark Grimshaw
-* @version	1
 */
+
+/**
+ * Description of class CITEFORMAT
+ * Format citations.
+ *
+ * @author Mark Grimshaw
+ * @version 1
+ *
+ * @todo requires core/classes does not exist in this package
+ * @todo requires languages/$languageDir/CONSTANTS.php does not exist in this package
+ * @todo messed up, CITEFORMAT is called with constructor with no arguments, but first argument is a reference
+ * @todo create common interface / parent class for BIBFORMAT and CITEFORMAT?
+ * @deprecated requires external classes
+ */
 class CITEFORMAT
 {
+    protected int $count;
+
+    /** @var string|bool  */
+    protected $pageSplitDone = '';
+
+    /**
+     * @var bool|string
+     * @todo data type is unclear
+     */
+    protected $previousNameInSameSentenceId = false;
+
+    /**
+     * @var string|bool
+     * @todo use only data type string?
+     */
+    protected $matchNameSplit = '';
+
+    protected bool $nameInSameSentence;
+    protected bool $wikindx;
+    protected bool $pluralKey = false;
+    protected bool $citationInSameSentence = false;
+    protected bool $multipleCitations = false;
+    protected bool $followCreatorTemplateUse = false;
+
+    protected int $endnoteSameIds = 0;
+
+    protected string $textEtAl = '';
+    protected string $possessive1 = '';
+    protected string $possessive2 = '';
+    protected string $stylesheet = '';
+    protected string $output = '';
+    protected string $id = '';
+    /** @var string|bool  */
+    protected $endnoteString = '';
+    protected string $bibStyleProcess = '';
+    protected string $hyperlinkBase = '';
+    protected string $styleSheet = '';
+    protected string $dir = '';
+    protected string $matchNameSplitEtAl = '';
+    protected string $patterns = '';
+
+    /** @var string[] $longMonth */
+    protected array $longMonth = [];
+    /** @var string[] $shortMonth */
+    protected array $shortMonth = [];
+    protected array $opCit = [];
+    protected array $endnotes = [];
+    protected array $citationIds = [];
+    protected array $creatorIds = [];
+    protected array $consecutiveCreatorSep = [];
+    protected array $endnoteStringArray = [];
+    protected array $creators = [];
+    protected array $endnoteCitations = [];
+    protected array $endnoteSameIdsArray = [];
+    protected array $inTextDoneIds = [];
+    protected array $rtfDoneIds = [];
+    protected array $intextBibliography = [];
+    protected array $creatorSurnames = [];
+    protected array $items = [];
+    protected array $style = [];
+    protected array $titles = [];
+    protected array $years = [];
+    protected array $templateEndnote = [];
+    protected array $pages = [];
+    protected array $item = [];
+    protected array $template = [];
+    protected array $yearsDisambiguated = [];
+    protected array $bibliographyIds = [];
+    protected array $ambiguousTemplate = [];
+    protected array $ids = [];
+    protected array $consecutiveCreatorTemplate = [];
+    protected array $templateEndnoteInText = [];
+    protected array $subsequentCreatorTemplate = [];
+    protected array $followCreatorTemplate = [];
+    protected array $templateOpCit = [];
+    protected array $templateIdem = [];
+    protected array $templateIbid = [];
+    protected array $footnoteStyle = [];
+
+    protected ?AbstractWikIndxLanguageClass $wikindxLanguageClass = null;
+    protected ?BIBSTYLE $bibStyle = null;
+    protected ?EXPORTFILTER $export = null;
+    protected ?UTF8 $utf8 = null;
+    protected ?MISC $misc = null;
+    protected ?PARSESTYLE $parseStyle = null;
+    protected ?STYLEMAP $styleMap = null;
+
     /**
     * $bibStyle is the object that handles bibliography formatting of appended bibliographies.
     * $bibStyleProcess is the method in $bibStyle that starts the formatting of a bibliographic entry.
     * $dir is the path to STYLEMAP.php etc.
     * $utfDir is a WIKINDX-specific setting
-    */
-    public function __construct(&$bibStyle, $bibStyleProcess, $dir = false, $utf8Dir = false)
+     * @param BIBSTYLE|object $bibStyle
+     * @param string $bibStyleProcess, for example 'process' or 'processBib', is function name
+     * @param string $dir
+     *
+     * @todo what class is $bibStyle??? Is called with for example TESTOSBIB, BIBSTYLE
+     */
+    public function __construct(&$bibStyle, string $bibStyleProcess, string $dir = '')
     {
+        include_once(__DIR__ . '/create/MISC.php');
+        $this->misc = new MISC();
         $this->bibStyle = $bibStyle;
         $this->bibStyleProcess = $bibStyleProcess;
         //05/05/2005 G.GARDEY: add a last "/" to $dir if not present.
@@ -58,24 +161,103 @@ class CITEFORMAT
         * 'html', 'rtf', or 'plain'
         */
         $this->output = 'html'; // default if not set externally
-        $this->styleSheet = false; // For RTF
-        $this->hyperlinkBase = false; // no hyperlinking of cited resources (i.e. for $this->output other than 'html')
-        $this->endnoteString = false;
-        $this->matchNameSplit = $this->matchNameSplitEtAl = false; // split page from main citation (in-text only)
+        $this->styleSheet = ''; // For RTF
+        $this->hyperlinkBase = ''; // no hyperlinking of cited resources (i.e. for $this->output other than 'html')
+        $this->endnoteString = '';
+        // matchNameSplit should be a string because it is used in preg_quote
+        $this->matchNameSplit = '';
+        $this->matchNameSplitEtAl = ''; // split page from main citation (in-text only)
         // WIKINDX-specific
         $this->wikindx = false;
     }
-/**
-* Read the chosen bibliographic style and create arrays.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$stylePath	The path where the styles are.
-* @param	$style		The requested bibliographic output style.
-* @return	bool
-*/
-    public function loadStyle($stylePath, $style)
+
+    public function setOutput(string $output): void
+    {
+        $this->output = $output;
+    }
+
+    public function setWikindx($wikindx): void
+    {
+        $this->wikindx = $wikindx;
+    }
+
+    public function resetItem(): void
+    {
+        $this->item = [];
+    }
+
+    public function getItems(): array
+    {
+        return $this->items;
+    }
+
+    public function setItemType(string $value): void
+    {
+        $this->items[$this->count]['type'] = $value;
+    }
+
+    public function setItemText(string $value): void
+    {
+        $this->items[$this->count]['text'] = $value;
+    }
+
+    public function setItemId(string $value): void
+    {
+        $this->items[$this->count]['id'] = $value;
+    }
+
+    public function getCount(): int
+    {
+        return $this->count;
+    }
+
+    public function setCount(int $count): void
+    {
+        $this->count = $count;
+    }
+
+    /**
+     * Is not called getStyle() because this function already exists. Has been deprecated and renamed
+     * to loadStyles(). We can rename this function later.
+     *
+     * @return array
+     */
+    public function getStyleArray(): array
+    {
+        return $this->style;
+    }
+
+    public function getBibliographyIds(): array
+    {
+        return $this->bibliographyIds;
+    }
+
+    public function gethyperlinkBase(): string
+    {
+        return $this->hyperlinkBase;
+    }
+
+    public function setHyperlinkBase(string $hyperlinkBase): void
+    {
+        $this->hyperlinkBase = $hyperlinkBase;
+    }
+
+    public function getYearsDisambiguated(): array
+    {
+        return $this->yearsDisambiguated;
+    }
+
+    /**
+     * Read the chosen bibliographic style and create arrays.
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param string $stylePath The path where the styles are.
+     * @param string $style The requested bibliographic output style.
+     * @return array
+     */
+    public function loadStyle(string $stylePath, string $style): array
     {
         //05/05/2005 G.GARDEY: add a last "/" to $stylePath if not present.
         $stylePath = trim($stylePath);
@@ -94,41 +276,58 @@ class CITEFORMAT
         fclose($fh);
         return [$info, $citation, $common, $types];
     }
-/**
-* Transform the raw data from the XML file into usable arrays
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$citation		Array of global formatting data for citations
-* @param	$footnote		Array of alternate creator formatting for footnotes
-*/
-    public function getStyle($citation, $footnote)
+
+    /**
+     * Transform the raw data from the XML file into usable arrays
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param $citation Array of global formatting data for citations
+     * @param $footnote Array of alternate creator formatting for footnotes
+     */
+    public function loadStyles($citation, $footnote)
     {
         $this->citationToArray($citation);
         $this->footnoteToArray($footnote);
         // If endnote-style citations, need to ensure we get endnote references with BBCode intact and not parsed by bibformat()
         if ($this->style['citationStyle']) {
-            $this->bibStyle->bibformat->output = 'noScan';
+            $this->bibStyle->getBibFormat()->setOutput('noScan');
         }
         if ($this->style['citationStyle'] && ($this->style['endnoteStyle'] == 2)) { // footnotes
-            $this->bibStyle->bibformat->citationFootnote = true;
+            $this->bibStyle->getBibFormat()->setCitationFootnote(true);
         }
         /**
-        * Load localisations etc.
-        */
+         * Load localisations etc.
+         */
         $this->loadArrays();
     }
-/**
-* Reformat the array representation of footnote creator styling into a more useable format.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$footnote		nodal array representation of XML data
-* @return	flattened array representation for easier use.
-*/
-    public function footnoteToArray($footnote)
+
+    /**
+     * Transform the raw data from the XML file into usable arrays
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param $citation Array of global formatting data for citations
+     * @param $footnote Array of alternate creator formatting for footnotes
+     *
+     * @deprecated Use loadStyles - name is more appropriate
+     */
+    public function getStyle($citation, $footnote)
+    {
+        $this->loadStyles($citation, $footnote);
+    }
+
+    /**
+     * Reformat the array representation of footnote creator styling into a more useable format.
+     *
+     * @author	Mark Grimshaw
+     * @version	1
+     *
+     * @param $footnote nodal array representation of XML data
+     */
+    public function footnoteToArray($footnote): void
     {
         foreach ($footnote as $array) {
             if (array_key_exists('_NAME', $array) && array_key_exists('_DATA', $array) &&
@@ -137,15 +336,16 @@ class CITEFORMAT
             }
         }
     }
-/**
-* Reformat the array representation of citation into a more useable format.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$citation		nodal array representation of XML data
-*/
-    public function citationToArray($citation)
+
+    /**
+     * Reformat the array representation of citation into a more useable format.
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param $citation nodal array representation of XML data
+     */
+    public function citationToArray($citation): void
     {
         foreach ($citation as $array) {
             if (array_key_exists('_NAME', $array) && array_key_exists('_DATA', $array)) {
@@ -158,23 +358,25 @@ class CITEFORMAT
             $this->citationToArrayInTextStyle();
         }
     }
-/**
-* Reformat the array representation of citation into a more useable format - Endnote style citations
-*
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function citationToArrayEndnoteStyle()
+
+    /**
+     * Reformat the array representation of citation into a more useable format - Endnote style citations
+     *
+     * @author Mark Grimshaw
+     * @version	1
+     */
+    public function citationToArrayEndnoteStyle(): void
     {
-        include_once('PARSESTYLE.php');
-        $temp = PARSESTYLE::parseStringToArray(
+        include_once(__DIR__ . '/PARSESTYLE.php');
+        $this->parseStyle = new PARSESTYLE();
+        $temp = $this->parseStyle->parseStringToArray(
             'citationEndnoteInText',
             trim($this->style['templateEndnoteInText']),
             $this->styleMap
         );
         // Ensure we have only valid fields.
         foreach ($temp as $field => $value) {
-            if (array_key_exists($field, $this->styleMap->citationEndnoteInText) || ($field == 'independent') ||
+            if (array_key_exists($field, $this->styleMap->getCitationEndNoteInText()) || ($field == 'independent') ||
                 ($field == 'ultimate') || ($field == 'preliminaryText')) {
                 $this->templateEndnoteInText[$field] = $value;
             }
@@ -182,14 +384,14 @@ class CITEFORMAT
         if (isset($this->templateEndnoteInText)) {
             $this->parseIndependent($this->templateEndnoteInText);
         }
-        $temp = PARSESTYLE::parseStringToArray(
+        $temp = $this->parseStyle->parseStringToArray(
             'citationEndnote',
             trim($this->style['templateEndnote']),
             $this->styleMap
         );
         // Ensure we have only valid fields.
         foreach ($temp as $field => $value) {
-            if (array_key_exists($field, $this->styleMap->citationEndnote) || ($field == 'independent') ||
+            if (array_key_exists($field, $this->styleMap->getCitationEndNote()) || ($field == 'independent') ||
                 ($field == 'ultimate') || ($field == 'preliminaryText')) {
                 $this->templateEndnote[$field] = $value;
             }
@@ -197,10 +399,10 @@ class CITEFORMAT
         if (isset($this->templateEndnote)) {
             $this->parseIndependent($this->templateEndnote);
         }
-        $temp = PARSESTYLE::parseStringToArray('citationEndnote', trim($this->style['ibid']), $this->styleMap);
+        $temp = $this->parseStyle->parseStringToArray('citationEndnote', trim($this->style['ibid']), $this->styleMap);
         // Ensure we have only valid fields.
         foreach ($temp as $field => $value) {
-            if (array_key_exists($field, $this->styleMap->citationEndnote) || ($field == 'independent') ||
+            if (array_key_exists($field, $this->styleMap->getCitationEndNote()) || ($field == 'independent') ||
                 ($field == 'ultimate') || ($field == 'preliminaryText')) {
                 $this->templateIbid[$field] = $value;
             }
@@ -208,10 +410,10 @@ class CITEFORMAT
         if (isset($this->templateIbid)) {
             $this->parseIndependent($this->templateIbid);
         }
-        $temp = PARSESTYLE::parseStringToArray('citationEndnote', trim($this->style['idem']), $this->styleMap);
+        $temp = $this->parseStyle->parseStringToArray('citationEndnote', trim($this->style['idem']), $this->styleMap);
         // Ensure we have only valid fields.
         foreach ($temp as $field => $value) {
-            if (array_key_exists($field, $this->styleMap->citationEndnote) || ($field == 'independent') ||
+            if (array_key_exists($field, $this->styleMap->getCitationEndNote()) || ($field == 'independent') ||
                 ($field == 'ultimate') || ($field == 'preliminaryText')) {
                 $this->templateIdem[$field] = $value;
             }
@@ -219,10 +421,10 @@ class CITEFORMAT
         if (isset($this->templateIdem)) {
             $this->parseIndependent($this->templateIdem);
         }
-        $temp = PARSESTYLE::parseStringToArray('citationEndnote', trim($this->style['opCit']), $this->styleMap);
+        $temp = $this->parseStyle->parseStringToArray('citationEndnote', trim($this->style['opCit']), $this->styleMap);
         // Ensure we have only valid fields.
         foreach ($temp as $field => $value) {
-            if (array_key_exists($field, $this->styleMap->citationEndnote) || ($field == 'independent') ||
+            if (array_key_exists($field, $this->styleMap->getCitationEndNote()) || ($field == 'independent') ||
                 ($field == 'ultimate') || ($field == 'preliminaryText')) {
                 $this->templateOpCit[$field] = $value;
             }
@@ -231,24 +433,24 @@ class CITEFORMAT
             $this->parseIndependent($this->templateOpCit);
         }
     }
-/**
-* Reformat the array representation of citation into a more useable format - In-text style citations
-*
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function citationToArrayInTextStyle()
+
+    /**
+     * Reformat the array representation of citation into a more useable format - In-text style citations
+     *
+     * @authorMark Grimshaw
+     * @version	1
+     */
+    public function citationToArrayInTextStyle(): void
     {
-        //print_r($this->style); print "<P>";
         include_once('PARSESTYLE.php');
-        $temp = PARSESTYLE::parseStringToArray(
+        $temp = $this->parseStyle->parseStringToArray(
             'citation',
             trim($this->style['template']),
             $this->styleMap
         );
         // Ensure we have only valid fields.
         foreach ($temp as $field => $value) {
-            if (array_key_exists($field, $this->styleMap->citation) || ($field == 'independent') ||
+            if (array_key_exists($field, $this->styleMap->getCitation()) || ($field == 'independent') ||
                 ($field == 'ultimate') || ($field == 'preliminaryText')) {
                 $this->template[$field] = $value;
             }
@@ -257,13 +459,13 @@ class CITEFORMAT
             $this->parseIndependent($this->template);
         }
         if (trim($this->style['followCreatorTemplate'])) {
-            $temp = PARSESTYLE::parseStringToArray(
+            $temp = $this->parseStyle->parseStringToArray(
                 'citation',
                 trim($this->style['followCreatorTemplate']),
                 $this->styleMap
             );
             foreach ($temp as $field => $value) {
-                if (array_key_exists($field, $this->styleMap->citation) || ($field == 'independent') ||
+                if (array_key_exists($field, $this->styleMap->getCitation()) || ($field == 'independent') ||
                     ($field == 'ultimate') || ($field == 'preliminaryText')) {
                     $this->followCreatorTemplate[$field] = $value;
                 }
@@ -271,13 +473,13 @@ class CITEFORMAT
             $this->parseIndependent($this->followCreatorTemplate);
         }
         if (trim($this->style['consecutiveCreatorTemplate'])) {
-            $temp = PARSESTYLE::parseStringToArray(
+            $temp = $this->parseStyle->parseStringToArray(
                 'citation',
                 trim($this->style['consecutiveCreatorTemplate']),
                 $this->styleMap
             );
             foreach ($temp as $field => $value) {
-                if (array_key_exists($field, $this->styleMap->citation) || ($field == 'independent') ||
+                if (array_key_exists($field, $this->styleMap->getCitation()) || ($field == 'independent') ||
                     ($field == 'ultimate') || ($field == 'preliminaryText')) {
                     $this->consecutiveCreatorTemplate[$field] = $value;
                 }
@@ -285,13 +487,13 @@ class CITEFORMAT
             $this->parseIndependent($this->consecutiveCreatorTemplate);
         }
         if (trim($this->style['subsequentCreatorTemplate'])) {
-            $temp = PARSESTYLE::parseStringToArray(
+            $temp = $this->parseStyle->parseStringToArray(
                 'citation',
                 trim($this->style['subsequentCreatorTemplate']),
                 $this->styleMap
             );
             foreach ($temp as $field => $value) {
-                if (array_key_exists($field, $this->styleMap->citation) || ($field == 'independent') ||
+                if (array_key_exists($field, $this->styleMap->getCitation()) || ($field == 'independent') ||
                     ($field == 'ultimate') || ($field == 'preliminaryText')) {
                     $this->subsequentCreatorTemplate[$field] = $value;
                 }
@@ -299,14 +501,14 @@ class CITEFORMAT
             $this->parseIndependent($this->subsequentCreatorTemplate);
         }
         if (trim($this->style['ambiguousTemplate'])) {
-            $temp = PARSESTYLE::parseStringToArray(
+            $temp = $this->parseStyle->parseStringToArray(
                 'citation',
                 trim($this->style['ambiguousTemplate']),
                 $this->styleMap
             );
             // Ensure we have only valid fields.
             foreach ($temp as $field => $value) {
-                if (array_key_exists($field, $this->styleMap->citation) || ($field == 'independent') ||
+                if (array_key_exists($field, $this->styleMap->getCitation()) || ($field == 'independent') ||
                     ($field == 'ultimate') || ($field == 'preliminaryText')) {
                     $this->ambiguousTemplate[$field] = $value;
                 }
@@ -314,16 +516,16 @@ class CITEFORMAT
             $this->parseIndependent($this->ambiguousTemplate);
         }
         // replacement citation templates for particular resource types
-        foreach ($this->styleMap->types as $type => $value) {
+        foreach ($this->styleMap->getTypes() as $type => $value) {
             $key = $type . 'Template';
             if (array_key_exists($key, $this->style) && trim($this->style[$key])) {
-                $temp = PARSESTYLE::parseStringToArray(
+                $temp = $this->parseStyle->parseStringToArray(
                     'citation',
                     trim($this->style[$key]),
                     $this->styleMap
                 );
                 foreach ($temp as $field => $value) {
-                    if (array_key_exists($field, $this->styleMap->citation) || ($field == 'independent') ||
+                    if (array_key_exists($field, $this->styleMap->getCitation()) || ($field == 'independent') ||
                         ($field == 'ultimate') || ($field == 'preliminaryText')) {
                         $this->{$key}[$field] = $value;
                     }
@@ -332,19 +534,20 @@ class CITEFORMAT
             }
         }
     }
-/**
-* Parse independent strings of templates
-*
-* @Author Mark Grimshaw
-*
-*@param array
-*/
-    public function parseIndependent(&$array)
+
+    /**
+     * Parse independent strings of templates
+     *
+     * @Author Mark Grimshaw
+     *
+     * @param array $array
+     */
+    public function parseIndependent(array &$array): void
     {
         if (array_key_exists('independent', $array)) {
             $ind1 = $array['independent'];
             foreach ($ind1 as $key => $value) {
-                $split = split('_', $key);
+                $split = mb_split('_', $key);
                 $ind2[$split[1]] = $value;
             }
             if (isset($ind2)) {
@@ -352,15 +555,16 @@ class CITEFORMAT
             }
         }
     }
-/**
-* Loop through $this->items
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @return	Complete string ready for printing to the output medium.
-*/
-    public function process()
+
+    /**
+     * Loop through $this->items
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @return string Complete string ready for printing to the output medium.
+     */
+    public function process(): string
     {
         if (!isset($this->output)) {
             $this->output = 'html';
@@ -372,15 +576,14 @@ class CITEFORMAT
         // In-text tyle citations
         return $this->inTextStyle();
     }
-/**
-* Endnote style citations
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @return	Complete string ready for printing to the output medium.
-*/
-    public function endnoteStyle()
+
+    /**
+     * Endnote style citations
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     */
+    public function endnoteStyle(): string
     {
         $pString = '';
         $multiples = $textAtoms = [];
@@ -389,9 +592,6 @@ class CITEFORMAT
             $this->id = $count;
             $this->ids[$count] = $this->item['id'];
             $text = '';
-//print "$count: "; print_r($this->item); print "<BR>";
-// If $this->items[$count + 1]['text'] is empty, this is the start or continuation of a multiple citation.
-// If $this->items[$count + 1]['text'] is not empty, this is the start of a new citation with 'text' preceeding the citation
             if (array_key_exists($count + 1, $this->items) && !$this->items[$count + 1]['text']) { // multiples
                 // Grab the first citation of the multiple
                 $textAtoms[] = $this->item['text'];
@@ -428,23 +628,28 @@ class CITEFORMAT
         }
         return $pString;
     }
-/**
-* In-text style citations
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @return	Complete string ready for printing to the output medium.
-*/
-    public function inTextStyle()
+
+    /**
+     * In-text style citations
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @return string Complete string ready for printing to the output medium.
+     */
+    public function inTextStyle(): string
     {
         $pString = '';
         $multiples = $textAtoms = [];
         $this->multipleCitations = false;
+        $split = '';
+
         $this->disambiguate();
         $preText = $postText = $this->previousNameInSameSentenceId = $this->citationInSameSentence = false;
         foreach ($this->items as $count => $this->item) {
-            $this->matchNameSplit = $this->matchNameSplitEtAl = $this->nameInSameSentence = false;
+            $this->matchNameSplit = '';
+            $this->matchNameSplitEtAl = '';
+            $this->nameInSameSentence = false;
             // If this is a single citation or the start of a multiple set, get any preText and postText
             if (!$this->multipleCitations && array_key_exists('preText', $this->item)) {
                 $preText = $this->item['preText'];
@@ -458,7 +663,6 @@ class CITEFORMAT
                 unset($tempTemplate);
             }
             $this->ids[$count] = $this->item['id'];
-            //print "$count: "; print_r($this->item); print "<BR>";
             $text = '';
             $this->followCreatorTemplateUse = false;
             if (array_key_exists('ambiguousTemplate', $this->item)) {
@@ -467,7 +671,7 @@ class CITEFORMAT
                     $this->template = $this->ambiguousTemplate;
                 }
             } elseif ($this->multipleCitations && array_key_exists($count, $this->creatorIds) &&
-                isset($this->consecutiveCreatorTemplate) && array_key_exists($count - 1, $this->creatorIds) &&
+                ($this->consecutiveCreatorTemplate ?? false) && array_key_exists($count - 1, $this->creatorIds) &&
                 ($this->creatorIds[$count] == $this->creatorIds[$count - 1])) {
                 $this->consecutiveCreatorSep[] = $count;
                 if ($this->checkTemplateFields($this->consecutiveCreatorTemplate)) {
@@ -498,8 +702,8 @@ class CITEFORMAT
                     }
                 }
             }
-// If $this->items[$count + 1]['text'] is empty, this is the start or continuation of a multiple citation.
-// If $this->items[$count + 1]['text'] is not empty, this is the start of a new citation with 'text' preceeding the citation
+            // If $this->items[$count + 1]['text'] is empty, this is the start or continuation of a multiple citation.
+            // If $this->items[$count + 1]['text'] is not empty, this is the start of a new citation with 'text' preceeding the citation
             if (array_key_exists($count + 1, $this->items) && !$this->items[$count + 1]['text']) { // multiples
                 // Grab the first citation of the multiple
                 $textAtoms[] = $this->item['text'];
@@ -544,7 +748,9 @@ class CITEFORMAT
                             $this->template = $this->$type;
                         } // $tempTemplate already stored
                     }
-                    unset($split);
+                    if (isset($split)) {
+                        unset($split);
+                    }
                 }
                 // If single subsequent citation later in the text, use subsequentCitationTemplate
                 if (!$this->matchNameSplit && !$this->nameInSameSentence &&
@@ -559,7 +765,7 @@ class CITEFORMAT
                 // If $citation is empty, we want to return something so return the title
                 if ($citation == '') {
                     $citation = $this->item['title'];
-                    $this->matchNameSplit = false;
+                    $this->matchNameSplit = '';
                 }
             }
             $this->multipleCitations = false;
@@ -572,10 +778,10 @@ class CITEFORMAT
             // APA-style split page number(s) from main citation
             if ($this->pageSplitDone) {
                 if ($this->matchNameSplitEtAl) {
-                    $pattern = '/(' . preg_quote($this->matchNameSplit) . '.*' .
-                    preg_quote($this->matchNameSplitEtAl) . ')/U';
+                    $pattern = '/(' . preg_quote((string)$this->matchNameSplit, '/') . '.*' .
+                    preg_quote($this->matchNameSplitEtAl, '/') . ')/U';
                 } else {
-                    $pattern = '/(' . preg_quote($this->matchNameSplit) . ')/U';
+                    $pattern = '/(' . preg_quote((string)$this->matchNameSplit, '/') . ')/U';
                 }
                 $text = preg_replace($pattern, '$1 ' . $this->pageSplitDone, $text, 1);
             }
@@ -588,13 +794,14 @@ class CITEFORMAT
         }
         return $pString;
     }
-/**
-* Discover if creator name(s) is in same sentence and split citation if requested.
-*
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function sameSentence($text)
+
+    /**
+     * Discover if creator name(s) is in same sentence and split citation if requested.
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     */
+    public function sameSentence(string $text): void
     {
         // Is this citation in the same sentence as the previous citation and for the same resource?
         if (($this->item['id'] == $this->previousNameInSameSentenceId) &&
@@ -656,7 +863,6 @@ class CITEFORMAT
         $pattern = implode('|', $patterns);
         $patternsEnd[] = $storedSurname . '$';
         $patternEnd = implode('|', $patternsEnd);
-        //print "$pattern : $patternEnd<P>";
         if (preg_match("/$pattern/", $lastSplit, $matchName)) {
             if (array_key_exists('followCreatorPageSplit', $this->style) &&
             !preg_match("/$patternEnd/", $lastSplit)) {
@@ -668,13 +874,14 @@ class CITEFORMAT
             $this->previousNameInSameSentenceId = false;
         }
     }
-/**
-* For any replacement templates used for in-text citations, check we have fields to populate it with.  If not, return FALSE to indicate that we use original $this->template
-*
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function checkTemplateFields($template)
+
+    /**
+     * For any replacement templates used for in-text citations, check we have fields to populate it with.  If not, return FALSE to indicate that we use original $this->template
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     */
+    public function checkTemplateFields(array $template): bool
     {
         foreach ($template as $key => $value) {
             if (array_key_exists($key, $this->item) || ($key == 'preliminaryText')) {
@@ -683,15 +890,18 @@ class CITEFORMAT
         }
         return false; // use original template
     }
-/**
-* Disambiguate any ambiguous citations
-*
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function disambiguate()
+
+    /**
+     * Disambiguate any ambiguous citations
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     */
+    public function disambiguate(): void
     {
-//print_r($this->items); print "<P>";
+        /** @var string $letter */
+        $letter = '';
+
         if (!$this->style['ambiguous']) { // do nothing
             return;
         }
@@ -755,19 +965,18 @@ class CITEFORMAT
         unset($this->pages);
         unset($this->years);
     }
-/**
-* Map the $item array against the style array and produce a string ready to be formatted for bold, italics etc.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	array template
-* @return	string ready for printing to the output medium.
-*/
-    public function map($template)
+
+    /**
+     * Map the $item array against the style array and produce a string ready to be formatted for bold, italics etc.
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param array $template
+     * @return string ready for printing to the output medium.
+     */
+    public function map(array $template): string
     {
-        //print_r($template); print "<P>";
-        //print_r($this->item); print "<BR>";
         $itemArray = [];
         $index = 0;
         $ultimate = $preliminaryText = '';
@@ -895,8 +1104,8 @@ class CITEFORMAT
         }
         /**
         * Check for independent characters.  These (should) come in pairs.
-        */        if (isset($independent)) {
-            //print_r($independent); print "<P>";
+        */
+        if (isset($independent)) {
             $independentKeys = array_keys($independent);
             while ($independent) {
                 $preAlternative = $postAlternative = false;
@@ -938,7 +1147,7 @@ class CITEFORMAT
                         break;
                     }
                 }
-                if (($startFound !== false) && ($endFound !== false)) { // intervening fields found
+                if ($startFound && $endFound) { // intervening fields found
                     $itemArray[$startFound] = $pre . $itemArray[$startFound];
                     $itemArray[$endFound] = $itemArray[$endFound] . $post;
                 } else { // intervening fields not found - do we have an alternative?
@@ -967,7 +1176,8 @@ class CITEFORMAT
         /**
         * if last character is punctuation (which it may be with missing fields etc.), and $ultimate is also
         * punctuation, remove last character.
-        */        if ($ultimate) {
+        */
+        if ($ultimate) {
             $last = substr(trim($pString), -1);
             /**
             * Don't do ';' in case last element is URL with &gt; ...!
@@ -977,7 +1187,7 @@ class CITEFORMAT
             }
         }
         if ($this->pageSplitDone) {
-            $this->pageSplitDone = trim(trim($pString) . $ultimate);
+            $this->pageSplitDone = trim($pString . $ultimate);
             if (preg_match('/[.,;:?!]$/', $this->pageSplitDone)) {
                 $this->pageSplitDone = substr($this->pageSplitDone, 0, -1);
             }
@@ -988,15 +1198,16 @@ class CITEFORMAT
         }
         return $this->hyperLink($preliminaryText . trim($pString) . $ultimate);
     }
-/**
-* Format the citation ID for endnote-style citations
-* @author	Mark Grimshaw
-*
-* @param	string pre-characters
-* @param 	string post-characters
-* @return	string formatted ID.
-*/
-    public function formatCitationId($pre, $post)
+
+    /**
+     * Format the citation ID for endnote-style citations
+     * @author Mark Grimshaw
+     *
+     * @param string $pre pre-characters
+     * @param string $post post-characters
+     * @return string formatted ID.
+     */
+    public function formatCitationId(string $pre, string $post): string
     {
         if ($this->style['endnoteStyle'] == 1) { // Endnotes, same ids
             $id = $this->endnoteSameIdsArray[$this->item['id']];
@@ -1110,7 +1321,7 @@ class CITEFORMAT
         } else {
             $bf = $ftf = '\\pard\\plain ';
         }
-// END WIKINDX-specific
+        // END WIKINDX-specific
         if ($this->style['endnoteStyle'] == 0) { // Endnotes, incrementing ids
             $citation = "{\\cs2 $preId\\chftn $postId}{__OSBIB__ENDNOTE__$id}";
             $endnoteString = "{\\footnote\\ftnalt$bf\\s2\\ql " . $citation . '}}__WIKINDX__NEWLINE__';
@@ -1147,19 +1358,21 @@ class CITEFORMAT
             $endnoteString = "{\\footnote$ftf\\s2\\ql " . $citation . '}}__WIKINDX__NEWLINE__';
             return '{\\cs2 \\chftn' . $endnoteString;
         }
+        return '';
     }
-/**
-* Format hyperlinks and clean up citation
-* @author	Mark Grimshaw
-*
-* @return	string ready for printing to the output medium.
-*/
-    public function hyperLink($citation)
+
+    /**
+     * Format hyperlinks and clean up citation
+     * @author Mark Grimshaw
+     *
+     * @return string ready for printing to the output medium.
+     */
+    public function hyperLink(string $citation): string
     {
         // Ensure we have no preliminary punctuation left over
         $citation = preg_replace("/^\s*[.,;:]\s*/U", '', $citation);
         if ($this->hyperlinkBase) {
-            $citation = MISC::a(
+            $citation = $this->misc->a(
                 'link',
                 $this->export->format(trim($citation)),
                 $this->hyperlinkBase . $this->item['id']
@@ -1167,24 +1380,28 @@ class CITEFORMAT
         }
         return $citation;
     }
-/**
-* Format creator name lists (authors, editors, etc.)
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$creators	Multi-associative array of creator names e.g. this array might be of
-* the primary authors:
-* <pre>
-*	array([0] => array(['surname'] => 'Grimshaw', ['firstname'] => Mark, ['initials'] => 'N', ['prefix'] => ),
-*	   [1] => array(['surname'] => 'Witt', ['firstname'] => Jan, ['initials'] => , ['prefix'] => 'de'))
-* </pre>
-* @param	$citationId
-*/
-    public function formatNames($creators, $citationId)
+
+    /**
+     * Format creator name lists (authors, editors, etc.)
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param array $creators Multi-associative array of creator names e.g. this array might be of
+     * the primary authors:
+     * <pre>
+     * array([0] => array(['surname'] => 'Grimshaw', ['firstname'] => Mark, ['initials'] => 'N', ['prefix'] => ),
+     *   [1] => array(['surname'] => 'Witt', ['firstname'] => Jan, ['initials'] => , ['prefix'] => 'de'))
+     * </pre>
+     * @param string $citationId
+    */
+    public function formatNames(array $creators, string $citationId): void
     {
-        if ($this->bibStyle->bibformat->citationFootnote) { // footnotes
-            list($pString, $creatorIds) = $this->bibStyle->bibformat->formatNames($creators, 'creator1', true);
+        $creatorIds = [];
+        $cArray = [];
+
+        if ($this->bibStyle->getBibFormat()->isCitationFootnote()) { // footnotes
+            list($pString, $creatorIds) = $this->bibStyle->getBibFormat()->formatNames($creators, 'creator1', true);
             $this->citationIds[$this->count] = $citationId;
             $this->creatorIds[$this->count] = implode(',', $creatorIds);
             $this->items[$this->count]['creator'] = $this->creators[$this->count] = $pString;
@@ -1197,7 +1414,7 @@ class CITEFORMAT
         * Set default plural behaviour for creator lists
         */
         $pluralKey = 'creator_plural';
-        $this->$pluralKey = false;
+        $this->pluralKey = false;
         $initialsStyle = 'creatorInitials';
         $firstNameInitial = 'creatorFirstName';
         $delimitTwo = 'twoCreatorsSep';
@@ -1321,7 +1538,8 @@ class CITEFORMAT
         */
         if ((count($cArray) > 1) || $etAl) {
             $pluralKey = 'creator_plural';
-            $this->$pluralKey = true;
+            // @todo $this->pluralKey is not used?
+            $this->pluralKey = true;
         }
         /**
         * Finally flatten array
@@ -1337,24 +1555,25 @@ class CITEFORMAT
         $this->items[$this->count]['creator'] = $this->creators[$this->count] = $pString;
         $this->items[$this->count]['creatorIds'] = $this->creatorIds[$this->count];
     }
-/**
-* Handle initials.
-* @see formatNames()
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$creator	Associative array of creator name e.g.
-* <pre>
-*	array(['surname'] => 'Grimshaw', ['firstname'] => Mark, ['initials'] => 'M N G', ['prefix'] => ))
-* </pre>
-* Initials must be space-delimited.
-*
-* @param	$initialsStyle
-* @param	$firstNameInitial
-* @return	Formatted string of initials.
-*/
-    public function checkInitials(&$creator, $initialsStyle, $firstNameInitial)
+
+    /**
+    * Handle initials.
+    * @see formatNames()
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    *
+    * @param $creator Associative array of creator name e.g.
+    *   <pre>
+    *   array(['surname'] => 'Grimshaw', ['firstname'] => Mark, ['initials'] => 'M N G', ['prefix'] => ))
+    *   </pre>
+    *   Initials must be space-delimited.
+    *
+    * @param string $initialsStyle
+    * @param string $firstNameInitial
+    * @return string Formatted string of initials.
+    */
+    public function checkInitials(array &$creator, string $initialsStyle, string $firstNameInitial): string
     {
         /**
         * Format firstname
@@ -1362,7 +1581,7 @@ class CITEFORMAT
         if ($creator['firstname'] && !$firstNameInitial) { // Full name
             $firstName = stripslashes($creator['firstname']);
         } elseif ($creator['firstname']) { // Initial only of first name.  'firstname' field may actually have several 'firstnames'
-            $fn = split(' ', stripslashes($creator['firstname']));
+            $fn = mb_split(' ', stripslashes($creator['firstname']));
             $firstTime = true;
             foreach ($fn as $name) {
                 if ($firstTime) {
@@ -1420,18 +1639,18 @@ class CITEFORMAT
         }
         return $initials;
     }
-/**
-* Format a title.  Anything enclosed in $delimitLeft...$delimitRight is to be left unchanged
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$pString	Raw title string.
-* @param	$delimitLeft
-* @param	$delimitRight
-* @return	Formatted title string.
-*/
-    public function formatTitle($pString, $delimitLeft = false, $delimitRight = false)
+
+    /**
+     * Format a title.  Anything enclosed in $delimitLeft...$delimitRight is to be left unchanged
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param string $pString Raw title string.
+     * @param string $delimitLeft
+     * @param string $delimitRight
+     */
+    public function formatTitle(string $pString, string $delimitLeft = '', string $delimitRight = ''): void
     {
         if (!$delimitLeft) {
             $delimitLeft = '{';
@@ -1439,8 +1658,8 @@ class CITEFORMAT
         if (!$delimitRight) {
             $delimitRight = '}';
         }
-        $delimitLeft = preg_quote($delimitLeft);
-        $delimitRight = preg_quote($delimitRight);
+        $delimitLeft = preg_quote($delimitLeft, '/');
+        $delimitRight = preg_quote($delimitRight, '/');
         $match = '/' . $delimitLeft . '/';
         /**
         * '0' == 'Osbib Bibliographic Formatting'
@@ -1479,36 +1698,39 @@ class CITEFORMAT
         $this->items[$this->count]['title'] = $title;
         $this->titles[$this->count] = $this->items[$this->count]['title'];
     }
-/**
-* Format preText and postText.
-* [cite]23:34-35|see ` for example[/cite] (as used by WIKINDX)
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	string $preText
-* @param	string $postText
-*/
-    public function formatPrePostText($preText, $postText)
+
+    /**
+    * Format preText and postText.
+    * [cite]23:34-35|see ` for example[/cite] (as used by WIKINDX)
+    *
+    * @author	Mark Grimshaw
+    * @version	1
+    *
+    * @param string $preText
+    * @param string $postText
+    */
+    public function formatPrePostText(string $preText, string $postText): void
     {
         $this->items[$this->count]['preText'] = $preText;
         $this->items[$this->count]['postText'] = $postText;
     }
-/**
-* Format pages.
-* $this->style['pageFormat']:
-* 0 == 132-9
-* 1 == 132-39
-* 2 == 132-139
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$start	Page start.
-* @param	$end		Page end.
-* @return	string of pages.
-*/
-    public function formatPages($start, $end = false)
+
+    /**
+     * Format pages.
+     * $this->style['pageFormat']:
+     * 0 == 132-9
+     * 1 == 132-39
+     * 2 == 132-139
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param string|bool $start Page start.
+     * @param string|bool $end Page end.
+     *
+     * @toto use stronger type hints
+     */
+    public function formatPages($start, $end = ''): void
     {
         $style = $this->style;
         /**
@@ -1586,20 +1808,20 @@ class CITEFORMAT
         $this->items[$this->count]['pages'] = $start . 'WIKINDX_NDASH' . $end;
         $this->pages[$this->count] = $this->items[$this->count]['pages'];
     }
-/**
-* Format publication year.
-* $this->style['yearFormat']:
-* 0 == 1998
-* 1 == '98
-* 2 == 98
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$year
-* @return	string of year.
-*/
-    public function formatYear($year)
+
+    /**
+     * Format publication year.
+     * $this->style['yearFormat']:
+     * 0 == 1998
+     * 1 == '98
+     * 2 == 98
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param string|int|bool $year
+     */
+    public function formatYear($year): void
     {
         if (!$year) {
             $this->items[$this->count]['year'] = $this->years[$this->count] = $this->style['replaceYear'];
@@ -1622,18 +1844,21 @@ class CITEFORMAT
         }
         $this->years[$this->count] = $this->items[$this->count]['year'];
     }
-/**
-* Format multiple citations
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param	$array		Citations
-* @return	string
-*/
-    public function multiple($multiples)
+
+    /**
+     * Format multiple citations
+     *
+     * @author Mark Grimshaw
+     * @version 1
+     *
+     * @param array $multiples Citations
+     * @return string
+     */
+    public function multiple(array $multiples): string
     {
         $first = true;
+        $text = '';
+
         foreach ($multiples as $index => $citation) {
             if ($first) {
                 $text = $citation;
@@ -1643,6 +1868,7 @@ class CITEFORMAT
             if ($this->style['citationStyle']) { // Endote-style citations
                 $separator = $this->style['consecutiveCitationEndnoteInTextSep'];
             } else {
+                // @phpstan-ignore-next-line
                 if (!$first && array_search($index, $this->consecutiveCreatorSep) !== false) {
                     $separator = $this->style['consecutiveCreatorSep'];
                 } else {
@@ -1653,17 +1879,18 @@ class CITEFORMAT
         }
         return $text;
     }
-/**
-* Collate and format the bibliography for endnote-style citations.  Must be processed in the same order as $ids.
-* Where the id nos. are the same for each resource (endnote-style citations), store the bibliographic id order with an incrementing citation id no.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param multiArray - multiple array of raw bibliographic data to be processed by $this->bibStyle
-* @param array - resource ids giving order of processing bibliography
-*/
-    public function processEndnoteBibliography($rows, $ids)
+
+    /**
+    * Collate and format the bibliography for endnote-style citations.  Must be processed in the same order as $ids.
+    * Where the id nos. are the same for each resource (endnote-style citations), store the bibliographic id order with an incrementing citation id no.
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    *
+    * @param array $rows - multiple array of raw bibliographic data to be processed by $this->bibStyle
+    * @param array $ids - resource ids giving order of processing bibliography
+    */
+    public function processEndnoteBibliography(array $rows, array $ids): void
     {
         $this->export = new EXPORTFILTER($this, $this->output);
         $process = $this->bibStyleProcess;
@@ -1699,7 +1926,7 @@ class CITEFORMAT
                         if (isset($pages) && array_key_exists($index, $this->pages) &&
                         ($this->style['endnoteStyle'] == 2)) { // footnotes
                             $type = $rows[$id]['type'];
-                            $this->bibStyle->bibformat->footnotePages = $this->export->format($pages[$index]);
+                            $this->bibStyle->getBibFormat()->footnotePages = $this->export->format($pages[$index]);
                         }
                         $this->endnoteCitations[] =
                             $this->endnoteRemovePunc($this->bibStyle->$process($rows[$id]));
@@ -1707,37 +1934,39 @@ class CITEFORMAT
                             $this->endnoteSameIdsArray[$id] = $endnoteSameIds;
                             ++$endnoteSameIds;
                         }
-                        $this->bibStyle->bibformat->footnotePages = false;
+                        $this->bibStyle->getBibFormat()->footnotePages = false;
                         ++$index;
                     }
                 }
             }
         }
     }
-/**
-* Removing trailing spaces and punctuation for endnote-style bibliographic entries.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param string
-* @return string
-*/
-    public function endnoteRemovePunc($entry)
+
+    /**
+    * Removing trailing spaces and punctuation for endnote-style bibliographic entries.
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    *
+    * @param string $entry
+    * @return string
+    */
+    public function endnoteRemovePunc(string $entry): string
     {
         // probably don't want to remove trailing punctuation so currently just trim
         return trim($entry);
-        return preg_replace('/[.,;:?!]$/', '', trim($entry));
+        //return preg_replace('/[.,;:?!]$/', '', trim($entry));
     }
-/**
-* Format the bibliography for in-text-style citations.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param array - array of raw bibliographic data for one resource to be processed by $this->bibStyle
-*/
-    public function processIntextBibliography($row)
+
+    /**
+    * Format the bibliography for in-text-style citations.
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    *
+    * @param array $row - array of raw bibliographic data for one resource to be processed by $this->bibStyle
+    */
+    public function processIntextBibliography(array $row): void
     {
         $process = $this->bibStyleProcess;
         if ($this->output == 'html') {
@@ -1746,33 +1975,35 @@ class CITEFORMAT
             $this->intextBibliography[] = $this->bibStyle->$process($row);
         }
     }
-/**
-* Collate the bibliography array for in-text-style citations.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @return	string
-*/
-    public function collateIntextBibliography()
+
+    /**
+    * Collate the bibliography array for in-text-style citations.
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    *
+    * @return string
+    */
+    public function collateIntextBibliography(): string
     {
-        $pString = $this->export->newLine . $this->export->newLine .
-            implode($this->export->newLine, $this->intextBibliography);
+        $pString = $this->export->getNewLine() . $this->export->getNewLine() .
+            implode($this->export->getNewLine(), $this->intextBibliography);
         if ($this->output == 'rtf') { // add a page break
             return "\n\\page\n$pString";
         }
         return $pString;
     }
-/**
-* Print the bibliography for endnote-style citations.
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @param string
-* @return	string
-*/
-    public function printEndnoteBibliography($pString)
+
+    /**
+    * Print the bibliography for endnote-style citations.
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    *
+    * @param string $pString
+    * @return string
+    */
+    public function printEndnoteBibliography(string $pString): string
     {
         $this->endnoteProcess();
         if ($this->output == 'html') {
@@ -1781,9 +2012,9 @@ class CITEFORMAT
             $post = $this->export->format($this->style['lastCharsEndnoteID']) . $post;
             $endnotes = '';
             foreach ($this->endnotes as $index => $string) {
-                $endnotes .= $pre . $index . $post . $string . $this->export->newLine;
+                $endnotes .= $pre . $index . $post . $string . $this->export->getNewLine();
             }
-            $pString .= $this->export->newLine . $this->export->newLine . $endnotes;
+            $pString .= $this->export->getNewLine() . $this->export->getNewLine() . $endnotes;
         } elseif ($this->output == 'rtf') {
             if (!empty($this->endnoteStringArray)) {
                 ksort($this->endnoteStringArray);
@@ -1801,27 +2032,28 @@ class CITEFORMAT
         } else {
             $endnotes = '';
             foreach ($this->endnotes as $index => $string) {
-                $endnotes .= $index . '. ' . $string . $this->export->newLine;
+                $endnotes .= $index . '. ' . $string . $this->export->getNewLine();
             }
-            $pString .= $this->export->newLine . $this->export->newLine . $endnotes;
+            $pString .= $this->export->getNewLine() . $this->export->getNewLine() . $endnotes;
         }
         // Turn off footnote templating in bibformat
-        $this->bibStyle->bibformat->citationFootnote = false;
-        $this->bibStyle->bibformat->output = $this->output;
+        $this->bibStyle->getBibFormat()->setCitationFootnote(false);
+        $this->bibStyle->getBibFormat()->setOutput($this->output);
         return $pString;
     }
-/**
-* Format the endnotes for endnote-style citations
-*
-* @author	Mark Grimshaw
-* @version	1
-*
-* @return	string
-*/
-    public function endnoteProcess()
+
+    /**
+    * Format the endnotes for endnote-style citations
+    *
+    * @author Mark Grimshaw
+    * @version 1
+    *
+    * @return string
+    */
+    public function endnoteProcess(): string
     {
-        if (!isset($this->ids)) {
-            return;
+        if (!($this->ids?? false)) {
+            return '';
         }
         $endnoteSameIdsArray = array_flip($this->endnoteSameIdsArray);
         $doneIds = [];
@@ -1931,10 +2163,15 @@ class CITEFORMAT
                 $lastPages = $thesePages;
                 // If footnotes, uses 'pages' formatting from footnote template
                 if ($this->style['citationStyle'] && ($this->style['endnoteStyle'] == 2)) {
-                    $type = $this->bibStyle->bibformat->footnoteTypeArray[$this->items[$index]['type']];
-                    if (array_key_exists('pages', $this->bibStyle->bibformat->$type)
+                    $footnoteTypeArray = $this->bibStyle->getBibFormat()->getFootnoteTypeArray();
+                    $type = $footnoteTypeArray[$this->items[$index]['type']];
+                    // @phpstan-ignore-next-line
+                    if (array_key_exists('pages', $this->bibStyle->getBibFormat()->getType())
                     && array_key_exists('pages', $this->templateEndnote)) {
-                        $this->templateEndnote['pages'] = $this->bibStyle->bibformat->{$type}['pages'];
+                        $this->templateEndnote['pages'] = $this->bibStyle->getBibFormat()->getDynamicPropertyArrayElement(
+                            $type,
+                            'pages'
+                        );
                     }
                 }
                 $this->endnotes[$index] = $this->export->format($this->map($this->templateEndnote));
@@ -1944,37 +2181,21 @@ class CITEFORMAT
                 }
             }
         }
-        return $this->export->newLine . $this->export->newLine . implode($this->export->newLine, $this->endnotes);
+        $newLine = $this->export->getNewLine();
+        return $newLine . $newLine . implode($newLine, $this->endnotes);
     }
-/**
-* Localisations etc.
-* @author	Mark Grimshaw
-* @version	1
-*/
-    public function loadArrays()
+
+    /**
+     * Localisations etc.
+     * @author Mark Grimshaw
+     * @version 1
+     */
+    public function loadArrays(): void
     {
         // WIKINDX-specific.  Months depend on the localisation set in the bibliographic style file.  'et al.' depends on the user's wikindx localisation.
         if ($this->wikindx) {
-            $styleLoc = false;
-            /* // temp......
-            // Style localisation
-                        $languageDir = $this->style['localisation'];
-                        if(!is_dir("languages/$languageDir"))
-                            $languageDir = "en";
-                        include_once("languages/$languageDir/CONSTANTS.php");
-                        $class = "CONSTANTS_" . $languageDir;
-                        $this->wikindxLanguageClass = new $class();
-                        if(method_exists($this->wikindxLanguageClass, "monthToLongName")
-                            && method_exists($this->wikindxLanguageClass, "monthToShortName"))
-                        {
-                            $this->longMonth = $this->wikindxLanguageClass->monthToLongName();
-                            $this->shortMonth = $this->wikindxLanguageClass->monthToShortName();
-                            $styleLoc = TRUE; // successfully localised
-                        }
-            */
-            // temp.......
-            $styleLoc = true;
             // User localisation
+            // todo: this class is not in this package
             include_once('core/session/SESSION.php');
             $session = new SESSION();
             if (!$languageDir = $session->getVar('setup_language')) {
@@ -1983,42 +2204,45 @@ class CITEFORMAT
             include_once("languages/$languageDir/CONSTANTS.php");
             $class = 'CONSTANTS_' . $languageDir;
             $this->wikindxLanguageClass = new $class();
-            if ($styleLoc && isset($this->wikindxLanguageClass->textEtAl)) {
+            if (isset($this->wikindxLanguageClass->textEtAl)) {
+                // @todo use get functions, do not access properties directly or make them constant
                 $this->textEtAl = $this->wikindxLanguageClass->textEtAl;
+                // @phpstan-ignore-next-line
                 $this->possessive1 = $this->wikindxLanguageClass->possessive1;
+                // @phpstan-ignore-next-line
                 $this->possessive2 = $this->wikindxLanguageClass->possessive2;
                 return;
             }
         }
         // Defaults.  Any localisation in external files as above should follow this format.
         $this->longMonth = [
-                1	=>	'January',
-                2	=>	'February',
-                3	=>	'March',
-                4	=>	'April',
-                5	=>	'May',
-                6	=>	'June',
-                7	=>	'July',
-                8	=>	'August',
-                9	=>	'September',
-                10	=>	'October',
-                11	=>	'November',
-                12	=>	'December',
-            ];
+            1  => 'January',
+            2  => 'February',
+            3  => 'March',
+            4  => 'April',
+            5  => 'May',
+            6  => 'June',
+            7  => 'July',
+            8  => 'August',
+            9  => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December',
+        ];
         $this->shortMonth = [
-                1	=>	'Jan',
-                2	=>	'Feb',
-                3	=>	'Mar',
-                4	=>	'Apr',
-                5	=>	'May',
-                6	=>	'Jun',
-                7	=>	'Jul',
-                8	=>	'Aug',
-                9	=>	'Sep',
-                10	=>	'Oct',
-                11	=>	'Nov',
-                12	=>	'Dec',
-            ];
+            1  => 'Jan',
+            2  => 'Feb',
+            3  => 'Mar',
+            4  => 'Apr',
+            5  => 'May',
+            6  => 'Jun',
+            7  => 'Jul',
+            8  => 'Aug',
+            9  => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dec',
+        ];
         // Scan for occurrences of creator name(s) followed by 'et al.' when checking if surname(s) is in same sentence as citation.
         // e.g. Grimshaw et al. state "blah blah blah" [cite]123:45-46[/cite].
         $this->textEtAl = 'et al.';
@@ -2028,5 +2252,3 @@ class CITEFORMAT
         $this->possessive2 = "'";
     }
 }
-?>
-

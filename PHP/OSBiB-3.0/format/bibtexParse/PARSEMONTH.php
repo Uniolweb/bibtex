@@ -1,5 +1,5 @@
 <?php
-/*
+/**
 Released through http://bibliophile.sourceforge.net under the GPL licence.
 Do whatever you like with this -- some credit to the author(s) would be appreciated.
 
@@ -11,28 +11,36 @@ that your improvements can be added to the release package.
 Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 */
-/*****
-*	PARSEMONTH: BibTeX MONTH import class
-*
-* BibTeX month field can come in as:
-* jan
-* "8~" # jan
-* jan#"~8"
-* etc.
-* where # is concatenation and '~' can be any non-numeric character.
-*****/
 
-// 17/June/2005 - Mark Grimshaw:  month fields that have multiple dates (e.g. dec # " 5--9," or nov # " 29" # "--" # dec # " 2") are correctly parsed.
+/**
+ * PARSEMONTH: BibTeX MONTH import class
+ *
+ * BibTeX month field can come in as:
+ * jan
+ * "8~" # jan
+ * jan#"~8"
+ * etc.
+ * where # is concatenation and '~' can be any non-numeric character.
+ *
+ * 17/June/2005 - Mark Grimshaw:  month fields that have multiple dates (e.g. dec # " 5--9," or nov # " 29" # "--" # dec # " 2") are correctly parsed.
+ */
 class PARSEMONTH
 {
-    // Constructor
-    public function PARSEMONTH()
-    {
-    }
-    public function init($monthField)
+    /** @var bool|string */
+    protected $endDay = false;
+
+    /** @var bool|string */
+    protected $startDay = false;
+
+    /**
+     * Convert string into array
+     */
+    public function init(string $monthField): array
     {
         $startMonth = $this->startDay = $endMonth = $this->endDay = false;
-        $date = split('#', $monthField);
+
+        /** @var array $date */
+        $date = explode('#', $monthField);
         foreach ($date as $field) {
             $field = ucfirst(strtolower(trim($field)));
             if ($month = array_search($field, $this->monthToLongName())) {
@@ -58,8 +66,11 @@ class PARSEMONTH
         }
         return [$startMonth, $this->startDay, $endMonth, $this->endDay];
     }
-// extract day of month from field
-    public function parseDay($dayField)
+
+    /**
+     * extract day of month from field
+     */
+    public function parseDay(string $dayField): void
     {
         preg_match('/([0-9]+).*([0-9]+)|([0-9]+)/', $dayField, $array);
         if (array_key_exists(3, $array)) {
@@ -77,40 +88,52 @@ class PARSEMONTH
             }
         }
     }
-// Convert month to long name
-    public function monthToLongName()
+
+    /**
+     * Returns array to map month integer to long name
+     *
+     * @todo function name is misleading
+     * @todo use const array for this?
+     */
+    public function monthToLongName(): array
     {
         return [
-                1	=>	'January',
-                2	=>	'February',
-                3	=>	'March',
-                4	=>	'April',
-                5	=>	'May',
-                6	=>	'June',
-                7	=>	'July',
-                8	=>	'August',
-                9	=>	'September',
-                10	=>	'October',
-                11	=>	'November',
-                12	=>	'December',
+                1   => 'January',
+                2   => 'February',
+                3   => 'March',
+                4   => 'April',
+                5   => 'May',
+                6   => 'June',
+                7   => 'July',
+                8   => 'August',
+                9   => 'September',
+                10  => 'October',
+                11  => 'November',
+                12  => 'December',
             ];
     }
-// Convert month to short name
-    public function monthToShortName()
+
+    /**
+     * Convert month to short name
+     *
+     * @todo function name is misleading
+     * @todo use const array for this
+     */
+    public function monthToShortName(): array
     {
         return [
-                1	=>	'Jan',
-                2	=>	'Feb',
-                3	=>	'Mar',
-                4	=>	'Apr',
-                5	=>	'May',
-                6	=>	'Jun',
-                7	=>	'Jul',
-                8	=>	'Aug',
-                9	=>	'Sep',
-                10	=>	'Oct',
-                11	=>	'Nov',
-                12	=>	'Dec',
+                1   => 'Jan',
+                2   => 'Feb',
+                3   => 'Mar',
+                4   => 'Apr',
+                5   => 'May',
+                6   => 'Jun',
+                7   => 'Jul',
+                8   => 'Aug',
+                9   => 'Sep',
+                10  => 'Oct',
+                11  => 'Nov',
+                12  => 'Dec',
             ];
     }
 }

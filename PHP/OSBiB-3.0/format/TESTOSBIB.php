@@ -21,27 +21,22 @@ http://bibliophile.sourceforge.net
 * It is intended to be a quick introduction to the main usage of OSBIB.  For more detailed explanation including various parameters that can be
 * set, see WIKINDX's usage of OSBIB in the example BIBSTYLE.php.
 *
-* @author	Mark Grimshaw
-* @version	1
+* @author Mark Grimshaw
+* @version 1
 */
-
-/*
-* Start the ball rolling
-*
-* The first parameter to TESTOSBIB is the bibliographic style.  This can be any of the OSBIB supplied styles in ../styles/bibliography.
-*/
-$useStyle = loadStyle();
-$testosbib = new TESTOSBIB($useStyle);
-$testosbib->execute();
-die; // exit
-
 class TESTOSBIB
 {
-    public function __construct($style)
+    protected string $style;
+
+    protected ?BIBFORMAT $bibformat = null;
+    protected ?CITEFORMAT $citeformat = null;
+
+    public function __construct(string $style)
     {
         $this->style = $style;
     }
-    /*
+
+    /**
     * function execute()
     *
     * Start the whole process
@@ -50,8 +45,13 @@ class TESTOSBIB
     {
         // Load the test data
         $this->getData();
-        include_once('BIBFORMAT.php');
+        include_once(__DIR__ . '/BIBFORMAT.php');
         $this->bibformat = new BIBFORMAT();
+        include_once(__DIR__ . '/CITEFORMAT.php');
+        // Pass the bibstyle object to CITEFORMAT() as the first argument.
+        // The second argument is the name of the method within the bibstyle object that starts the formatting of a bibliographic item.
+        $this->citeformat = new CITEFORMAT($this, 'processBib', '../');
+
         // Load the bibliographic style
         list($info, $citation, $footnote, $styleCommon, $styleTypes) =
             $this->bibformat->loadStyle('../styles/bibliography/', $this->style);
@@ -62,9 +62,9 @@ class TESTOSBIB
             $this->bibResult[] = $this->processBib($row);
         }
         // For citation formatting, BIBFORMAT must be reinitialised.
-        include_once('BIBFORMAT.php');
+        //include_once('BIBFORMAT.php');
         $this->bibformat = new BIBFORMAT();
-        include_once('CITEFORMAT.php');
+        //include_once(__DIR__ . '/CITEFORMAT.php');
         // Pass the bibstyle object to CITEFORMAT() as the first argument.
         // The second argument is the name of the method within the bibstyle object that starts the formatting of a bibliographic item.
         $this->citeformat = new CITEFORMAT($this, 'processBib', '../');
@@ -77,35 +77,37 @@ class TESTOSBIB
         $this->formattedText = $this->processCite();
         $this->printToScreen();
     }
-/*
-* function processBib()
-*
-* Produce a bibliography from $this->row.
-*/
-    public function processBib($row)
+
+    /**
+     * function processBib()
+     *
+     * Produce a bibliography from $this->row.
+     */
+    public function processBib(array $row): string
     {
         $id = $row['id'];
+        $type = $row['type'];
         // Add the resource type
-        $this->bibformat->type = $type = $row['type'];
+        $this->bibformat->setType($type);
         $row = $this->bibformat->preProcess($type, $row);
-        $type = $this->bibformat->type; // may have been changed in preProcess so reset.
+        $type = $this->bibformat->getType(); // may have been changed in preProcess so reset.
         // Add the title.  The 2nd and 3rd parameters indicate what bracketing system is used to conserve uppercase characters in titles.
         $this->bibformat->formatTitle($row['title'], '{', '}');
         // Add creator names.  Up to 5 types are allowed - for mappings depending on resource type see STYLEMAP.php
         for ($index = 1; $index <= 5; $index++) {
             $creatorSlot = 'creator' . $index;
             // If we have creator name in this slot OR that creator slot is not defined in STYLEMAP.php, do nothing
-            if (array_key_exists($creatorSlot, $row) &&
-            array_key_exists($creatorSlot, $this->bibformat->styleMap->$type)) {
+            if (array_key_exists($creatorSlot, $row)
+                && array_key_exists($creatorSlot, $this->bibformat->getStyleMap()->getDynamicProperty($type))) {
                 $this->bibformat->formatNames($row[$creatorSlot], $creatorSlot);
             }
         }
         // Edition
-        if (array_key_exists('edition', $row) && array_search('edition', $this->bibformat->styleMap->$type)) {
+        if (array_key_exists('edition', $row) && array_search('edition', $this->bibformat->getStyleMap()->getDynamicProperty($type))) {
             $this->bibformat->formatEdition($row['edition']);
         }
         // Pages
-        if (array_key_exists('pageStart', $row) && array_search('pages', $this->bibformat->styleMap->$type)) {
+        if (array_key_exists('pageStart', $row) && array_search('pages', $this->bibformat->getStyleMap()->getDynamicProperty($type))) {
             $end = array_key_exists('pageEnd', $row) ? $row['pageEnd'] : false;
             $this->bibformat->formatPages($row['pageStart'], $end);
         }
@@ -116,12 +118,13 @@ class TESTOSBIB
         // Return the result of the bibliographic formatting removing any extraneous braces
         return preg_replace('/{(.*)}/U', '$1', $this->bibformat->map());
     }
-/*
-* function processCite()
-*
-* Parse $this->text for citation tags and format accordingly.
-*/
-    public function processCite()
+
+    /**
+     * function processCite()
+     *
+     * Parse $this->text for citation tags and format accordingly.
+     */
+    public function processCite(): string
     {
         // Must be initialised.
         $this->pageStart = $this->pageEnd = $this->preText = $this->postText = $this->citeIds = [];
@@ -162,7 +165,6 @@ class TESTOSBIB
         * N.B. the preg_match_all() above does not capture any text after the final citation so this must be handled manually and appended to any final output -
         * this is $this->tailText above.
         */
-        //		$this->row = array();
         $this->citeformat->count = 0;
         $citeIndex = 0;
         while (!empty($this->matches[1])) {
@@ -197,12 +199,16 @@ class TESTOSBIB
         $bib = $this->printBibliography($this->row);
         return $pString . $bib;
     }
-/**
-* Parse the cite tag by extracting resource ID and any page numbers. Check ID is valid
-* PreText and postText can also be encoded: e.g. (see Grimshaw 2003; Boulanger 2004 for example)
-* [cite]23:34-35|see ` for example[/cite].  For multiple citations, only the first encountered preText and postText will be used to enclose the citations.
-*/
-    public function parseCiteTag($matchIndex, $tag)
+
+    /**
+     * Parse the cite tag by extracting resource ID and any page numbers. Check ID is valid
+     * PreText and postText can also be encoded: e.g. (see Grimshaw 2003; Boulanger 2004 for example)
+     * [cite]23:34-35|see ` for example[/cite].  For multiple citations, only the first encountered preText and
+     * postText will be used to enclose the citations.
+     *
+     * @todo $matchIndex not used
+     */
+    public function parseCiteTag($matchIndex, string $tag): string
     {
         // When a user cut's 'n' pastes in HTML design mode, superfluous HTML tags (usually <style lang=xx></span>) are inserted.  Remove anything that looks like HTML
         $tag = preg_replace('/<.*?>/si', '', $tag);
@@ -226,9 +232,12 @@ class TESTOSBIB
         }
         return $id;
     }
-// Accept a SQL result row of raw bibliographic data and process it.
-// We build up the $citeformat->item array with formatted parts from the raw $row
-    public function processCitations($row, $id)
+
+    /**
+     * Accept a SQL result row of raw bibliographic data and process it.
+     * We build up the $citeformat->item array with formatted parts from the raw $row
+     */
+    public function processCitations(array $row, string $id): void
     {
         $this->rowSingle = $row;
         unset($row);
@@ -241,20 +250,25 @@ class TESTOSBIB
         }
         $this->citeformat->formatYear(stripslashes($this->rowSingle['year1']));
     }
-/* Create preText and postText.  This is for in-text citations where a string of citations tags:
-[cite]1:24|See ` for example[/cite][cite]33:54[/cite]
-might result in:
-(See Grimshaw et al., 2005 p. 24 and Grimshaw, 1999 p. 54 for example).
-*/
-    public function createPrePostText($preText, $postText)
+
+    /**
+     * Create preText and postText.  This is for in-text citations where a string of citations tags:
+     * [cite]1:24|See ` for example[/cite][cite]33:54[/cite]
+     * might result in:
+     * (See Grimshaw et al., 2005 p. 24 and Grimshaw, 1999 p. 54 for example).
+    */
+    public function createPrePostText(string $preText, string $postText): void
     {
         if (!$preText && !$postText) { // empty field
             return;
         }
         $this->citeformat->formatPrePostText($preText, $postText);
     }
-// Process bibliography array into string for output -- used for in-text citations and appended bibliographies for footnotes
-    public function printBibliography($bibliography)
+
+    /**
+     * Process bibliography array into string for output -- used for in-text citations and appended bibliographies for footnotes
+     */
+    public function printBibliography(array $bibliography)
     {
         foreach ($bibliography as $id => $row) {
             $row['id'] = $id;
@@ -271,22 +285,23 @@ might result in:
         }
         return $this->citeformat->collateIntextBibliography();
     }
-/*
-* function getData()
-*
-* Load some test data.
-* $this->row is how BIBFORMAT expects bibliographic input to be formatted and passed to its classes.  It is
-* your responsibility to get your data in a format usable by OSBIB (bibtex-based databases should use STYLEMAPBIBTEX.php) -- see docs/ for details.
-*/
+
+    /**
+    * function getData()
+    *
+    * Load some test data.
+    * $this->row is how BIBFORMAT expects bibliographic input to be formatted and passed to its classes.  It is
+    * your responsibility to get your data in a format usable by OSBIB (bibtex-based databases should use STYLEMAPBIBTEX.php) -- see docs/ for details.
+    */
     public function getData()
     {
-// First resource
-        $this->row[33]['id']		=	33; // Unique ID for this resource
-        $this->row[33]['type']		= 	'book_article';	// The type of resource which must be one of the types in STYLEMAP.php
-        $this->row[33]['title']		=	'{WIKINDX}'; // Braces protect uppercase
-        $this->row[33]['collectionTitle']	=	'Guide to Open Source Software';
-        $this->row[33]['pageStart']	=	'51';
-        $this->row[33]['pageEnd']	=	'59';
+        // First resource
+        $this->row[33]['id']      = 33; // Unique ID for this resource
+        $this->row[33]['type']    = 'book_article';	// The type of resource which must be one of the types in STYLEMAP.php
+        $this->row[33]['title']   = '{WIKINDX}'; // Braces protect uppercase
+        $this->row[33]['collectionTitle'] = 'Guide to Open Source Software';
+        $this->row[33]['pageStart'] = '51';
+        $this->row[33]['pageEnd']   = '59';
         /*
         * For creators (authors, editors, composers, inventors, performers, translators etc.), the initial key element here must be
         * one of 'creator1', 'creator2', 'creator3', 'creator4' or 'creator5' where 'creator1' is usually the primary creator.  These are mapped
@@ -294,31 +309,31 @@ might result in:
         * The second integer key element (keyed from 0) gives the descending order of printing the creator names for the particular creator type.
         */
         // Primary creator, first in list.
-        $this->row[33]['creator1'][0]['surname']	=	'Grimshaw';
-        $this->row[33]['creator1'][0]['firstname']	=	'Mark';
-        $this->row[33]['creator1'][0]['initials']	=	'N'; // Full stops are added by the bibliographic style if required.
-        $this->row[33]['creator1'][0]['prefix']		=	''; // 'de', 'von', 'della' etc.  Array element must be present.
-        $this->row[33]['creator1'][0]['id']			=	4; // unique ID for this author (presumably the database table ID for this creator).
-// Second creator, first in list.  In STYLEMAP, 'creator2' for resource type 'book' is mapped to 'editor'
-        $this->row[33]['creator2'][0]['surname']	=	'Mouse';
-        $this->row[33]['creator2'][0]['firstname']	=	'Mickey';
-        $this->row[33]['creator2'][0]['initials']	=	'';
-        $this->row[33]['creator2'][0]['prefix']		=	'de';
-        $this->row[33]['creator2'][0]['id']			=	77; // unique ID for this author
+        $this->row[33]['creator1'][0]['surname']    = 'Grimshaw';
+        $this->row[33]['creator1'][0]['firstname']  = 'Mark';
+        $this->row[33]['creator1'][0]['initials']   = 'N'; // Full stops are added by the bibliographic style if required.
+        $this->row[33]['creator1'][0]['prefix']     = ''; // 'de', 'von', 'della' etc.  Array element must be present.
+        $this->row[33]['creator1'][0]['id']         = 4; // unique ID for this author (presumably the database table ID for this creator).
+        // Second creator, first in list.  In STYLEMAP, 'creator2' for resource type 'book' is mapped to 'editor'
+        $this->row[33]['creator2'][0]['surname']    = 'Mouse';
+        $this->row[33]['creator2'][0]['firstname']  = 'Mickey';
+        $this->row[33]['creator2'][0]['initials']   = '';
+        $this->row[33]['creator2'][0]['prefix']     = 'de';
+        $this->row[33]['creator2'][0]['id']         =77; // unique ID for this author
         // Publication year
-        $this->row[33]['year1']		=	'2003';
+        $this->row[33]['year1']    = '2003';
         // Original publication year
-        $this->row[33]['year2']		=	'1999';
+        $this->row[33]['year2']    = '1999';
         // Publisher name
-        $this->row[33]['publisherName']	=	'Tsetswana Books';
+        $this->row[33]['publisherName'] = 'Tsetswana Books';
         // Publisher location
-        $this->row[33]['publisherLocation']	=	'Gabarone';
+        $this->row[33]['publisherLocation'] = 'Gabarone';
 
-// Second resource
-        $this->row[1]['id']			=	1; // Unique ID for this resource
-        $this->row[1]['type']		= 	'book';	// The type of resource which must be one of the types in STYLEMAP.php
-        $this->row[1]['title']		=	'{OSBIB}: Open Source Bibliographic Formatting'; // Braces protect uppercase
-        $this->row[1]['edition']	=	'3';
+        // Second resource
+        $this->row[1]['id']         = 1; // Unique ID for this resource
+        $this->row[1]['type']       = 'book';	// The type of resource which must be one of the types in STYLEMAP.php
+        $this->row[1]['title']      = '{OSBIB}: Open Source Bibliographic Formatting'; // Braces protect uppercase
+        $this->row[1]['edition']    = '3';
         /*
         * For creators (authors, editors, composers, inventors, performers, translators etc.), the initial key element here must be
         * one of 'creator1', 'creator2', 'creator3', 'creator4' or 'creator5' where 'creator1' is usually the primary creator.  These are mapped
@@ -326,45 +341,46 @@ might result in:
         * The second integer key element (keyed from 0) gives the descending order of printing the creator names for the particular creator type.
         */
         // Primary creator, first in list.
-        $this->row[1]['creator1'][0]['surname']		=	'Grimshaw';
-        $this->row[1]['creator1'][0]['firstname']	=	'Mark';
-        $this->row[1]['creator1'][0]['initials']	=	'N'; // Full stops are added by the bibliographic style if required.
-        $this->row[1]['creator1'][0]['prefix']		=	''; // 'de', 'von', 'della' etc.  Array element must be present.
-        $this->row[1]['creator1'][0]['id']			=	4; // unique ID for this author (same author as above)
-// Primary creator, second in list.
-        $this->row[1]['creator1'][1]['surname']		=	'Boulanger';
-        $this->row[1]['creator1'][1]['firstname']	=	'Christian';
-        $this->row[1]['creator1'][1]['initials']	=	'';
-        $this->row[1]['creator1'][1]['prefix']		=	'';
-        $this->row[1]['creator1'][1]['id']			=	10; // unique ID for this author
+        $this->row[1]['creator1'][0]['surname']     = 'Grimshaw';
+        $this->row[1]['creator1'][0]['firstname']   = 'Mark';
+        $this->row[1]['creator1'][0]['initials']    = 'N'; // Full stops are added by the bibliographic style if required.
+        $this->row[1]['creator1'][0]['prefix']      = ''; // 'de', 'von', 'della' etc.  Array element must be present.
+        $this->row[1]['creator1'][0]['id']          = 4; // unique ID for this author (same author as above)
+        // Primary creator, second in list.
+        $this->row[1]['creator1'][1]['surname']     = 'Boulanger';
+        $this->row[1]['creator1'][1]['firstname']   = 'Christian';
+        $this->row[1]['creator1'][1]['initials']    = '';
+        $this->row[1]['creator1'][1]['prefix']      = '';
+        $this->row[1]['creator1'][1]['id']          = 10; // unique ID for this author
         // Primary creator, third in list.
-        $this->row[1]['creator1'][2]['surname']		=	'Gardey';
-        $this->row[1]['creator1'][2]['firstname']	=	'Guillaume';
-        $this->row[1]['creator1'][2]['initials']	=	'';
-        $this->row[1]['creator1'][2]['prefix']		=	'';
-        $this->row[1]['creator1'][2]['id']			=	24; // unique ID for this author
+        $this->row[1]['creator1'][2]['surname']     = 'Gardey';
+        $this->row[1]['creator1'][2]['firstname']   = 'Guillaume';
+        $this->row[1]['creator1'][2]['initials']    = '';
+        $this->row[1]['creator1'][2]['prefix']      = '';
+        $this->row[1]['creator1'][2]['id']          = 24; // unique ID for this author
         // Second creator, first in list.  In STYLEMAP, 'creator2' for resource type 'book' is mapped to 'editor'
-        $this->row[1]['creator2'][0]['surname']		=	'Rossatto';
-        $this->row[1]['creator2'][0]['firstname']	=	'Andrea';
-        $this->row[1]['creator2'][0]['initials']	=	'';
-        $this->row[1]['creator2'][0]['prefix']		=	'';
-        $this->row[1]['creator2'][0]['id']			=	101; // unique ID for this author
+        $this->row[1]['creator2'][0]['surname']     = 'Rossatto';
+        $this->row[1]['creator2'][0]['firstname']   = 'Andrea';
+        $this->row[1]['creator2'][0]['initials']    = '';
+        $this->row[1]['creator2'][0]['prefix']      = '';
+        $this->row[1]['creator2'][0]['id']          = 101; // unique ID for this author
         // Publication year
-        $this->row[1]['year1']		=	'2005';
+        $this->row[1]['year1'] = '2005';
         // Original publication year
-        $this->row[1]['year2']		=	'2004';
+        $this->row[1]['year2'] = '2004';
         // Publisher name
-        $this->row[1]['publisherName']	=	'Botswana Press';
+        $this->row[1]['publisherName'] = 'Botswana Press';
         // Publisher location
-        $this->row[1]['publisherLocation']	=	'Selebi Phikwe';
+        $this->row[1]['publisherLocation'] = 'Selebi Phikwe';
         // Some text input with citation markup relating to the ID in $this->row above.
         $this->text = 'Grimshaw says "blah blah blah" [cite]33:52-53[/cite].  He further says "blah blah blah" [cite]33:58[/cite].  However, Grimshaw et al. later contradict this by stating:  "blah blah blah" [cite]1:101[/cite] and "blah blah blah" [cite]1:104[/cite].  This latter contradiction is qualified with "blah blah blah" [cite]1:113[/cite].';
     }
-/*
-* function printToScreen()
-*
-* Print to the browser
-*/
+
+    /**
+    * function printToScreen()
+    *
+    * Print to the browser
+    */
     public function printToScreen()
     {
         $string = '<p><strong>Bibliographic style:</strong><br />' . $this->style . '</p>';
@@ -390,36 +406,4 @@ might result in:
         $string .= '<p>' . $this->formattedText . '</p>';
         print "$string";
     }
-}
-
-// External to class
-
-// Load styles and print select box.
-function loadStyle()
-{
-    include_once('../LOADSTYLE.php');
-    $styles = LOADSTYLE::loadDir('../styles/bibliography');
-    $styleKeys = array_keys($styles);
-    print "<h2><font color='red'>OSBIB Bibliographic Formatting (Quick Test)</font></h2>";
-    print '<table width="100%" border="0"><tr><td>';
-    print '<form method = "POST">';
-    print '<select name="style" id="style" size="10">';
-    if (array_key_exists('style', $_POST)) {
-        $useStyle = $_POST['style'];
-    } else {
-        $useStyle = $styleKeys[0];
-    }
-    foreach ($styles as $style => $value) {
-        if ($style == $useStyle) {
-            print "<option value=\"$style\" selected = \"selected\">$value</option>";
-        } else {
-            print "<option value=\"$style\">$value</option>";
-        }
-    }
-    print '</select>';
-    print '<br /><input type="submit" value="SUBMIT" />';
-    print '</form><td>';
-    print '<td align="right" valign="top"><a href="http://bibliophile.sourceforge.net">
-		<img src="../create/bibliophile.gif" alt="Bibliophile" border="0"></a></td></tr></table>';
-    return $useStyle;
 }

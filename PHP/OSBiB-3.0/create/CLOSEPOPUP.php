@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /********************************
 OSBib:
 A collection of PHP classes to create and manage bibliographic formatting for OS bibliography software
@@ -16,16 +18,16 @@ Mark Grimshaw 2005
 http://bibliophile.sourceforge.net
 ********************************/
 /*****
-* CLOSEPOPUP class
-*
 * Close tidily and print HTML. this used for javascript pop-ups so does not include titles, GIFs etc.
 *
-*	$Header: /cvsroot/bibliophile/OSBib/create/CLOSEPOPUP.php,v 1.1 2005/06/25 02:57:34 sirfragalot Exp $
+* $Header: /cvsroot/bibliophile/OSBib/create/CLOSEPOPUP.php,v 1.1 2005/06/25 02:57:34 sirfragalot Exp $
 *
-*****/
+*/
 class CLOSEPOPUP
 {
-    public function __construct($pString = false)
+    protected ?MESSAGES $messages = null;
+
+    public function __construct(string $pString = '')
     {
         include_once('MESSAGES.php');
         $this->messages = new MESSAGES();
@@ -34,10 +36,11 @@ class CLOSEPOPUP
         ob_end_flush();
         die;
     }
-/**
-* Print HTML header information
-*/
-    public function header()
+
+    /**
+    * Print HTML header information
+    */
+    public function header(): string
     {
         return <<< END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -51,10 +54,11 @@ class CLOSEPOPUP
 
 END;
     }
-/**
-* Print result
-*/
-    public function printBody($pString)
+
+    /**
+    * Print result
+    */
+    public function printBody(string $pString): string
     {
         return <<< END
 <body>

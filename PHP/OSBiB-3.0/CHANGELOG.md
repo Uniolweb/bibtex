@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## v4.0 - 23.12.2022 -- Sybille Peters
+
+!!! Minimum supported version is PHP 7.4
+
+Major cleanup for PHP 8.1:
+
+- CGL fix, use php-cs-fixer to convert PHP files to unified format, based on PSR-12, see https://www.php-fig.org/psr/psr-12/
+- add .editorconfig, see http://EditorConfig.org
+  (this also includes adding the properties in the first place)
+- Use PHPDoc style comments for functions, classes, etc., see https://en.wikipedia.org/wiki/PHPDoc
+- check with phpstan, see https://phpstan.org/user-guide/getting-started
+
+code changes
+- Add "typed properties" for classes, see https://www.php.net/manual/en/migration74.new-features.php
+- remove or replaced functions which no longer exist, e.g. split(), set_magic_quotes_runtime(0)
+
+Resources:
+
+- PSR-12: https://www.php-fig.org/psr/psr-12/
+- editorconfig: http://EditorConfig.org
+- PHP 7.4 features: https://www.php.net/manual/en/migration74.new-features.php
+- PHPDoc:  https://en.wikipedia.org/wiki/PHPDoc
+- phpstan: https://phpstan.org/user-guide/getting-started
+
+
 ## v3.0 - 21/Nov/2005 -- Mark Grimshaw
 
 Major feature enhancements and minor bug fixes.
