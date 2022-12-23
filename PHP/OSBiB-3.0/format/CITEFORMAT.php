@@ -1141,7 +1141,8 @@ class CITEFORMAT
             $citation = "{\\cs2 $preId$id$postId}{__OSBIB__ENDNOTE__$id}";
             $endnoteString = "{\\footnote\\ftnalt$bf\\s2\\ql " . $citation . '}}__WIKINDX__NEWLINE__';
             return "{\\cs2 $id}";
-        } elseif ($this->style['endnoteStyle'] == 2) { // Footnotes, incrementing ids
+        }
+        if ($this->style['endnoteStyle'] == 2) { // Footnotes, incrementing ids
             $citation = "{\\cs2 $preId\\chftn $postId}{__OSBIB__ENDNOTE__$id}";
             $endnoteString = "{\\footnote$ftf\\s2\\ql " . $citation . '}}__WIKINDX__NEWLINE__';
             return '{\\cs2 \\chftn' . $endnoteString;
