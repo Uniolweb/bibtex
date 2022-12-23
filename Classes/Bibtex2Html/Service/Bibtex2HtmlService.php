@@ -265,11 +265,12 @@ class Bibtex2HtmlService implements LoggerAwareInterface
          // Format the entries array  for html output
          $bibformat = $this->osbibFactory->instantiateBibFormat();
          $bibformat->cleanEntry = true; // convert BibTeX (and LaTeX) special characters to UTF-8
-         list($info, $citation, $styleCommon, $styleTypes) = $bibformat->loadStyle(
+         // list($info, $citation, $styleCommon, $styleTypes)
+         $loadedStyles = $bibformat->loadStyle(
              $this->bibliographyStylesPath . '/',
              $style . $lang
          );
-         $bibformat->getStyle($styleCommon, $styleTypes);
+         $bibformat->getStyle($loadedStyles['common'], $loadedStyles['types'], $loadedStyles['footnote'] ?? []);
 
          /**
           * @var array<string,string> $entry

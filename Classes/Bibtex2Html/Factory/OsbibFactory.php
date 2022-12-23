@@ -34,13 +34,31 @@ class OsbibFactory
      */
     public function autoloadClasses(): void
     {
+        // try to load ParseEntries or PARSEENTRIES
         if (!class_exists('ParseEntries')
+            && !class_exists('PARSEENTRIES')
         ) {
-            include_once($this->absoluteOsbibPath . '/format/bibtexParse/ParseEntries.php');
+            $path = $this->absoluteOsbibPath . '/format/bibtexParse/';
+            if (file_exists($path . 'ParseEntries.php')) {
+                include_once($path . 'ParseEntries.php');
+            } elseif (file_exists($path . 'PARSEENTRIES.php')) {
+                include_once($path . 'PARSEENTRIES.php');
+            } else {
+                throw new \RuntimeException('class ParseEntries or PARSEENTRIES does not exist in ' . $path);
+            }
         }
+
         if (!class_exists('BibFormat')
+            && (!class_exists('BIBFORMAT'))
         ) {
-            include_once($this->absoluteOsbibPath . '/format/BibFormat.php');
+            $path = $this->absoluteOsbibPath . '/format/';
+            if (file_exists($path . 'BibFormat.php')) {
+                include_once($path . 'BibFormat.php');
+            } elseif (file_exists($path . 'BIBFORMAT.php')) {
+                include_once($path . 'BIBFORMAT.php');
+            } else {
+                throw new \RuntimeException('class BibFormat or BIBFORMAT does not exist in ' . $path);
+            }
         }
     }
 
@@ -53,6 +71,10 @@ class OsbibFactory
         if (class_exists('ParseEntries')) {
             return new \ParseEntries($expandMacro, $fieldExtract, $removeDelimit);
         }
+        if (class_exists('PARSEENTRIES')) {
+            return new \PARSEENTRIES($expandMacro, $fieldExtract, $removeDelimit);
+        }
+        throw new \RuntimeException('class ParseEntries or PARSEENTRIES does not exist');
     }
 
     public function instantiateBibFormat()
@@ -60,6 +82,10 @@ class OsbibFactory
         if (class_exists('BibFormat')) {
             return new \BibFormat($this->absoluteOsbibPath, true);
         }
+        if (class_exists('BIBFORMAT')) {
+            return new \BIBFORMAT($this->absoluteOsbibPath, true);
+        }
+        throw new \RuntimeException('class BibFormat or BIBFORMAT does not exist');
     }
 
     public function getAbsolutePathForExtensionPath(string $extkey, string $path): string
