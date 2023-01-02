@@ -23,7 +23,8 @@ class PARSEXML
     /** @var array|bool */
     protected $entries = [];
 
-    protected ?XMLParser $parser = null;
+    /** @var ?XMLParser|mixed  */
+    protected $parser = null;
 
     /**
      * Grab a complete XML entry
