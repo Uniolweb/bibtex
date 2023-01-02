@@ -24,7 +24,7 @@ class PARSEXML
     protected $entries = [];
 
     /** @var ?XMLParser|mixed  */
-    protected $parser = null;
+    protected $parser;
 
     /**
      * Grab a complete XML entry
