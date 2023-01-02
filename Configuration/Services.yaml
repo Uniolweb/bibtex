@@ -17,3 +17,27 @@ services:
         description: 'Convert Flexform'
         schedulable: false
         hidden: false
+
+  Uniolit\Bibtex\Command\ConvertFlexform2Command:
+    tags:
+      - name: 'console.command'
+        command: 'bibtex:convertFlexform2'
+        description: 'Convert Flexform'
+        schedulable: false
+        hidden: false
+
+  Uniolit\Bibtex\Command\DumpFlexformInfoCommand:
+    tags:
+      - name: 'console.command'
+        command: 'bibtex:dumpFlexform'
+        description: 'Dump Flexform information'
+        schedulable: false
+        hidden: false
+
+  Uniolit\Bibtex\Command\CheckFlexformCommand:
+    tags:
+      - name: 'console.command'
+        command: 'bibtex:checkFlexform'
+        description: 'Check Flexform'
+        schedulable: false
+        hidden: false

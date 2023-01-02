@@ -476,13 +476,16 @@ class PARSEENTRIES
                 $line = $lastLine ? $lastLine : $this->getLine();
 
                 // BEGIN: check to guard against endless loop
-                // this is a workaround to guard against endless loop which may occur with entries such as:
+                // this is a workaround to guard against endless loop which may occur for example with entries
+                // with parenthesis in citation key, e.g. @book blah (blah) { ...
+                // This is actually an error in the bibtex file, but it was not correct that it resulted in an
+                // endless loop, we now throw an exception.
                 // Sybille Peters
                 // @todo: fix this
                 if ($lastCurrentLine === $this->currentLine) {
                     $numSame++;
-                    if ($numSame > 50) {
-                        $this->currentLine++;
+                    if ($numSame > 500) {
+                        throw new \RuntimeException('Error parsing bibtex file, may be unexpected charaters such as ( in citation key, e.g. @book title (something) { ....');
                     }
                 }
                 $lastCurrentLine = $this->currentLine;

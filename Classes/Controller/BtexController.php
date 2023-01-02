@@ -17,6 +17,8 @@ class BtexController extends ActionController implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    private int $uid = 0;
+
     /** @var int */
     private $languageId = 0;
 
@@ -54,24 +56,24 @@ class BtexController extends ActionController implements LoggerAwareInterface
         );
     }
 
-    protected function getBibtexSettings(): BibtexSettings
+    protected function initializeBibtexSettings(): BibtexSettings
     {
-        $fileType = $this->settings['fileType'] ?? 'url';
-        if ($fileType === 'url') {
-            $url = $this->settings['link'] ?? '';
-        } else {
-            $url = (string)($this->settings['file'] ?? 0);
-        }
+        $contentObj = $this->configurationManager->getContentObject();
+        $this->uid = (int)$contentObj->data['uid'];
+
         $style = 'uniol_' . ($this->languageId === 0 ? 'de' : 'en');
+        /*
         return new BibtexSettings(
+            $this->uid,
             $fileType,
             $url,
             $this->settings['sort'] ?? BibtexSettings::DEFAULT_SORT,
-            true,
             $style,
             $this->settings['filterType'] ?? '',
             array_filter(explode(',', $this->settings['filterEntries'] ?? ''))
         );
+        */
+        return BibtexSettings::initializeWithSettings($this->settings, $this->uid, $style);
     }
 
     /**
@@ -84,7 +86,7 @@ class BtexController extends ActionController implements LoggerAwareInterface
         $this->languageId = (int)($context->getPropertyFromAspect('language', 'id'));
 
         if ($bibtexSettings === null) {
-            $bibtexSettings = $this->getBibtexSettings();
+            $bibtexSettings = $this->initializeBibtexSettings();
         }
 
         // todo: use caching (getCacheIdentifier. setInCache)? Is this really necessary? Plugin is uncached!

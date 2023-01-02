@@ -16,63 +16,14 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Uniolit\Bibtex\Configuration\BibtexSettings;
 
 /**
- * Convert flexforms for bibtex plugins,
- *
- * Before, for example
- *
- * <T3FlexForms>
- * <data>
- * <sheet index="sDEF">
- * <language index="lDEF">
- * <field index="settings.link">
- * <value index="vDEF">https://uol.de/f/2/dept/wire/fachgebiete/innovation/bibtex/BibTex_Export_Sonst_03122021.bib</value>
- * </field>
- * <field index="settings.sort">
- * <value index="vDEF">year</value>
- * </field>
- * <field index="settings.allow">
- * <value index="vDEF">techreport</value>
- * </field>
- * <field index="settings.deny">
- * <value index="vDEF"></value>
- * </field>
- * <field index="settings.template">
- * <value index="vDEF"></value>
- * </field>
- * </language>
- * </sheet>
- * </data>
- * </T3FlexForms>
- *
- * After, for example:
- *
- * <T3FlexForms>
- * <data>
- * <sheet index="sDEF">
- * <language index="lDEF">
- * <field index="settings.link">
- * <value index="vDEF">https://uol.de/f/6/dept/versorgung/ag/gesoek/Literatur_goe.bib?v=1670920300</value>
- * </field>
- * <field index="settings.sort">
- * <value index="vDEF">none</value>
- * </field>
- * <field index="settings.filterType">
- * <value index="vDEF">allow</value>
- * </field>
- * <field index="settings.filterEntries">
- * <value index="vDEF">book</value>
- * </field>
- * </language>
- * </sheet>
- * </data>
- * </T3FlexForms>
+ * Set filterType to 'allow' if filterEntries is not empty. This was not handled correctly in previous
+ * ConvertFlexFormCommand.
  */
-class ConvertFlexformCommand extends Command
+class ConvertFlexform2Command extends Command
 {
-    protected const NAME = 'bibtex:convertFlexform';
+    protected const NAME = 'bibtex:convertFlexform2';
     protected const PLUGIN_SIGNATURE = 'bibtex_bibtex';
 
     /**
@@ -111,7 +62,7 @@ class ConvertFlexformCommand extends Command
 
     protected function configure()
     {
-        $this->setDescription('Convert flexforms for bibtex plugins');
+        $this->setDescription('Set filterType to <allow> if filterEntries is not empty. ');
         $this->addOption('dry-run', 'd', InputOption::VALUE_NONE, 'Dry run: do not change');
         $this->addOption('interactive', 'i', InputOption::VALUE_NONE, 'Dry run: do not change');
         $this->addOption(
@@ -188,7 +139,7 @@ class ConvertFlexformCommand extends Command
             }
             if (!$this->needsChanges($xmlArray)) {
                 $this->io->writeln(sprintf(
-                    'Needs no change: %s [%d] auf Seite [%d]: enthält kein Flexform',
+                    'Needs no change: %s [%d] auf Seite [%d]',
                     $row['header'],
                     $uid,
                     $pid
@@ -201,7 +152,7 @@ class ConvertFlexformCommand extends Command
             $newXml = $this->arrayToXml($xmlArray);
             if ($newXml === $xml) {
                 $this->io->writeln(sprintf(
-                    'Nothing to change, skipping ...: %s [%d] auf Seite [%d]: enthält kein Flexform',
+                    'Nothing to change, skipping ...: %s [%d] auf Seite [%d]',
                     $row['header'],
                     $uid,
                     $pid
@@ -299,10 +250,10 @@ class ConvertFlexformCommand extends Command
 
     protected function needsChanges(array $xmlArray): bool
     {
-        if (isset($xmlArray['data']['sDEF']['lDEF']['settings.allow'])) {
-            return true;
-        }
-        if (isset($xmlArray['data']['sDEF']['lDEF']['settings.deny'])) {
+        $filterType = $xmlArray['data']['sDEF']['lDEF']['settings.filterType']['vDEF'] ?? '';
+        $filterEntries = $xmlArray['data']['sDEF']['lDEF']['settings.filterEntries']['vDEF'] ?? '';
+        if ($filterEntries && (!$filterType || $filterType === 'none')) {
+            // needs changes: filterType should be set
             return true;
         }
         return false;
@@ -314,34 +265,14 @@ class ConvertFlexformCommand extends Command
             return $xmlArray;
         }
         $arrayReference = &$xmlArray['data']['sDEF']['lDEF'];
-        $allow = $arrayReference['settings.allow']['vDEF'] ?? '';
-        unset($arrayReference['settings.allow']);
-
-        $deny = $arrayReference['settings.deny']['vDEF'] ?? '';
-        unset($arrayReference['settings.deny']);
-        if ($allow) {
-            $arrayReference['settings.filterType']['vDEF'] = 'allow';
-            $arrayReference['settings.filterEntries']['vDEF'] = $allow;
-        } elseif ($deny) {
-            $arrayReference['settings.filterType']['vDEF'] = 'deny';
-            $arrayReference['settings.filterEntries']['vDEF'] = $deny;
-        } else {
-            $arrayReference['settings.filterType']['vDEF'] = 'none';
-            $arrayReference['settings.filterEntries']['vDEF'] = '';
+        $filterType = $arrayReference['settings.filterType']['vDEF'] ?? '';
+        $filterEntries = $arrayReference['settings.filterEntries']['vDEF'] ?? '';
+        if (!($filterEntries && (!$filterType || $filterType === 'none'))) {
+            // needs changes: filterType should be set
+            return $xmlArray;
         }
-
-        $sort = $arrayReference['settings.filterType']['vDEF'] ?? '';
-        if (!in_array($sort, BibtexSettings::ALLOWED_SORT)) {
-            $arrayReference['settings.filterType']['vDEF'] = '';
-        }
-
-        // remove unused fields
-        if (isset($arrayReference['settings.template'])) {
-            unset($arrayReference['settings.template']);
-        }
-        if (isset($arrayReference['settings.key'])) {
-            unset($arrayReference['settings.key']);
-        }
+        // set filterType to allow because it is most likely it was allow
+        $arrayReference['settings.filterType']['vDEF'] = 'allow';
 
         return $xmlArray;
     }

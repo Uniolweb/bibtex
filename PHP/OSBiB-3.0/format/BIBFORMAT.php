@@ -99,8 +99,7 @@ class BIBFORMAT
         bool $preview = false,
         bool $wikindx = false,
         bool $cleanEntry = false
-    )
-    {
+    ) {
         include_once(__DIR__ . '/PARSESTYLE.php');
         $this->parseStyle = new PARSESTYLE();
 

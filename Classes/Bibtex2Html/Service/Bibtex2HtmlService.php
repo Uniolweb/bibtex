@@ -194,11 +194,16 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         }
     }
 
-    public function fetchContentByFileReference(int $fileRefId): string
+    public function fetchContentByFileReferenceId(int $fileRefId): string
     {
         $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
         $fileRef = $resourceFactory->getFileReferenceObject($fileRefId);
-        if (!$fileRef || ! $fileRef instanceof FileReference) {
+        return $this->fetchContentByFileReference($fileRef);
+    }
+
+    public function fetchContentByFileReference(?FileReference $fileRef): string
+    {
+        if (!$fileRef) {
             return '';
         }
         $file = $fileRef->getOriginalFile();

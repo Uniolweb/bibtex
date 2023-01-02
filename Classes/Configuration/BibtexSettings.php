@@ -3,6 +3,10 @@
 declare(strict_types=1);
 namespace Uniolit\Bibtex\Configuration;
 
+use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Uniolit\Bibtex\Service\FileService;
+
 class BibtexSettings
 {
     /** @var string */
@@ -21,10 +25,9 @@ class BibtexSettings
     /** @var string */
     public const DEFAULT_STYLE = 'uniol_en';
 
-    /** @var bool if true, do not show select to select sort order */
-    public const DEFAULT_SORT_FIXED = true;
-
     public const DEFAULT_FILTER_TYPE = '';
+
+    private int $uid = 0;
 
     private string $url = '';
 
@@ -32,14 +35,6 @@ class BibtexSettings
      * @var string
      */
     private $sort = self::DEFAULT_SORT;
-
-    /**
-     * Do not show form to select sorting,
-     * use the sorting that was selected in settings.
-     *
-     * @var bool
-     */
-    private $sortFixed = self::DEFAULT_SORT_FIXED;
 
     private string $style = self::DEFAULT_STYLE;
 
@@ -57,36 +52,74 @@ class BibtexSettings
 
     private string $fileType = 'url';
 
-    private int $fileRef = 0;
+    private ?FileReference $fileReference = null;
+
+    public static function initializeWithSettings(array $settings, int $uid, string $style): BibtexSettings
+    {
+        return new BibtexSettings(
+            $uid,
+            $settings['fileType'] ?? 'url',
+            $settings['link'] ?? '',
+            (int)($settings['file'] ?? 0),
+            $settings['sort'] ?? self::DEFAULT_SORT,
+            $style,
+            $settings['filterType'] ?? '',
+            array_filter(explode(',', $settings['filterEntries'] ?? ''))
+        );
+    }
 
     /**
+     * @param int $uid
      * @param string $fileType
+     * @param string $url
+     * @param int $numFiles
      * @param string $sort
-     * @param bool $sortFixed
      * @param string $style
      * @param string $filterType
      * @param string[] $filterEntries
+     * @param ?FileService $fileService
      */
     public function __construct(
+        int $uid,
         string $fileType,
         string $url,
+        int $numFiles,
         string $sort = self::DEFAULT_SORT,
-        bool $sortFixed = self::DEFAULT_SORT_FIXED,
         string $style = self::DEFAULT_STYLE,
         string $filterType = '',
-        array $filterEntries = []
+        array $filterEntries = [],
+        ?FileService $fileService = null
     ) {
-        $this->fileType = $fileType;
-        if ($fileType === 'url') {
-            $this->url = $url;
-        } else {
-            $this->fileRef = (int)$url;
-        }
+        $uid = $uid;
         $this->sort = $sort;
-        $this->sortFixed = $sortFixed;
         $this->setStyle($style);
         $this->filterType = $filterType;
         $this->filterEntries = $filterEntries;
+
+        $this->fileType = $fileType;
+        if ($fileType === 'url') {
+            $this->url = $url;
+        } elseif ($numFiles > 0) {
+            if (!$fileService) {
+                $fileService = GeneralUtility::makeInstance(FileService::class);
+            }
+            $this->initializeFileRef($uid, $fileService);
+        }
+    }
+
+    protected function initializeFileRef(int $uid, FileService $fileService): void
+    {
+        $fileReferenceObjects = $fileService->getFileObjectsByRelations('tt_content', 'pi_flexform', $uid);
+        $fileReferenceObject = reset($fileReferenceObjects);
+        $this->fileReference = $fileReferenceObject;
+    }
+
+    /**
+     * @return int
+     */
+    public function getUid(): int
+    {
+        return $this->uid;
     }
 
     public function getDefaultSort(): string
@@ -114,22 +147,6 @@ class BibtexSettings
     public function setSort(string $sort): void
     {
         $this->sort = $sort;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSortFixed(): bool
-    {
-        return $this->sortFixed;
-    }
-
-    /**
-     * @param bool $sortFixed
-     */
-    public function setSortFixed(bool $sortFixed): void
-    {
-        $this->sortFixed = $sortFixed;
     }
 
     /**
@@ -207,11 +224,22 @@ class BibtexSettings
     }
 
     /**
-     * @return int
+     * @return ?FileReference
      */
-    public function getFileRef(): int
+    public function getFileRef(): ?FileReference
     {
-        return $this->fileRef;
+        return $this->fileReference;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFileUrl(): string
+    {
+        if ($this->fileReference) {
+            return $this->fileReference->getPublicUrl();
+        }
+        return '';
     }
 
     public function getTemplate(): string
