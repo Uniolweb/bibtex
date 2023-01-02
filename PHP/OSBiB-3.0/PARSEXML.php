@@ -23,7 +23,7 @@ class PARSEXML
     /** @var array|bool */
     protected $entries = [];
 
-    /** @var ?XMLParser|mixed  */
+    /** @var XMLParser|mixed|null */
     protected $parser;
 
     /**
