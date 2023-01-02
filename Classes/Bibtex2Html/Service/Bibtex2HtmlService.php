@@ -262,7 +262,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
          string $filterType = '',
          array $filter = [],
          string $lang = '',
-         string $style = 'uniol'
+         string $style = 'uniol_de'
      ): array {
          //// End added by C.v.O Uni Oldenburg
          /** @var array<int,array<string,string>> $newEntries */
@@ -275,7 +275,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
          // list($info, $citation, $styleCommon, $styleTypes)
          $loadedStyles = $bibformat->loadStyleAsNamedArray(
              $this->bibliographyStylesPath . '/',
-             $style . $lang
+             $style
          );
          $bibformat->getStyle($loadedStyles['common'], $loadedStyles['types'], $loadedStyles['footnote'] ?? []);
 
