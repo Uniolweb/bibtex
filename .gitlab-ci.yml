@@ -12,8 +12,13 @@
 
 # todo:
 # - add check if platform is in composer.json (should not be)
-# - make PHP version for platform depend on major.minor PHP version
 
+
+variables:
+  PHP_PLATFORM_VERSION_8_1: "8.1.13"
+  PHP_VERSION_8_1: "8.1"
+  PHP_PLATFORM_VERSION_7_4: "7.4.33"
+  PHP_VERSION_7_4: "7.4"
 
 test-job:
   tags:
@@ -22,21 +27,27 @@ test-job:
   stage: test
   parallel:
     matrix:
-      - PHP_VERSION: [ "8.1" ]
+#      - PHP: [ "7_4", "8_1" ]
+      - PHP: [ "8_1" ]
   script:
     - echo "Hello again you, $GITLAB_USER_LOGIN!"
+    - 'echo "PHP=$PHP"'
+    - PHP_VERSION=PHP_VERSION_${PHP}
+    - PHP_PLATFORM_VERSION=PHP_PLATFORM_VERSION_${PHP}
+    - 'echo "PHP version: ${!PHP_VERSION}"'
+    - 'echo "PHP platform version: ${!PHP_PLATFORM_VERSION}"'
     - who
     - pwd
     - hostname
     - composer validate
-    - composer config platform.php "8.1.13"
+    - composer config platform.php "${!PHP_PLATFORM_VERSION}"
     - if [ ! -f auth.json ] && [ ! -L auth.json ];then ln -s /home/gitlab-runner/private/auth.json auth.json;fi
     - composer install
-    - Build/Scripts/runTests.sh -s lint -p $PHP_VERSION
-    - Build/Scripts/runTests.sh -s composerValidate -p $PHP_VERSION
-    - Build/Scripts/runTests.sh -s cgl -n -p $PHP_VERSION
-    - Build/Scripts/runTests.sh -s phpstan -p $PHP_VERSION
-    - Build/Scripts/runTests.sh -s unit -p 8.1
+    - Build/Scripts/runTests.sh -s lint -p "${!PHP_VERSION}"
+    - Build/Scripts/runTests.sh -s composerValidate -p "${!PHP_VERSION}"
+    - Build/Scripts/runTests.sh -s cgl -n -p "${!PHP_VERSION}"
+    - Build/Scripts/runTests.sh -s phpstan -p "${!PHP_VERSION}"
+    - Build/Scripts/runTests.sh -s unit -p "${!PHP_VERSION}"
     - composer config --unset platform.php
     - composer config --unset platform
 
