@@ -66,6 +66,12 @@ class checkFlexformCommand extends Command
             InputOption::VALUE_NONE,
             'Show hidden content elements'
         );
+        $this->addOption(
+            'breakonerror',
+            'b',
+            InputOption::VALUE_NONE,
+            'Break on first error for each bibtex file. If this option is on, all errors will be displayed, if not only one error per file.'
+        );
     }
 
     /**
@@ -81,6 +87,7 @@ class checkFlexformCommand extends Command
 
         $uid = $input->getOption('uid');
         $showHidden = $input->getOption('showhidden');
+        $breakOnError = $input->getOption('breakonerror');
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tt_content')->createQueryBuilder();
         if ($showHidden) {
@@ -128,7 +135,9 @@ class checkFlexformCommand extends Command
                     $uid,
                     $pid
                 ));
-                continue;
+                if ($breakOnError) {
+                    continue;
+                }
             }
 
             $xml = $row['pi_flexform'] ?? '';
@@ -141,17 +150,20 @@ class checkFlexformCommand extends Command
                     $uid,
                     $pid
                 ));
-
-                continue;
+                if ($breakOnError) {
+                    continue;
+                }
             }
 
             $style = 'uniol_' . ($this->language ?? 'de');
 
             //var_dump($settings);
 
-            $bibtexSettings = BibtexSettings::initializeWithSettings($settings, $uid, $style);
+            // todo: move this to a separate class, collect all errors in an array and return
+            $bibtexSettings = BibtexSettings::initializeWithSettings($settings, $uid, $style, true);
             $fileType = $bibtexSettings->getFileType();
             $content = '';
+            $url = '';
             switch ($fileType) {
                 case 'url':
                     $url = $bibtexSettings->getUrl();
@@ -162,7 +174,9 @@ class checkFlexformCommand extends Command
                             $uid,
                             $pid
                         ));
-                        continue 2;
+                        if ($breakOnError) {
+                            continue 2;
+                        }
                     }
                     $content = $this->bibtex2HtmlService->fetchContentByUrl($url);
                     break;
@@ -176,7 +190,9 @@ class checkFlexformCommand extends Command
                             $pid,
                             $fileType
                         ));
-                        continue 2;
+                        if ($breakOnError) {
+                            continue 2;
+                        }
                     }
                     $site = $this->siteFinder->getSiteByPageId($pid);
                     $baseUrl = $site->getBase();
@@ -192,7 +208,9 @@ class checkFlexformCommand extends Command
                         $pid,
                         $fileType
                     ));
-                    continue 2;
+                    if ($breakOnError) {
+                        continue 2;
+                    }
             }
 
             if (!$content) {
@@ -204,7 +222,9 @@ class checkFlexformCommand extends Command
                     $url,
                     $fileType,
                 ));
-                continue;
+                if ($breakOnError) {
+                    continue;
+                }
             }
 
             // parse bibtex
@@ -219,28 +239,72 @@ class checkFlexformCommand extends Command
                         $url,
                         $fileType,
                     ));
-                    continue;
+                    if ($breakOnError) {
+                        continue;
+                    }
                 }
 
                 // todo: check if all required fields for type exist
                 foreach ($entries as $entry) {
                     // consistency check for author
-                    $entryField = $entry['entry'];
-                    if (preg_match('/^([A-Z]\. ){4,}/', $entryField)) {
+                    $resultField = $entry['entry'] ?? '';
+                    if (preg_match('/^([A-Z]\. ){4,}/', $resultField)) {
                         $this->io->warning(sprintf(
-                            'Result with several initials, probably author has wrong format: header="%s" [%d] auf Seite [%d], url=%s, fileType=%s, result="%s"',
+                            'Result with several initials, probably author has wrong format: header="%s" [%d] auf Seite [%d], url=%s, fileType=%s, compiled entry="%s"',
                             $row['header'],
                             $uid,
                             $pid,
                             $url,
                             $fileType,
-                            $entryField
+                            $resultField
                         ));
                         $isError = true;
-                        break;
+                        if ($breakOnError) {
+                            break;
+                        }
+                    }
+                    if (!($entry['year'] ?? false)) {
+                        $this->io->warning(sprintf(
+                            'Result missing field year: header="%s" [%d] on page [%d], url=%s, fileType=%s compiled entry="%s"',
+                            $row['header'],
+                            $uid,
+                            $pid,
+                            $url,
+                            $fileType,
+                            $resultField
+                        ));
+                        $isError = true;
+                        if ($breakOnError) {
+                            break;
+                        }
+                    }
+
+                    // todo check if bibtex entry is there
+                    $bibtex = $entry['bibtex'];
+
+                    // check URL:
+                    $url = $entry['origEntry']['url'] ?? '';
+                    if ($url) {
+                        // check URL (does not work reliably)
+                        /*
+                        if (!$this->bibtex2HtmlService->checkByUrl($url)) {
+                            $this->io->warning(sprintf(
+                                'Result has "url" field with URL which is unavailable: header="%s" [%d] on page [%d], url=%s, fileType=%s url="%s"',
+                                $row['header'],
+                                $uid,
+                                $pid,
+                                $url,
+                                $fileType,
+                                $url
+                            ));
+                            if ($breakOnError) {
+                                break;
+                            }
+                        }
+                        */
                     }
                 }
-                if ($isError) {
+                if ($isError && $breakOnError) {
                     continue;
                 }
             } catch (\Exception $e) {
@@ -253,7 +317,9 @@ class checkFlexformCommand extends Command
                     $url,
                     $fileType,
                 ));
-                continue;
+                if ($breakOnError) {
+                    continue;
+                }
             }
 
             $count++;

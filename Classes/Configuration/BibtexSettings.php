@@ -27,6 +27,8 @@ class BibtexSettings
 
     public const DEFAULT_FILTER_TYPE = '';
 
+    private bool $addOrigEntry = false;
+
     private int $uid = 0;
 
     private string $url = '';
@@ -54,7 +56,7 @@ class BibtexSettings
 
     private ?FileReference $fileReference = null;
 
-    public static function initializeWithSettings(array $settings, int $uid, string $style): BibtexSettings
+    public static function initializeWithSettings(array $settings, int $uid, string $style, bool $addOrigEntry = false): BibtexSettings
     {
         return new BibtexSettings(
             $uid,
@@ -64,7 +66,8 @@ class BibtexSettings
             $settings['sort'] ?? self::DEFAULT_SORT,
             $style,
             $settings['filterType'] ?? '',
-            array_filter(explode(',', $settings['filterEntries'] ?? ''))
+            array_filter(explode(',', $settings['filterEntries'] ?? '')),
+            $addOrigEntry
         );
     }
 
@@ -77,6 +80,7 @@ class BibtexSettings
      * @param string $style
      * @param string $filterType
      * @param string[] $filterEntries
+     * @param bool $addOrigEntry
      * @param ?FileService $fileService
      */
     public function __construct(
@@ -88,10 +92,12 @@ class BibtexSettings
         string $style = self::DEFAULT_STYLE,
         string $filterType = '',
         array $filterEntries = [],
+        bool $addOrigEntry = false,
         ?FileService $fileService = null
     ) {
         $uid = $uid;
         $this->sort = $sort;
+        $this->addOrigEntry = $addOrigEntry;
         $this->setStyle($style);
         $this->filterType = $filterType;
         $this->filterEntries = $filterEntries;
@@ -112,6 +118,14 @@ class BibtexSettings
         $fileReferenceObjects = $fileService->getFileObjectsByRelations('tt_content', 'pi_flexform', $uid);
         $fileReferenceObject = reset($fileReferenceObjects);
         $this->fileReference = $fileReferenceObject;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAddOrigEntry(): bool
+    {
+        return $this->addOrigEntry;
     }
 
     /**

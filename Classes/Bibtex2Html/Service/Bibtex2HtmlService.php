@@ -175,10 +175,24 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             $filterType,
             $filterItems,
             $lang,
-            $bibtexSettings->getStyle()
+            $bibtexSettings->getStyle(),
+            $bibtexSettings->isAddOrigEntry()
         );
 
         return $newEntries;
+    }
+
+    public function checkByUrl(string $url): bool
+    {
+        try {
+            $response = $this->requestFactory->request($url);
+            if ($response->getStatusCode() !== 200) {
+                return false;
+            }
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     public function fetchContentByUrl(string $url): string
@@ -255,6 +269,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
      * @param array $filter
      * @param string $lang
      * @param string $style
+     * @param bool $addOrigEntry Add the original parsed entry elements to the returned entry as array with key 'origEntry'
      * @return array
      */
      protected function preFormatBibtexEntries(
@@ -262,7 +277,8 @@ class Bibtex2HtmlService implements LoggerAwareInterface
          string $filterType = '',
          array $filter = [],
          string $lang = '',
-         string $style = 'uniol_de'
+         string $style = 'uniol_de',
+         bool $addOrigEntry = false
      ): array {
          //// End added by C.v.O Uni Oldenburg
          /** @var array<int,array<string,string>> $newEntries */
@@ -327,6 +343,9 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                  'twist_entry' => $this->toTWiStEntry($mapped_entry, $resourceType),
                  'twist_pdf' => $this->toTWiStPDF($entry)
              ];
+             if ($addOrigEntry) {
+                 $newEntry['origEntry'] = $entry;
+             }
              $newEntries[] = $newEntry;
          }
          return $newEntries;
