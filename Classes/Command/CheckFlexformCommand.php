@@ -22,7 +22,7 @@ use Uniolit\Bibtex\Service\FileService;
 /**
  * Make some basic checks for the Flexform in bibtex plugins
  */
-class checkFlexformCommand extends Command
+class CheckFlexformCommand extends Command
 {
     protected const NAME = 'bibtex:checkFlexform';
     protected const PLUGIN_SIGNATURE = 'bibtex_bibtex';
@@ -160,7 +160,7 @@ class checkFlexformCommand extends Command
             //var_dump($settings);
 
             // todo: move this to a separate class, collect all errors in an array and return
-            $bibtexSettings = BibtexSettings::initializeWithSettings($settings, $uid, $style, true);
+            $bibtexSettings = BibtexSettings::initializeWithSettings($settings, $style, true);
             $fileType = $bibtexSettings->getFileType();
             $content = '';
             $url = '';
@@ -197,7 +197,7 @@ class checkFlexformCommand extends Command
                     $site = $this->siteFinder->getSiteByPageId($pid);
                     $baseUrl = $site->getBase();
                     $url = $baseUrl . '/' . $fileUrl;
-                    $content = $this->bibtex2HtmlService->fetchContentByFileReference($bibtexSettings->getFileRef());
+                    $content = $this->bibtex2HtmlService->fetchContentByFile($bibtexSettings->getFile());
                     break;
 
                 default:

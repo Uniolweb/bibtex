@@ -7,118 +7,49 @@
                 </TCEforms>
                 <type>array</type>
                 <el>
-                    <settings.fileType>
-                        <TCEforms>
-                            <label>Bibtex Datei als URL oder Datei auswählen</label>
-                            <onChange>reload</onChange>
-                            <config>
-                                <type>radio</type>
-                                <items type="array">
-                                    <numIndex index="0" type="array">
-                                        <numIndex index="0">
-                                            URL
-                                        </numIndex>
-                                        <numIndex index="1">url</numIndex>
-                                    </numIndex>
-                                    <numIndex index="1" type="array">
-                                        <numIndex index="0">
-                                            Datei auswählen
-                                        </numIndex>
-                                        <numIndex index="1">file</numIndex>
-                                    </numIndex>
-                                </items>
-                                <default>url</default>
-                            </config>
-                        </TCEforms>
-                    </settings.fileType>
 
-                    <!-- URL of Bibtex file -->
+                    <!-- todo TYPO3 v12: type='link' nutzen
+                    https://docs.typo3.org/m/typo3/reference-tca/main/en-us/ColumnsConfig/Type/Link/Index.html#columns-link
+                    -->
+                    <!-- todo "Neue Mediendatei hinzufügen" / "Add new media asset" im Link Browser ausblenden, wie?
+                         https://gitlab.uni-oldenburg.de/it-dienste/typo3/typo3-uol.de/-/issues/792
+                     -->
+                    <!-- todo: Hint für Datei-Endung anzeigen ... wie? -->
                     <settings.link>
                         <TCEforms>
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.bibtexUrl</label>
-                            <displayCond>FIELD:settings.fileType:=:url</displayCond>
                             <config>
                                 <type>input</type>
-                                <size>40</size>
-                                <max>250</max>
+                                <renderType>inputLink</renderType>
                                 <eval>trim,required</eval>
+                                <!-- does not work, trying to not display "Add new media asset"
+                                    https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/10.1/Feature-84250-SeparatelyEnableDisableAddMediaByURLAndSelectUploadFiles.html
+                                    https://gitlab.uni-oldenburg.de/it-dienste/typo3/typo3-uol.de/-/issues/792
+                                    -->
+                                <!--
+                                <appearance>
+                                    <fileByUrlAllowed>false</fileByUrlAllowed>
+                                </appearance>
+                                -->
+                                <fieldControl>
+                                    <linkPopup>
+                                        <options>
+                                            <allowedExtensions>bib</allowedExtensions>
+                                            <!-- Comma separated list of link fields that should not be displayed.
+                                            Possible values are class, params, target and title.
+                                            By default, all link fields are displayed.-->
+                                            <blindLinkFields>class,param,target,title</blindLinkFields>
+                                            <!-- what link types NOT to show -->
+                                            <blindLinkOptions>page,mail,telephone,folder,tx_calendarize_domain_model_event,news</blindLinkOptions>
+                                            <!-- title von Button, nicht Link Browser !!! -->
+                                            <title>Bibtex Datei auswählen</title>
+
+                                        </options>
+                                    </linkPopup>
+                                </fieldControl>
                             </config>
                         </TCEforms>
                     </settings.link>
-
-                    <!-- todo Make it possible to select several, set maxitems to > 1 in that case -->
-                    <settings.file>
-                        <TCEforms>
-                            <label>Datei auswählen</label>
-                            <displayCond>FIELD:settings.fileType:=:file</displayCond>
-                            <config>
-                                <type>inline</type>
-                                <default></default>
-                                <eval>required</eval>
-                                <size>1</size>
-                                <minitems>1</minitems>
-                                <maxitems>1</maxitems>
-                                <foreign_field>uid_foreign</foreign_field>
-                                <foreign_label>uid_local</foreign_label>
-                                <foreign_match_fields>
-                                    <fieldname>pi_flexform</fieldname>
-                                </foreign_match_fields>
-                                <foreign_selector>uid_local</foreign_selector>
-                                <foreign_sortby>sorting_foreign</foreign_sortby>
-                                <foreign_table>sys_file_reference</foreign_table>
-                                <foreign_table_field>tablenames</foreign_table_field>
-                                <appearance>
-                                    <createNewRelationLinkTitle>Datei laden</createNewRelationLinkTitle>
-                                    <enabledControls>
-                                        <dragdrop>1</dragdrop>
-                                        <info>1</info>
-                                        <sort>0</sort>
-                                    </enabledControls>
-                                    <!--
-                                    <headerThumbnail>
-                                        <field>uid_local</field>
-                                        <height>45m</height>
-                                    </headerThumbnail>
-                                    -->
-                                </appearance>
-                                <overrideChildTca>
-                                    <columns>
-                                        <uid_local>
-                                            <config>
-                                                <appearance>
-                                                    <elementBrowserAllowed>bib</elementBrowserAllowed>
-                                                    <elementBrowserType>file</elementBrowserType>
-                                                </appearance>
-                                            </config>
-                                        </uid_local>
-                                    </columns>
-                                    <!-- suppress displaying title and description here -->
-                                    <types type="array">
-                                        <numIndex index="0" type="array">
-                                            <showitem>--palette--;;filePalette</showitem>
-                                        </numIndex>
-                                        <numIndex index="1" type="array">
-                                            <showitem>--palette--;;filePalette</showitem>
-                                        </numIndex>
-                                        <numIndex index="2" type="array">
-                                            <showitem>--palette--;;filePalette</showitem>
-                                        </numIndex>
-                                        <numIndex index="3" type="array">
-                                            <showitem>--palette--;;filePalette</showitem>
-                                        </numIndex>
-                                        <numIndex index="4" type="array">
-                                            <showitem>--palette--;;filePalette</showitem>
-                                        </numIndex>
-                                        <numIndex index="5" type="array">
-                                            <showitem>--palette--;;filePalette</showitem>
-                                        </numIndex>
-                                    </types>
-                                </overrideChildTca>
-                            </config>
-                        </TCEforms>
-                    </settings.file>
-
-
 
                     <!-- todo: use multiple, e.g. sort by year, author -->
                     <settings.sort>
@@ -127,6 +58,7 @@
                             <config>
                                 <type>select</type>
                                 <renderType>selectSingle</renderType>
+                                <default>year</default>
                                 <items>
                                     <numIndex index="0" type="array">
                                         <numIndex index="0">
@@ -140,17 +72,6 @@
                                         </numIndex>
                                         <numIndex index="1">bibtexEntryType</numIndex>
                                     </numIndex>
-
-                                    <!-- deactivated because parsing of authors not reliable, also does not make
-                                      sense because there are often several authors in different order -->
-                                    <!--
-                                    <numIndex index="2" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.author
-                                        </numIndex>
-                                        <numIndex index="1">author</numIndex>
-                                    </numIndex>
-                                    -->
                                     <numIndex index="3" type="array">
                                         <numIndex index="0">
                                             LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.year
@@ -205,14 +126,6 @@
                                 <maxitems>100</maxitems>
                                 <!-- <eval>required</eval> -->
                                 <items type="array">
-                                    <!--
-                                    <numIndex index="0" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.allow.all
-                                        </numIndex>
-                                        <numIndex index="1"></numIndex>
-                                    </numIndex>
-                                    -->
                                     <numIndex index="1" type="array">
                                         <numIndex index="0">article</numIndex>
                                         <numIndex index="1">article</numIndex>
@@ -273,207 +186,6 @@
                             </config>
                         </TCEforms>
                     </settings.filterEntries>
-
-
-
-                    <!--
-                    <settings.allow>
-                        <TCEforms>
-                            <displayCond>FIELD:settings.allowDeny:=:allow</displayCond>
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.allow</label>
-                            <config>
-                                <type>select</type>
-                                <renderType>selectSingle</renderType>
-                                <items type="array">
-                                    <numIndex index="0" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.allow.all
-                                        </numIndex>
-                                        <numIndex index="1"></numIndex>
-                                    </numIndex>
-                                    <numIndex index="1" type="array">
-                                        <numIndex index="0">article</numIndex>
-                                        <numIndex index="1">article</numIndex>
-                                    </numIndex>
-                                    <numIndex index="2" type="array">
-                                        <numIndex index="0">book</numIndex>
-                                        <numIndex index="1">book</numIndex>
-                                    </numIndex>
-                                    <numIndex index="3" type="array">
-                                        <numIndex index="0">booklet</numIndex>
-                                        <numIndex index="1">booklet</numIndex>
-                                    </numIndex>
-                                    <numIndex index="4" type="array">
-                                        <numIndex index="0">conference</numIndex>
-                                        <numIndex index="1">conference</numIndex>
-                                    </numIndex>
-                                    <numIndex index="5" type="array">
-                                        <numIndex index="0">inbook</numIndex>
-                                        <numIndex index="1">inbook</numIndex>
-                                    </numIndex>
-                                    <numIndex index="6" type="array">
-                                        <numIndex index="0">incollection</numIndex>
-                                        <numIndex index="1">incollection</numIndex>
-                                    </numIndex>
-                                    <numIndex index="7" type="array">
-                                        <numIndex index="0">inproceedings</numIndex>
-                                        <numIndex index="1">inproceedings</numIndex>
-                                    </numIndex>
-                                    <numIndex index="8" type="array">
-                                        <numIndex index="0">manual</numIndex>
-                                        <numIndex index="1">manual</numIndex>
-                                    </numIndex>
-                                    <numIndex index="9" type="array">
-                                        <numIndex index="0">mastersthesis</numIndex>
-                                        <numIndex index="1">mastersthesis</numIndex>
-                                    </numIndex>
-                                    <numIndex index="10" type="array">
-                                        <numIndex index="0">misc</numIndex>
-                                        <numIndex index="1">misc</numIndex>
-                                    </numIndex>
-                                    <numIndex index="11" type="array">
-                                        <numIndex index="0">phdthesis</numIndex>
-                                        <numIndex index="1">phdthesis</numIndex>
-                                    </numIndex>
-                                    <numIndex index="12" type="array">
-                                        <numIndex index="0">proceedings</numIndex>
-                                        <numIndex index="1">proceedings</numIndex>
-                                    </numIndex>
-                                    <numIndex index="13" type="array">
-                                        <numIndex index="0">techreport</numIndex>
-                                        <numIndex index="1">techreport</numIndex>
-                                    </numIndex>
-                                    <numIndex index="14" type="array">
-                                        <numIndex index="0">unpublished</numIndex>
-                                        <numIndex index="1">unpublished</numIndex>
-                                    </numIndex>
-                                </items>
-                                <size>15</size>
-                                <maxitems>100</maxitems>
-                                <renderMode>singlebox</renderMode>
-                            </config>
-                        </TCEforms>
-                    </settings.allow>
-
-                    <settings.deny>
-                        <TCEforms>
-                            <displayCond>FIELD:settings.allowDeny:=:deny</displayCond>
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.deny</label>
-                            <config>
-                                <type>select</type>
-                                <renderType>selectSingle</renderType>
-                                <items type="array">
-                                    <numIndex index="0" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.deny.all
-                                        </numIndex>
-                                        <numIndex index="1"></numIndex>
-                                    </numIndex>
-                                    <numIndex index="1" type="array">
-                                        <numIndex index="0">article</numIndex>
-                                        <numIndex index="1">article</numIndex>
-                                    </numIndex>
-                                    <numIndex index="2" type="array">
-                                        <numIndex index="0">book</numIndex>
-                                        <numIndex index="1">book</numIndex>
-                                    </numIndex>
-                                    <numIndex index="3" type="array">
-                                        <numIndex index="0">booklet</numIndex>
-                                        <numIndex index="1">booklet</numIndex>
-                                    </numIndex>
-                                    <numIndex index="4" type="array">
-                                        <numIndex index="0">conference</numIndex>
-                                        <numIndex index="1">conference</numIndex>
-                                    </numIndex>
-                                    <numIndex index="5" type="array">
-                                        <numIndex index="0">inbook</numIndex>
-                                        <numIndex index="1">inbook</numIndex>
-                                    </numIndex>
-                                    <numIndex index="6" type="array">
-                                        <numIndex index="0">incollection</numIndex>
-                                        <numIndex index="1">incollection</numIndex>
-                                    </numIndex>
-                                    <numIndex index="7" type="array">
-                                        <numIndex index="0">inproceedings</numIndex>
-                                        <numIndex index="1">inproceedings</numIndex>
-                                    </numIndex>
-                                    <numIndex index="8" type="array">
-                                        <numIndex index="0">manual</numIndex>
-                                        <numIndex index="1">manual</numIndex>
-                                    </numIndex>
-                                    <numIndex index="9" type="array">
-                                        <numIndex index="0">mastersthesis</numIndex>
-                                        <numIndex index="1">mastersthesis</numIndex>
-                                    </numIndex>
-                                    <numIndex index="10" type="array">
-                                        <numIndex index="0">misc</numIndex>
-                                        <numIndex index="1">misc</numIndex>
-                                    </numIndex>
-                                    <numIndex index="11" type="array">
-                                        <numIndex index="0">phdthesis</numIndex>
-                                        <numIndex index="1">phdthesis</numIndex>
-                                    </numIndex>
-                                    <numIndex index="12" type="array">
-                                        <numIndex index="0">proceedings</numIndex>
-                                        <numIndex index="1">proceedings</numIndex>
-                                    </numIndex>
-                                    <numIndex index="13" type="array">
-                                        <numIndex index="0">techreport</numIndex>
-                                        <numIndex index="1">techreport</numIndex>
-                                    </numIndex>
-                                    <numIndex index="14" type="array">
-                                        <numIndex index="0">unpublished</numIndex>
-                                        <numIndex index="1">unpublished</numIndex>
-                                    </numIndex>
-                                </items>
-                                <size>15</size>
-                                <maxitems>100</maxitems>
-                                <renderMode>singlebox</renderMode>
-                            </config>
-                        </TCEforms>
-                    </settings.deny>
-                    -->
-
-
-                    <!-- wird zur Zeit nicht unterstützt
-                    todo: wieder reaktivieren?
-                    <settings.template>
-                        <TCEforms>
-                            <label>Template-Datei (optional, nicht empfohlen)</label>
-                            <config>
-                                <type>input</type>
-                                <size>64</size>
-                                <max>128</max>
-                                <eval>trim</eval>
-                            </config>
-                        </TCEforms>
-                    </settings.template>
-                    -->
-
-                    <!--
-                    <settings.key>
-                        <TCEforms>
-                            <label>Key (optional, wird zur Zeit nicht unterstützt)</label>
-                            <config>
-                                <type>input</type>
-                                <size>64</size>
-                                <max>128</max>
-                                <eval>trim</eval>
-                            </config>
-                        </TCEforms>
-                    </settings.key>
-
-                    <settings.sortfixed>
-                        <TCEforms>
-                            <label>Kopfleiste mit Sortiermöglichkeiten ausblenden (optional, wird zur Zeit immer ausgeblendet)</label>
-                            <config>
-                                <type>check</type>
-                                <default>1</default>
-                            </config>
-                        </TCEforms>
-                    </settings.sortfixed>
-                    -->
-
                 </el>
             </ROOT>
         </sDEF>

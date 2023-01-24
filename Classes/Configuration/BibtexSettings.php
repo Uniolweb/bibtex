@@ -3,9 +3,9 @@
 declare(strict_types=1);
 namespace Uniolit\Bibtex\Configuration;
 
-use TYPO3\CMS\Core\Resource\FileReference;
+use TYPO3\CMS\Core\LinkHandling\LinkService;
+use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Uniolit\Bibtex\Service\FileService;
 
 class BibtexSettings
 {
@@ -49,20 +49,18 @@ class BibtexSettings
      * Currently not used!
      *
      * @var string
+     * @deprecated
      */
     private string $template = '';
 
     private string $fileType = 'url';
 
-    private ?FileReference $fileReference = null;
+    private ?File $file = null;
 
-    public static function initializeWithSettings(array $settings, int $uid, string $style, bool $addOrigEntry = false): BibtexSettings
+    public static function initializeWithSettings(array $settings, string $style, bool $addOrigEntry = false): BibtexSettings
     {
         return new BibtexSettings(
-            $uid,
-            $settings['fileType'] ?? 'url',
             $settings['link'] ?? '',
-            (int)($settings['file'] ?? 0),
             $settings['sort'] ?? self::DEFAULT_SORT,
             $style,
             $settings['filterType'] ?? '',
@@ -72,52 +70,51 @@ class BibtexSettings
     }
 
     /**
-     * @param int $uid
-     * @param string $fileType
      * @param string $url
-     * @param int $numFiles
      * @param string $sort
      * @param string $style
      * @param string $filterType
      * @param string[] $filterEntries
      * @param bool $addOrigEntry
-     * @param ?FileService $fileService
+     * @param LinkService $linkService
      */
     public function __construct(
-        int $uid,
-        string $fileType,
         string $url,
-        int $numFiles,
         string $sort = self::DEFAULT_SORT,
         string $style = self::DEFAULT_STYLE,
         string $filterType = '',
         array $filterEntries = [],
         bool $addOrigEntry = false,
-        ?FileService $fileService = null
+        ?LinkService $linkService = null
     ) {
-        $uid = $uid;
         $this->sort = $sort;
         $this->addOrigEntry = $addOrigEntry;
         $this->setStyle($style);
         $this->filterType = $filterType;
         $this->filterEntries = $filterEntries;
 
-        $this->fileType = $fileType;
-        if ($fileType === 'url') {
-            $this->url = $url;
-        } elseif ($numFiles > 0) {
-            if (!$fileService) {
-                $fileService = GeneralUtility::makeInstance(FileService::class);
+        $this->fileType = 'none';
+        // check if target is a file
+        if (strpos($url, 't3://file') === 0) {
+            // target is file
+            // TYPO3\CMS\Core\LinkHandling\LinkService::resolve()  . This method will return an array with a key  file  containing a  TYPO3\CMS\Core\Resource\FileInterface
+            // https://copyprogramming.com/howto/typo3-11-convert-t3-file-uri-into-file-identifier
+            if (!$linkService) {
+                $linkService = GeneralUtility::makeInstance(LinkService::class);
+                $result = $linkService->resolve($url);
+                if (
+                    ($result['file'] ?? false)
+                    && ($result['type'] ?? false)
+                    && ($result['type'] === 'file')) {
+                    $this->file = $result['file'];
+                    $this->fileType = 'file';
+                }
             }
-            $this->initializeFileRef($uid, $fileService);
+        } else {
+            // target is url
+            $this->url = $url;
+            $this->fileType = 'url';
         }
-    }
-
-    protected function initializeFileRef(int $uid, FileService $fileService): void
-    {
-        $fileReferenceObjects = $fileService->getFileObjectsByRelations('tt_content', 'pi_flexform', $uid);
-        $fileReferenceObject = reset($fileReferenceObjects);
-        $this->fileReference = $fileReferenceObject;
     }
 
     /**
@@ -238,11 +235,11 @@ class BibtexSettings
     }
 
     /**
-     * @return ?FileReference
+     * @return ?File
      */
-    public function getFileRef(): ?FileReference
+    public function getFile(): ?File
     {
-        return $this->fileReference;
+        return $this->file;
     }
 
     /**
@@ -250,12 +247,16 @@ class BibtexSettings
      */
     public function getFileUrl(): string
     {
-        if ($this->fileReference) {
-            return $this->fileReference->getPublicUrl();
+        if ($this->file) {
+            return $this->file->getPublicUrl();
         }
         return '';
     }
 
+    /**
+     * @return string
+     * @depreacated
+     */
     public function getTemplate(): string
     {
         return $this->template;

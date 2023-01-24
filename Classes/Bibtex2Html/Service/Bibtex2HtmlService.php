@@ -31,8 +31,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Http\RequestFactory;
-use TYPO3\CMS\Core\Resource\FileReference;
-use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Uniolit\Bibtex\Bibtex2Html\Factory\OsbibFactory;
@@ -153,11 +152,11 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                 break;
 
             case 'file':
-                $fileRef = $bibtexSettings->getFileRef();
-                if (!$fileRef) {
+                $file = $bibtexSettings->getFile();
+                if (!$file) {
                     return [];
                 }
-                $content = $this->fetchContentByFileReference($fileRef);
+                $content = $this->fetchContentByFile($file);
                 break;
         }
 
@@ -208,20 +207,12 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         }
     }
 
-    public function fetchContentByFileReferenceId(int $fileRefId): string
+    public function fetchContentByFile(?File $file): string
     {
-        $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
-        $fileRef = $resourceFactory->getFileReferenceObject($fileRefId);
-        return $this->fetchContentByFileReference($fileRef);
-    }
-
-    public function fetchContentByFileReference(?FileReference $fileRef): string
-    {
-        if (!$fileRef) {
+        if (!$file) {
             return '';
         }
-        $file = $fileRef->getOriginalFile();
-        return $fileRef->getStorage()->getFileContents($file);
+        return $file->getStorage()->getFileContents($file);
     }
 
     /**

@@ -146,7 +146,7 @@ class DumpFlexformInfoCommand extends Command
 
             //var_dump($settings);
 
-            $bibtexSettings = BibtexSettings::initializeWithSettings($settings, $uid, $style);
+            $bibtexSettings = BibtexSettings::initializeWithSettings($settings, $style);
             $fileType = $bibtexSettings->getFileType();
             switch ($fileType) {
                 case 'url':

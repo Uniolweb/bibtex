@@ -17,8 +17,6 @@ class BtexController extends ActionController implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private int $uid = 0;
-
     /** @var int */
     private $languageId = 0;
 
@@ -58,22 +56,8 @@ class BtexController extends ActionController implements LoggerAwareInterface
 
     protected function initializeBibtexSettings(): BibtexSettings
     {
-        $contentObj = $this->configurationManager->getContentObject();
-        $this->uid = (int)$contentObj->data['uid'];
-
         $style = 'uniol_' . ($this->languageId === 0 ? 'de' : 'en');
-        /*
-        return new BibtexSettings(
-            $this->uid,
-            $fileType,
-            $url,
-            $this->settings['sort'] ?? BibtexSettings::DEFAULT_SORT,
-            $style,
-            $this->settings['filterType'] ?? '',
-            array_filter(explode(',', $this->settings['filterEntries'] ?? ''))
-        );
-        */
-        return BibtexSettings::initializeWithSettings($this->settings, $this->uid, $style);
+        return BibtexSettings::initializeWithSettings($this->settings, $style);
     }
 
     /**
