@@ -255,7 +255,7 @@ class BibtexSettings
 
     /**
      * @return string
-     * @depreacated
+     * @deprecated
      */
     public function getTemplate(): string
     {
