@@ -8,13 +8,19 @@
                 <type>array</type>
                 <el>
 
-                    <!-- todo TYPO3 v12: type='link' nutzen
+                    <!-- todo ab TYPO3 v12: type='link' nutzen
+                         dann müssen aber auch die anderen properties in diesem Feld geändert werden (im linkPopup)
                     https://docs.typo3.org/m/typo3/reference-tca/main/en-us/ColumnsConfig/Type/Link/Index.html#columns-link
                     -->
                     <!-- todo "Neue Mediendatei hinzufügen" / "Add new media asset" im Link Browser ausblenden, wie?
                          https://gitlab.uni-oldenburg.de/it-dienste/typo3/typo3-uol.de/-/issues/792
+                         https://forge.typo3.org/issues/99766
                      -->
-                    <!-- todo: Hint für Datei-Endung anzeigen ... wie? -->
+                    <!--
+                         todo: Hint für Datei-Endung anzeigen ... wie?
+                         https://gitlab.uni-oldenburg.de/it-dienste/typo3/typo3-uol.de/-/issues/792
+                         https://forge.typo3.org/issues/99767
+                    -->
                     <settings.link>
                         <TCEforms>
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.bibtexUrl</label>
@@ -22,15 +28,6 @@
                                 <type>input</type>
                                 <renderType>inputLink</renderType>
                                 <eval>trim,required</eval>
-                                <!-- does not work, trying to not display "Add new media asset"
-                                    https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/10.1/Feature-84250-SeparatelyEnableDisableAddMediaByURLAndSelectUploadFiles.html
-                                    https://gitlab.uni-oldenburg.de/it-dienste/typo3/typo3-uol.de/-/issues/792
-                                    -->
-                                <!--
-                                <appearance>
-                                    <fileByUrlAllowed>false</fileByUrlAllowed>
-                                </appearance>
-                                -->
                                 <fieldControl>
                                     <linkPopup>
                                         <options>
@@ -38,7 +35,7 @@
                                             <!-- Comma separated list of link fields that should not be displayed.
                                             Possible values are class, params, target and title.
                                             By default, all link fields are displayed.-->
-                                            <blindLinkFields>class,param,target,title</blindLinkFields>
+                                            <blindLinkFields>class,params,target,title</blindLinkFields>
                                             <!-- what link types NOT to show -->
                                             <blindLinkOptions>page,mail,telephone,folder,tx_calendarize_domain_model_event,news</blindLinkOptions>
                                             <!-- title von Button, nicht Link Browser !!! -->
