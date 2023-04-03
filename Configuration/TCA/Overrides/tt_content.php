@@ -1,12 +1,15 @@
 <?php
-
-defined('TYPO3_MODE') or die();
-
+defined('TYPO3') or die();
 
 $extkey = 'bibtex';
-$extensionName = strtolower(\TYPO3\CMS\Core\Utility\GeneralUtility::underscoredToUpperCamelCase($extkey));
-$pluginSignature = $extensionName . '_bibtex';
+$extensionName = 'Bibtex';
+$pluginSignature = $extkey . '_bibtex';
 
+\TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
+    $extkey,
+    'Bibtex',
+    'Bibtex'
+);
 
 // add flexform
 $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$pluginSignature] = 'pi_flexform';
