@@ -29,7 +29,15 @@ if (!defined('TYPO3_MODE')) {
 
 
     // caching framework
-
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bibtex_bibtexcache'] ??= [];
+
+    /*
+     * ----
+     * hooks
+     * ----
+     */
+    // Page module hook
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['cms/layout/class.tx_cms_layout.php']['list_type_Info']['bibtex_bibtex']['bibtex'] =
+        \Uniolit\Bibtex\Hooks\PageLayoutView::class . '->getExtensionSummary';
 
 })();

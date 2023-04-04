@@ -50,6 +50,7 @@ parameters:
   # use these paths (but do not check)
   scanDirectories:
     - ../../.Build/Web/typo3/sysext
+    - ../../.Build/Web/typo3conf/ext/uniollib
     - ../../PHP/OSBiB-3.0
 
   # do not check if array types specified

@@ -7,9 +7,16 @@
 		"TYPO3",
 		"bibtex"
 	],
+	"repositories": [
+		{
+			"type": "gitlab",
+			"url": "git@gitlab.uni-oldenburg.de:it-dienste/typo3/uniollib.git"
+		}
+	],
 	"require": {
 		"php": "^7.4 || ^8.0",
-		"typo3/cms-core": "^11.5.19"
+		"typo3/cms-core": "^11.5.19",
+		"uniolt3/uniollib": "^0.2.5 || dev-main"
 	},
 	"autoload": {
 		"psr-4": {
@@ -25,6 +32,9 @@
 			"phpstan/extension-installer": true,
 			"typo3/class-alias-loader": true,
 			"typo3/cms-composer-installers": true
+		},
+		"platform": {
+			"php": "8.1.13"
 		}
 	},
 	"extra": {
