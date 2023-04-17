@@ -168,16 +168,16 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         $errors = [];
         // todo: check if all required fields for type exist
         foreach ($entries as $entry) {
-            $entry = $entry['entry'] ?? '';
-            $shortform = substr($entry, 0, 50);
-            if (strlen($entry) > 50) {
+            $parsedEntry = $entry['entry'] ?? '';
+            $shortform = substr($parsedEntry, 0, 50);
+            if (strlen($parsedEntry) > 50) {
                 $shortform .= ' ...';
             }
 
             // consistency check for author
             // If author starts with more then 4 letters followed by dot (e.g. "S.U.M.L.S.", this is usually a sign of wrong
             //   format where several authors are not seperated by "and", but are separated, for example by ","
-            if (preg_match('/^([A-Z]\. ){4,}/', $entry)) {
+            if (preg_match('/^([A-Z]\. ){4,}/', $parsedEntry)) {
                 $errors[] = [
                         'message' => 'Result with several initials, probably author has wrong format',
                         'code' => FetchContentResult::RESULT_CODE_PARSE_INVALID_AUTHOR_FORMAT,
