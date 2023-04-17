@@ -30,7 +30,6 @@ namespace Uniolit\Bibtex\Bibtex2Html\Service;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -50,11 +49,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
     public const DEFAULT_OSBIBPATH = 'bibtex:PHP/OSBiB-3.0/';
 
     /**
-     * @var RequestFactory|null
-     */
-    protected ?RequestFactory $requestFactory = null;
-
-    /**
      * @var OsbibFactory|null
      */
     protected ?OsbibFactory $osbibFactory = null;
@@ -66,7 +60,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
     protected string $bibliographyStylesPath = '';
 
     /**
-     * @param RequestFactory|null $requestFactory
      * @param OsbibFactory|null $osbibFactory
      * @param string $stylesPath if empty string is passed, read from extension configuration
      * @param string $osbibPath if empty string is passed, read from extension configuration
@@ -74,7 +67,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
      * @throws \TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException
      */
     public function __construct(
-        RequestFactory $requestFactory = null,
         OsbibFactory $osbibFactory = null,
         string $stylesPath = '',
         string $osbibPath = ''
@@ -99,8 +91,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         }
         $this->osbibPath = $osbibPath;
         $this->absoluteOsBibPath = ExtensionManagementUtility::extPath(...explode(':', $osbibPath));
-
-        $this->requestFactory = $requestFactory ?: GeneralUtility::makeInstance(RequestFactory::class);
         $this->osbibFactory = $osbibFactory ?: GeneralUtility::makeInstance(OsbibFactory::class, $this->osbibPath);
     }
 
@@ -112,57 +102,37 @@ class Bibtex2HtmlService implements LoggerAwareInterface
     /**
      * Prepare bibtex entries
      *
-     * @param BibtexSettings $bibtexSettings
-     * @param int $languageId
-     * @return array
      * @todo Make this more modular and separate
      * - converting bibtex content into normalized bibtex entries
      * - converting this into HTML
      */
-    public function bibtex2Html(BibtexSettings $bibtexSettings, int $languageId = 0): array
+    public function bibtex2Html(BibtexSettings $bibtexSettings, string $content, int $languageId = 0): array
     {
         $this->autoloadClasses();
 
         // @todo: use configurable language mapping, e.g. via TypoScript
         $languageKey = $languageId === 0 ? '' : '_en';
 
-        $entries = $this->bib2html($bibtexSettings, $languageKey);
-        return $entries;
+        $result = $this->bib2html($bibtexSettings, $content, $languageKey);
+        return $result;
     }
 
-    protected function bib2html(BibtexSettings $bibtexSettings, string $lang=''): array
+    /**
+     * @todo Use a class for the entries
+     * @return array  return [
+     *   'entries' => array,
+     *   'countEntries' => [
+     *      'total' => int,
+     *      'displayed' => int,
+     *    ]
+     *  ];
+     */
+    protected function bib2html(BibtexSettings $bibtexSettings, string $content, string $lang='', bool $performChecks = true): array
     {
-        $fileType = $bibtexSettings->getFileType();
-
         $sort = $bibtexSettings->getSort();
         $filterType = $bibtexSettings->getFilterType();
         $filterItems = $bibtexSettings->getFilterEntries();
 
-        if (!$fileType) {
-            return [];
-        }
-        $content = '';
-        switch ($fileType) {
-            case 'url':
-                $url = $bibtexSettings->getUrl();
-                if (!$url) {
-                    return [];
-                }
-                $content = $this->fetchContentByUrl($bibtexSettings->getUrl());
-                break;
-
-            case 'file':
-                $file = $bibtexSettings->getFile();
-                if (!$file) {
-                    return [];
-                }
-                $content = $this->fetchContentByFile($file);
-                break;
-        }
-
-        if (!$content) {
-            return [];
-        }
         // if bibtex file identified and opened, then convert to html
         $entries = $this->bibtexPreProcess(
             $content
@@ -178,41 +148,68 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             $bibtexSettings->isAddOrigEntry()
         );
 
-        return $newEntries;
+        $errors = $this->checkParsedBibtexEntries($newEntries);
+
+        return [
+            'entries' => $newEntries,
+            'countEntries' => [
+                'total' => count($entries),
+                'displayed' => count($newEntries),
+            ],
+            'parseErrors' => $errors
+        ];
     }
 
-    public function checkByUrl(string $url): bool
+    /**
+     * Very rough consistency check for bibtex entries.
+     */
+    public function checkParsedBibtexEntries(array $entries, bool $breakOnError = true): array
     {
-        try {
-            $response = $this->requestFactory->request($url);
-            if ($response->getStatusCode() !== 200) {
-                return false;
+        $errors = [];
+        // todo: check if all required fields for type exist
+        foreach ($entries as $entry) {
+            $entry = $entry['entry'] ?? '';
+            $shortform = substr($entry, 0, 50);
+            if (strlen($entry) > 50) {
+                $shortform .= ' ...';
             }
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
 
-    public function fetchContentByUrl(string $url): string
-    {
-        try {
-            $response = $this->requestFactory->request($url);
-            return $response->getBody()->getContents();
-        } catch (\Exception $e) {
-            $message = 'Bibtex file does not exist or is empty:' . $url;
-            // @extensionScannerIgnoreLine
-            $this->logger->error($message);
-            return '';
-        }
-    }
+            // consistency check for author
+            // If author starts with more then 4 letters followed by dot (e.g. "S.U.M.L.S.", this is usually a sign of wrong
+            //   format where several authors are not seperated by "and", but are separated, for example by ","
+            if (preg_match('/^([A-Z]\. ){4,}/', $entry)) {
+                $errors[] = [
+                        'message' => 'Result with several initials, probably author has wrong format',
+                        'code' => FetchContentResult::RESULT_CODE_PARSE_INVALID_AUTHOR_FORMAT,
+                        'confidence' => 'high',
+                        'shortform' => $shortform
+                    ];
+                if ($breakOnError) {
+                    break;
+                }
+            }
+            if (!($entry['year'] ?? false)) {
+                $errors[] = [
+                    'message' => 'Result missing field year',
+                    'code' => FetchContentResult::RESULT_CODE_PARSE_MISSING_YEAR,
+                    'confidence' => 'very high',
+                    'shortform' => $shortform
+                ];
+                if ($breakOnError) {
+                    break;
+                }
+            }
 
-    public function fetchContentByFile(?File $file): string
-    {
-        if (!$file) {
-            return '';
+            // todo check if bibtex entry is there
+            //$bibtex = $entry['bibtex'];
+
+            // check URL:
+            $url = $entry['origEntry']['url'] ?? '';
+            if ($url) {
+                // todo: check URL
+            }
         }
-        return $file->getStorage()->getFileContents($file);
+        return $errors;
     }
 
     /**
@@ -346,6 +343,8 @@ class Bibtex2HtmlService implements LoggerAwareInterface
       * @param $entry Current entry
       * @param $lang language string, e.g. 'en', 'de' (default is 'en')
       * @return string
+      *
+      * @todo localize strings
       */
     protected function toDownload($entry, $lang): string
     {

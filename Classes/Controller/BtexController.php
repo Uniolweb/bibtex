@@ -5,12 +5,14 @@ namespace Uniolit\Bibtex\Controller;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
+use Uniolit\Bibtex\Bibtex2Html\Service\FetchContent;
+use Uniolit\Bibtex\Bibtex2Html\Service\FetchContentResult;
+use Uniolit\Bibtex\Cache\BibtexCache;
 use Uniolit\Bibtex\Configuration\BibtexSettings;
 
 class BtexController extends ActionController implements LoggerAwareInterface
@@ -20,7 +22,9 @@ class BtexController extends ActionController implements LoggerAwareInterface
     /** @var int */
     private $languageId = 0;
 
-    private $cache;
+    protected BibtexCache $bibtexCache;
+
+    protected FetchContent $fetchContent;
 
     /** @var AssetCollector */
     protected $assetCollector;
@@ -28,16 +32,20 @@ class BtexController extends ActionController implements LoggerAwareInterface
     /** @var Bibtex2HtmlService */
     protected $bibtex2HtmlService;
 
-    public function __construct(AssetCollector $assetCollector, Bibtex2HtmlService $bibtex2HtmlService)
-    {
+    public function __construct(
+        AssetCollector $assetCollector,
+        Bibtex2HtmlService $bibtex2HtmlService,
+        BibtexCache $bibtexCache,
+        FetchContent $fetchContent
+    ) {
+        $this->fetchContent = $fetchContent;
         $this->assetCollector = $assetCollector;
         $this->bibtex2HtmlService = $bibtex2HtmlService;
+        $this->bibtexCache = $bibtexCache;
     }
 
     public function initializeAction()
     {
-        $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('bibtex_bibtexcache');
-
         // inlude JavaScript in footer
         $this->assetCollector->addJavaScript(
             'bibtex.js',
@@ -73,8 +81,22 @@ class BtexController extends ActionController implements LoggerAwareInterface
             $bibtexSettings = $this->initializeBibtexSettings();
         }
 
-        // todo: use caching (getCacheIdentifier. setInCache)? Is this really necessary? Plugin is uncached!
-        $entries = $this->bibtex2HtmlService->bibtex2Html($bibtexSettings, $this->languageId);
+        /** @var FetchContentResult $content */
+        $content = $this->fetchContent->fetchContent($bibtexSettings);
+        if ($content->isOk()) {
+            $result = $this->bibtex2HtmlService->bibtex2Html(
+                $bibtexSettings,
+                $content->getData(),
+                $this->languageId
+            );
+            $entries = $result['entries'];
+            $content->setTotalNumberOfEntries((int)($result['countEntries']['total'] ?? 0));
+            $content->setParseErrors($result['parseErrors'] ?? []);
+        } else {
+            $entries = [];
+        }
+        // currently caches only metadata
+        $this->bibtexCache->set($bibtexSettings->getUnifiedUrl(), $content->getMetaData());
 
         $this->view->assign('entries', $entries);
         $this->view->assign('bibtexSettings', $bibtexSettings);
@@ -105,42 +127,5 @@ class BtexController extends ActionController implements LoggerAwareInterface
             return false;
         }
         return true;
-    }
-
-    /**
-     * @param string $identifier
-     * @param string $content
-     *
-     * @deprecated Not used, plugin is cached plugin
-     */
-    protected function setInCache(string $identifier, string $content)
-    {
-        $tags = [];
-        // 30 days
-        $lifetime = 2592000;
-        $this->cache->set($identifier, $content, $tags, $lifetime);
-    }
-
-    /**
-     * @param string $url
-     * @param string $sort
-     * @return string
-     *
-     * @deprecated Not used, plugin is cached plugin
-     */
-    protected function getCacheIdentifier(string $url, string $sort): string
-    {
-        return md5($url . '?sort=' . $sort . '&lang=' . $this->languageId);
-    }
-
-    /**
-     * @param string $identifier
-     * @return mixed
-     *
-     * @deprecated Not used, plugin is cached plugin
-     */
-    protected function getFromCache(string $identifier)
-    {
-        return $this->cache->get($identifier);
     }
 }

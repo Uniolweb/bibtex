@@ -16,6 +16,8 @@ use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
+use Uniolit\Bibtex\Bibtex2Html\Service\FetchContent;
+use Uniolit\Bibtex\Bibtex2Html\Service\FetchContentResult;
 use Uniolit\Bibtex\Configuration\BibtexSettings;
 use Uniolit\Bibtex\Service\FileService;
 
@@ -39,11 +41,13 @@ class CheckFlexformCommand extends Command
     protected ?FileService $fileService = null;
     protected ?SiteFinder $siteFinder = null;
     protected ?Bibtex2HtmlService $bibtex2HtmlService = null;
+    protected FetchContent $fetchContent;
 
     public function __construct()
     {
         parent::__construct(self::NAME);
 
+        $this->fetchContent = GeneralUtility::makeInstance(FetchContent::class);
         $this->flexformTools = GeneralUtility::makeInstance(FlexFormTools::class);
         $this->flexformService = GeneralUtility::makeInstance(FlexFormService::class);
         $this->fileService = GeneralUtility::makeInstance(FileService::class);
@@ -162,7 +166,7 @@ class CheckFlexformCommand extends Command
             // todo: move this to a separate class, collect all errors in an array and return
             $bibtexSettings = BibtexSettings::initializeWithSettings($settings, $style, true);
             $fileType = $bibtexSettings->getFileType();
-            $content = '';
+            $content = null;
             $url = '';
             switch ($fileType) {
                 case 'url':
@@ -178,7 +182,8 @@ class CheckFlexformCommand extends Command
                             continue 2;
                         }
                     }
-                    $content = $this->bibtex2HtmlService->fetchContentByUrl($url);
+                    /** @var FetchContentResult $content */
+                    $content = $this->fetchContent->fetchContentByUrl($url);
                     break;
                 case 'file':
                     $fileUrl = $bibtexSettings->getFileUrl();
@@ -197,7 +202,8 @@ class CheckFlexformCommand extends Command
                     $site = $this->siteFinder->getSiteByPageId($pid);
                     $baseUrl = $site->getBase();
                     $url = $baseUrl . '/' . $fileUrl;
-                    $content = $this->bibtex2HtmlService->fetchContentByFile($bibtexSettings->getFile());
+                    /** @var FetchContentResult $content */
+                    $content = $this->fetchContent->fetchContentByFile($bibtexSettings->getFile());
                     break;
 
                 default:
@@ -229,7 +235,8 @@ class CheckFlexformCommand extends Command
 
             // parse bibtex
             try {
-                $entries = $this->bibtex2HtmlService->bibtex2Html($bibtexSettings, 0);
+                $result = $this->bibtex2HtmlService->bibtex2Html($bibtexSettings, $content->getData());
+                $entries = $result['entries'];
                 if (!$entries) {
                     $this->io->warning(sprintf(
                         'No entries as result of parsing: header="%s" [%d] auf Seite [%d], url=%s, fileType=%s',

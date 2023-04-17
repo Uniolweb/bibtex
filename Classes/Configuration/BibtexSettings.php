@@ -33,6 +33,9 @@ class BibtexSettings
 
     private string $url = '';
 
+    /** @var string URL regardless of file type */
+    private string $unifiedUrl = '';
+
     /**
      * @var string
      */
@@ -70,7 +73,7 @@ class BibtexSettings
     }
 
     /**
-     * @param string $url
+     * @param string $unifiedUrl
      * @param string $sort
      * @param string $style
      * @param string $filterType
@@ -79,7 +82,7 @@ class BibtexSettings
      * @param LinkService $linkService
      */
     public function __construct(
-        string $url,
+        string $unifiedUrl,
         string $sort = self::DEFAULT_SORT,
         string $style = self::DEFAULT_STYLE,
         string $filterType = '',
@@ -95,13 +98,13 @@ class BibtexSettings
 
         $this->fileType = 'none';
         // check if target is a file
-        if (strpos($url, 't3://file') === 0) {
+        if (strpos($unifiedUrl, 't3://file') === 0) {
             // target is file
             // TYPO3\CMS\Core\LinkHandling\LinkService::resolve()  . This method will return an array with a key  file  containing a  TYPO3\CMS\Core\Resource\FileInterface
             // https://copyprogramming.com/howto/typo3-11-convert-t3-file-uri-into-file-identifier
             if (!$linkService) {
                 $linkService = GeneralUtility::makeInstance(LinkService::class);
-                $result = $linkService->resolve($url);
+                $result = $linkService->resolve($unifiedUrl);
                 if (
                     ($result['file'] ?? false)
                     && ($result['type'] ?? false)
@@ -112,9 +115,10 @@ class BibtexSettings
             }
         } else {
             // target is url
-            $this->url = $url;
+            $this->url = $unifiedUrl;
             $this->fileType = 'url';
         }
+        $this->unifiedUrl = $unifiedUrl;
     }
 
     /**
@@ -224,6 +228,16 @@ class BibtexSettings
     public function getUrl(): string
     {
         return $this->url;
+    }
+
+    /**
+     * Get URL regardless of file type (URL or file)
+     *
+     * @return string
+     */
+    public function getUnifiedUrl(): string
+    {
+        return $this->unifiedUrl;
     }
 
     /**

@@ -39,6 +39,33 @@
 			<trans-unit id="settings.filterByPublication" xml:space="preserve">
                 <source>Publication types (multi-select mode)</source>
             </trans-unit>
+			<trans-unit id="error.message.fetch.0" xml:space="preserve">
+                <source>Bibtex content was fetched successfully.</source>
+            </trans-unit>
+			<trans-unit id="error.message.fetch.1" xml:space="preserve">
+                <source>Error fetching Bibtex content. Please check if URL is correct and content can be loaded.</source>
+            </trans-unit>
+			<trans-unit id="error.message.fetch.2" xml:space="preserve">
+                <source>No Bibtex content. Maybe the file is empty?</source>
+            </trans-unit>
+			<trans-unit id="error.message.fetch.3" xml:space="preserve">
+                <source>Bibtex file is missing or could not be loaded.</source>
+            </trans-unit>
+			<trans-unit id="error.message.fetch.4" xml:space="preserve">
+                <source>Invalid configuration: Wrong file type.</source>
+            </trans-unit>
+			<trans-unit id="error.message.fetch.5" xml:space="preserve">
+                <source>Invalid configuration: Invalid URL or undefined URL.</source>
+            </trans-unit>
+			<trans-unit id="error.message.fetch.unknown_result" xml:space="preserve">
+                <source>Result of loading Bibtex file is currently unknown. Load page in Frontend to see more results here.</source>
+            </trans-unit>
+			<trans-unit id="last_fetched" xml:space="preserve">
+                <source>Last fetched</source>
+            </trans-unit>
+			<trans-unit id="error.message.parse.1" xml:space="preserve">
+                <source>Result with several initials, probably author has wrong format. (Several authors should be seperated by "and", not comma (",").)</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

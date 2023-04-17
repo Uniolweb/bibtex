@@ -18,7 +18,6 @@ class Bibtex2HtmlServiceTest extends UnitTestCase
     {
         return new Bibtex2HtmlService(
             null,
-            null,
             Bibtex2HtmlService::DEFAULT_STYLES_PATH,
             Bibtex2HtmlService::DEFAULT_OSBIBPATH
         );

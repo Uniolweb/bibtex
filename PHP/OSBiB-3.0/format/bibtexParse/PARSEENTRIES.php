@@ -545,13 +545,13 @@ class PARSEENTRIES
             }
         }
         if (empty($this->preamble)) {
-            $this->preamble = false;
+            $this->preamble = [];
         }
         if (empty($this->strings)) {
-            $this->strings = false;
+            $this->strings = [];
         }
         if (empty($this->entries)) {
-            $this->entries = false;
+            $this->entries = [];
         }
         return [$this->preamble, $this->strings, $this->entries];
     }

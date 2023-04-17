@@ -8,6 +8,7 @@ use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Uniolit\Bibtex\Cache\BibtexCache;
 use Uniolt3\Uniollib\Service\Backend\PageLayoutService;
 
 /**
@@ -41,11 +42,14 @@ class PageLayoutView
 
     protected ?LanguageService $languageService = null;
 
+    private BibtexCache $cache;
+
     public function __construct()
     {
         $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
         $this->layoutService = GeneralUtility::makeInstance(PageLayoutService::class);
         $this->extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
+        $this->cache = GeneralUtility::makeInstance(BibtexCache::class);
     }
 
     /**
@@ -69,10 +73,9 @@ class PageLayoutView
 
         // url
         $url = $this->getFieldFromFlexform('settings.link');
-        if (strpos($url, 't3://file?') === 0) {
-            $url = $this->getUrlFromFileLink($url);
-        }
-        $this->layoutService->addRow('URL', $url);
+        $this->setMessage($url);
+
+        $this->layoutService->addRow('URI', $url);
 
         // sorting
         $sorting = $this->getFieldFromFlexform('settings.sort');
@@ -86,7 +89,10 @@ class PageLayoutView
         $filterType = $this->getFieldFromFlexform('settings.filterType');
         if ($filterType !== 'none' && $filterEntries) {
             $this->layoutService->addRow(
-                sprintf('Filter (%s)', $this->getLanguageService()->sL('LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.' . $filterType)),
+                sprintf(
+                    'Filter (%s)',
+                    $this->getLanguageString('settings.filterType.' . $filterType)
+                ),
                 $filterEntries
             );
         }
@@ -101,6 +107,65 @@ class PageLayoutView
         */
 
         return $this->layoutService->render();
+    }
+
+    protected function setMessage(string $unifiedUrl): void
+    {
+        if (strpos($unifiedUrl, 't3://file?') === 0) {
+            // todo: can be handled in BibtexSettings
+            $url = $this->getUrlFromFileLink($unifiedUrl);
+        } else {
+            $url = $unifiedUrl;
+            if (!GeneralUtility::isValidUrl($url)) {
+                $this->layoutService->addMessage(
+                    $this->getLanguageString('error.message.fetch.5'),
+                    PageLayoutService::STATUS_ERROR
+                );
+                return;
+            }
+        }
+
+        if (!$url) {
+            $this->layoutService->addMessage(
+                $this->getLanguageString('error.message.fetch.5'),
+                PageLayoutService::STATUS_ERROR
+            );
+            return;
+        }
+
+        $fetchResult = $this->cache->get($unifiedUrl);
+        if (!$fetchResult) {
+            $this->layoutService->addMessage(
+                $this->getLanguageString('error.message.fetch.unknown_result'),
+                PageLayoutService::STATUS_WARNING
+            );
+            return;
+        }
+        $lastFetchedString = sprintf(
+            '(%s: %s)',
+            $this->getLanguageString('last_fetched'),
+            date('d.m.Y H:i', $fetchResult->getTimestamp())
+        );
+        if ($fetchResult->isOk()) {
+            $this->layoutService->addMessage(
+                $this->getLanguageString('error.message.fetch.0') . ' ' . $lastFetchedString,
+                PageLayoutService::STATUS_OK
+            );
+            $this->layoutService->addRow('Anzahl Einträge', (string)$fetchResult->getTotalNumberOfEntries());
+            $parseErrors = $fetchResult->getParseErrors();
+            foreach ($parseErrors as $parseError) {
+                $this->layoutService->addMessage(
+                    $this->getLanguageString('error.message.parse.' . $parseError['code']),
+                    PageLayoutService::STATUS_WARNING
+                );
+            }
+        } else {
+            $this->layoutService->addMessage(
+                $this->getLanguageString('error.message.fetch.' . $fetchResult->getResultCode())
+                    . ' ' . $lastFetchedString,
+                PageLayoutService::STATUS_ERROR
+            );
+        }
     }
 
     protected function getUrlFromFileLink(string $url): string
@@ -165,5 +230,12 @@ class PageLayoutView
     protected function getLanguageService(): LanguageService
     {
         return $GLOBALS['LANG'];
+    }
+
+    protected function getLanguageString(string $languageKey, string $defaultString = '', string $languageFile = 'locallang_backend.xlf'): string
+    {
+        return $this->getLanguageService()->sL(
+            'LLL:EXT:bibtex/Resources/Private/Language/' . $languageFile . ':' . $languageKey
+        ) ?: $defaultString;
     }
 }
