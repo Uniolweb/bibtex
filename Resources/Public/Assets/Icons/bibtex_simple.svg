@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="30.184961mm"
+   height="33.744804mm"
+   viewBox="0 0 30.184961 33.744804"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="bibtex_simple.png"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#cccccc"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="1"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.60756173"
+     inkscape:cx="255.11811"
+     inkscape:cy="566.19761"
+     inkscape:window-width="1920"
+     inkscape:window-height="1176"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-34.000003,-34.000003)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5835px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264588px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="40.368881"
+       y="54.098629"
+       id="text3796"
+       transform="scale(0.99998099,1.000019)"><tspan
+         sodipodi:role="line"
+         id="tspan3794"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';stroke-width:0.264588px"
+         x="40.368881"
+         y="54.098629">Bib</tspan></text>
+    <rect
+       style="opacity:0.99;fill:none;stroke:#000000;stroke-width:2.10174;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect7706"
+       width="28.083221"
+       height="31.643066"
+       x="35.050873"
+       y="35.050873" />
+  </g>
+</svg>

@@ -23,19 +23,6 @@ ExtensionUtility::configurePlugin(
 // Page TSconfig
 ExtensionManagementUtility::addPageTSConfig("@import 'EXT:bibtex/Configuration/TSconfig/Page/Wizards/NewContentElement.tsconfig'");
 
-
-// icons
-/*
-$iconRegistry = GeneralUtility::makeInstance(
-    IconRegistry::class
-);
-$iconRegistry->registerIcon(
-    'bibtex-plugin', // Icon-Identifier
-    SvgIconProvider::class,
-    ['source' => 'EXT:bibtex/Resources/Public/Assets/Icons/BibTeX_logo.svg']
-);
-*/
-
 // caching framework
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bibtex_bibtexcache'] ??= [];
 
