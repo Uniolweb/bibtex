@@ -6,9 +6,14 @@ $extensionName = 'Bibtex';
 $pluginSignature = $extkey . '_bibtex';
 
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
+    // extension_key or ExtensionName
     $extkey,
+    // plugin name
     'Bibtex',
-    'Bibtex'
+    // label
+    'Bibtex',
+    // icon
+    'bibtex-plugin'
 );
 
 // add flexform
