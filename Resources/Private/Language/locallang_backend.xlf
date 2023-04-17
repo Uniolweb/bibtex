@@ -66,6 +66,9 @@
 			<trans-unit id="error.message.parse.1" xml:space="preserve">
                 <source>Result with several initials, probably author has wrong format. (Several authors should be seperated by "and", not comma (",").)</source>
             </trans-unit>
+			<trans-unit id="error.message.parse.2" xml:space="preserve">
+                <source>Invalid format in Bibtex file:  Missing field (year). Bibtex entry should have a field "year".</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

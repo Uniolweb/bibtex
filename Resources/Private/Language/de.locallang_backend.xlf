@@ -92,7 +92,7 @@
             </trans-unit>
 			<trans-unit id="error.message.parse.2" xml:space="preserve">
                 <source>Invalid format in Bibtex file:  Missing field (year). Bibtex entry should have a field "year".</source>
-				<target>Fehlerhaftes Format in Bibtex Datei: Es fehlt ein Eintrag für das Jahr (year).</target>
+				<target>Fehlerhaftes Format in Bibtex Datei: Es fehlt ein Eintrag für das Jahr ("year").</target>
             </trans-unit>
 
         </body>
