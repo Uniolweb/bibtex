@@ -72,10 +72,23 @@ class PageLayoutView
         $this->generateTitle();
 
         // url
-        $url = $this->getFieldFromFlexform('settings.link');
-        $this->setMessage($url);
-
-        $this->layoutService->addRow('URI', $url);
+        $typolink = $this->getFieldFromFlexform('settings.link');
+        $this->setMessage($typolink);
+        if (strpos($typolink, 't3://file?') === 0) {
+            // todo: can be handled in BibtexSettings
+            $url = $this->getUrlFromFileLink($typolink);
+        } else {
+            $url = $typolink;
+        }
+        $this->layoutService->addRow(
+            'URI',
+            // todo: move style for links to general css ("skin")?
+            sprintf(
+                '<a href="%s" target="_blank" title="URL aufrufen" style="text-decoration: underline;color: blue;">%s</a>',
+                $url,
+                $url
+            )
+        );
 
         // sorting
         $sorting = $this->getFieldFromFlexform('settings.sort');
@@ -109,13 +122,13 @@ class PageLayoutView
         return $this->layoutService->render();
     }
 
-    protected function setMessage(string $unifiedUrl): void
+    protected function setMessage(string $typolink): void
     {
-        if (strpos($unifiedUrl, 't3://file?') === 0) {
+        if (strpos($typolink, 't3://file?') === 0) {
             // todo: can be handled in BibtexSettings
-            $url = $this->getUrlFromFileLink($unifiedUrl);
+            $url = $this->getUrlFromFileLink($typolink);
         } else {
-            $url = $unifiedUrl;
+            $url = $typolink;
             if (!GeneralUtility::isValidUrl($url)) {
                 $this->layoutService->addMessage(
                     $this->getLanguageString('error.message.fetch.5'),
@@ -133,7 +146,7 @@ class PageLayoutView
             return;
         }
 
-        $fetchResult = $this->cache->get($unifiedUrl);
+        $fetchResult = $this->cache->get($typolink);
         if (!$fetchResult) {
             $this->layoutService->addMessage(
                 $this->getLanguageString('error.message.fetch.unknown_result'),
