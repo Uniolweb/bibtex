@@ -168,11 +168,8 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         $errors = [];
         // todo: check if all required fields for type exist
         foreach ($entries as $entry) {
-            $parsedEntry = $entry['entry'] ?? '';
-            $shortform = substr($parsedEntry, 0, 50);
-            if (strlen($parsedEntry) > 50) {
-                $shortform .= ' ...';
-            }
+            $parsedEntry = $entry['entry'] ??'';
+            $bibtexHTML = $entry['bibtex'] ?? '';
 
             // consistency check for author
             // If author starts with more then 4 letters followed by dot (e.g. "S.U.M.L.S.", this is usually a sign of wrong
@@ -182,7 +179,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                         'message' => 'Result with several initials, probably author has wrong format',
                         'code' => FetchContentResult::RESULT_CODE_PARSE_INVALID_AUTHOR_FORMAT,
                         'confidence' => 'high',
-                        'shortform' => $shortform
+                        'bibtexHTML' => $bibtexHTML
                     ];
                 if ($breakOnError) {
                     break;
@@ -193,7 +190,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                     'message' => 'Result missing field year',
                     'code' => FetchContentResult::RESULT_CODE_PARSE_MISSING_YEAR,
                     'confidence' => 'very high',
-                    'shortform' => $shortform
+                    'bibtexHTML' => $bibtexHTML
                 ];
                 if ($breakOnError) {
                     break;

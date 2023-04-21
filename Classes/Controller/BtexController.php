@@ -3,16 +3,15 @@
 declare(strict_types=1);
 namespace Uniolit\Bibtex\Controller;
 
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
-use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use Uniolit\Bibtex\Bibtex2Html\Service\FetchContent;
-use Uniolit\Bibtex\Bibtex2Html\Service\FetchContentResult;
-use Uniolit\Bibtex\Cache\BibtexCache;
 use Uniolit\Bibtex\Configuration\BibtexSettings;
 
 class BtexController extends ActionController implements LoggerAwareInterface
@@ -22,26 +21,17 @@ class BtexController extends ActionController implements LoggerAwareInterface
     /** @var int */
     private $languageId = 0;
 
-    protected BibtexCache $bibtexCache;
-
     protected FetchContent $fetchContent;
 
     /** @var AssetCollector */
     protected $assetCollector;
 
-    /** @var Bibtex2HtmlService */
-    protected $bibtex2HtmlService;
-
     public function __construct(
         AssetCollector $assetCollector,
-        Bibtex2HtmlService $bibtex2HtmlService,
-        BibtexCache $bibtexCache,
         FetchContent $fetchContent
     ) {
         $this->fetchContent = $fetchContent;
         $this->assetCollector = $assetCollector;
-        $this->bibtex2HtmlService = $bibtex2HtmlService;
-        $this->bibtexCache = $bibtexCache;
     }
 
     public function initializeAction()
@@ -72,42 +62,32 @@ class BtexController extends ActionController implements LoggerAwareInterface
      * @param BibtexSettings $bibtexSettings
      * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
      */
-    public function showAction(BibtexSettings $bibtexSettings = null)
+    public function showAction(BibtexSettings $bibtexSettings = null): ResponseInterface
     {
+        $errorMessage = '';
+        $entries = [];
         $context = GeneralUtility::makeInstance(Context::class);
+        // todo: just use $this->language ?
         $this->languageId = (int)($context->getPropertyFromAspect('language', 'id'));
 
         if ($bibtexSettings === null) {
             $bibtexSettings = $this->initializeBibtexSettings();
         }
 
-        /** @var FetchContentResult $content */
-        $content = $this->fetchContent->fetchContent($bibtexSettings);
-        if ($content->isOk()) {
-            $result = $this->bibtex2HtmlService->bibtex2Html(
-                $bibtexSettings,
-                $content->getData(),
-                $this->languageId
-            );
-            $entries = $result['entries'];
-            $content->setTotalNumberOfEntries((int)($result['countEntries']['total'] ?? 0));
-            $content->setParseErrors($result['parseErrors'] ?? []);
+        $contentResult = $this->fetchContent->fetchContent($bibtexSettings);
+        if ($contentResult->isOk()) {
+            $contentResult = $this->fetchContent->fetchEntries($bibtexSettings, $contentResult, $this->languageId);
+            $this->view->assign('entries', $contentResult->getParsedEntries());
         } else {
-            $entries = [];
+            $this->view->assign('errorMessage', LocalizationUtility::translate(
+                key: 'error.msg.fe.bibtex_file_not_avaiable',
+                extensionName: 'bibtex'
+            ));
         }
-        // currently caches only metadata
-        $this->bibtexCache->set($bibtexSettings->getUnifiedUrl(), $content->getMetaData());
-
-        $this->view->assign('entries', $entries);
+        $this->fetchContent->writeToCache($bibtexSettings, $contentResult);
         $this->view->assign('bibtexSettings', $bibtexSettings);
 
-        // todo handle error output
-        /*
-        if ($lang === 'en') {
-            return 'Bibtex file does not exist or it was not possible to read the content:&nbsp; ' . $bibFile;
-        }
-        return 'Bibtex Datei existiert nicht oder Inhalte konnten nicht gelesen werden:&nbsp; ' . $bibFile;
-        */
+        return $this->htmlResponse();
     }
 
     /**

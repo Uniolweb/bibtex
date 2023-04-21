@@ -45,5 +45,8 @@
 </f:section>
 
 <f:section name="content">
+	<f:if condition="{errorMessage}">
+		{errorMessage}
+	</f:if>
     <f:render partial="Entries/Uniol" arguments="{entries: entries}"/>
 </f:section>

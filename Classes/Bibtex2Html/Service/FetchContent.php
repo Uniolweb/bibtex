@@ -5,27 +5,51 @@ namespace Uniolit\Bibtex\Bibtex2Html\Service;
 
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Resource\File;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Uniolit\Bibtex\Cache\BibtexCache;
 use Uniolit\Bibtex\Configuration\BibtexSettings;
 
 class FetchContent
 {
-    /**
-     * @var RequestFactory|null
-     */
-    protected ?RequestFactory $requestFactory = null;
+    protected RequestFactory $requestFactory;
 
-    /**
-     * @param RequestFactory|null $requestFactory
-     */
-    public function __construct(RequestFactory $requestFactory = null)
+    protected BibtexCache $bibtexCache;
+
+    protected Bibtex2HtmlService $bibtex2HtmlService;
+
+    public function __construct(RequestFactory $requestFactory, BibtexCache $bibtexCache, Bibtex2HtmlService $bibtex2HtmlService)
     {
-        $this->requestFactory = $requestFactory ?: GeneralUtility::makeInstance(RequestFactory::class);
+        $this->requestFactory = $requestFactory;
+        $this->bibtexCache = $bibtexCache;
+        $this->bibtex2HtmlService = $bibtex2HtmlService;
     }
 
     /**
-     * @todo return data and metadata in array
+     * @todo possibly add option $fetchFromCache to make it possible to fetch from cache, but we don't do this
+     * right now, we want to always get fresh results.
      */
+    public function fetchEntries(BibtexSettings $bibtexSettings, FetchContentResult $contentResult, int $language): FetchContentResult
+    {
+        if ($contentResult->isOk()) {
+            $result = $this->bibtex2HtmlService->bibtex2Html(
+                $bibtexSettings,
+                $contentResult->getData(),
+                $language
+            );
+            $entries = $result['entries'] ?? [];
+            $contentResult->setTotalNumberOfEntries((int)($result['countEntries']['total'] ?? 0));
+            $contentResult->setParsedEntries($entries);
+            $contentResult->setParseErrors($result['parseErrors'] ?? []);
+        }
+
+        return $contentResult;
+    }
+
+    public function writeToCache(BibtexSettings $bibtexSettings, FetchContentResult $contentResult)
+    {
+        // currently caches only metadata
+        $this->bibtexCache->set($bibtexSettings->getUnifiedUrl(), $contentResult->getMetaData());
+    }
+
     public function fetchContent(BibtexSettings $bibtexSettings): FetchContentResult
     {
         $fileType = $bibtexSettings->getFileType();
@@ -85,9 +109,9 @@ class FetchContent
                 $contents
             );
         } catch (\Exception $e) {
-            $message = 'Bibtex file does not exist or is empty:' . $url;
+            $message = $e->getMessage();
             return new FetchContentResult(
-                FetchContentResult::RESULT_CODE_ERROR_GENERIC,
+                FetchContentResult::RESULT_CODE_ERROR_URL_NOT_AVAILABLE,
                 $message
             );
         }

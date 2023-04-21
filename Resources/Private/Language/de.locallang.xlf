@@ -23,6 +23,10 @@
                 <source>--- no sorting ---</source>
                 <target>--- keine Sortierung ---</target>
             </trans-unit>
+			<trans-unit id="error.msg.fe.bibtex_file_not_avaiable" xml:space="preserve">
+                <source>Bibtex file not available or has no entries.</source>
+				<target>Bibtex Datei konnte nicht geladen werden oder hat keine Einträge.</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

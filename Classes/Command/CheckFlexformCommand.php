@@ -23,6 +23,8 @@ use Uniolit\Bibtex\Service\FileService;
 
 /**
  * Make some basic checks for the Flexform in bibtex plugins
+ *
+ * @todo unify procedure to check with the procedure used in PageLayoutView::setMessage, use common functionality.
  */
 class CheckFlexformCommand extends Command
 {
@@ -166,7 +168,7 @@ class CheckFlexformCommand extends Command
             // todo: move this to a separate class, collect all errors in an array and return
             $bibtexSettings = BibtexSettings::initializeWithSettings($settings, $style, true);
             $fileType = $bibtexSettings->getFileType();
-            $content = null;
+
             $url = '';
             switch ($fileType) {
                 case 'url':
@@ -182,8 +184,6 @@ class CheckFlexformCommand extends Command
                             continue 2;
                         }
                     }
-                    /** @var FetchContentResult $content */
-                    $content = $this->fetchContent->fetchContentByUrl($url);
                     break;
                 case 'file':
                     $fileUrl = $bibtexSettings->getFileUrl();
@@ -202,8 +202,6 @@ class CheckFlexformCommand extends Command
                     $site = $this->siteFinder->getSiteByPageId($pid);
                     $baseUrl = $site->getBase();
                     $url = $baseUrl . '/' . $fileUrl;
-                    /** @var FetchContentResult $content */
-                    $content = $this->fetchContent->fetchContentByFile($bibtexSettings->getFile());
                     break;
 
                 default:
@@ -219,9 +217,12 @@ class CheckFlexformCommand extends Command
                     }
             }
 
-            if (!$content) {
+            /** @var FetchContentResult $content */
+            $content = $this->fetchContent->fetchContent($bibtexSettings);
+
+            if (!$content->isOk()) {
                 $this->io->warning(sprintf(
-                    'Kein Inhalt: header="%s" [%d] auf Seite [%d], url=%s, fileType=%s',
+                    'Fehler beim Laden: header="%s" [%d] auf Seite [%d], url=%s, fileType=%s',
                     $row['header'],
                     $uid,
                     $pid,

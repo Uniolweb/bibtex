@@ -17,6 +17,11 @@ use Uniolt3\Uniollib\Service\Backend\PageLayoutService;
 class PageLayoutView
 {
     /**
+     * @todo make this configurable, support typolink format as well
+     */
+    protected string $documentationUrl = 'https://uol.de/typo3doku/inhalte/bibtex';
+
+    /**
      * Flexform information
      *
      * @var array
@@ -42,7 +47,7 @@ class PageLayoutView
 
     protected ?LanguageService $languageService = null;
 
-    private BibtexCache $cache;
+    protected BibtexCache $cache;
 
     public function __construct()
     {
@@ -111,13 +116,9 @@ class PageLayoutView
         }
 
         // show Links
-        /*
-        $this->layoutService->addDocumentationLink(
-            'url ...',
-            'alt text ...',
-            'title ...'
-        );
-        */
+        if ($this->documentationUrl) {
+            $this->layoutService->addDocumentationLink($this->documentationUrl);
+        }
 
         return $this->layoutService->render();
     }
@@ -150,32 +151,59 @@ class PageLayoutView
         if (!$fetchResult) {
             $this->layoutService->addMessage(
                 $this->getLanguageString('error.message.fetch.unknown_result'),
-                PageLayoutService::STATUS_WARNING
+                'info'
             );
             return;
         }
-        $lastFetchedString = sprintf(
-            '(%s: %s)',
+        $this->layoutService->addRow(
             $this->getLanguageString('last_fetched'),
             date('d.m.Y H:i', $fetchResult->getTimestamp())
         );
         if ($fetchResult->isOk()) {
             $this->layoutService->addMessage(
-                $this->getLanguageString('error.message.fetch.0') . ' ' . $lastFetchedString,
+                $this->getLanguageString('error.message.fetch.0'),
                 PageLayoutService::STATUS_OK
             );
             $this->layoutService->addRow('Anzahl Einträge', (string)$fetchResult->getTotalNumberOfEntries());
             $parseErrors = $fetchResult->getParseErrors();
-            foreach ($parseErrors as $parseError) {
-                $this->layoutService->addMessage(
-                    $this->getLanguageString('error.message.parse.' . $parseError['code']),
-                    PageLayoutService::STATUS_WARNING
-                );
+            if ($parseErrors) {
+                $errorCodes = [];
+                // title: error.message.parse.title
+                foreach ($parseErrors as $parseError) {
+                    $code = (int)$parseError['code'];
+                    $errorCodes[$code] = $code;
+                    $html = $this->getLanguageString('error.message.parse.' . $code);
+                    $tip = $this->getLanguageString('error.message.parse.tip.' . $code);
+                    if ($tip) {
+                        $html .= '<br/>' . $tip;
+                    }
+                    $bibtexHtml = $parseError['bibtexHTML'] ?? '';
+                    if ($bibtexHtml) {
+                        $html .= '<br/><code>' . $bibtexHtml . '</code>';
+                    }
+
+                    $this->layoutService->addMessage(
+                        $html,
+                        PageLayoutService::STATUS_WARNING
+                    );
+                }
+                foreach ($errorCodes as $code) {
+                    $url = $this->getLanguageString('error.message.parse.url.' . $code);
+                    $this->layoutService->addLink(
+                        $url,
+                        $this->getLanguageString('error.message.parse.url.linktext.' . $code) ?: 'Info'
+                    );
+                }
             }
         } else {
+            $message = $this->getLanguageString('error.message.fetch.' . $fetchResult->getResultCode());
+            $exceptionMessage = $fetchResult->getErrorMessage();
+            if ($exceptionMessage) {
+                $message .= '<br/>' . $exceptionMessage;
+            }
+
             $this->layoutService->addMessage(
-                $this->getLanguageString('error.message.fetch.' . $fetchResult->getResultCode())
-                    . ' ' . $lastFetchedString,
+                $message,
                 PageLayoutService::STATUS_ERROR
             );
         }

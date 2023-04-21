@@ -76,6 +76,10 @@
                 <source>Invalid configuration: Invalid URL or undefined URL.</source>
 				<target>Fehlerhafte Konfiguration: Ungültige URL oder keine URL angegeben.</target>
             </trans-unit>
+			<trans-unit id="error.message.fetch.6" xml:space="preserve">
+                <source>Could not fetch Bibtex from URL.</source>
+				<target>Bibtex Inhalt konnte nicht über angegebene URL geladen werden.</target>
+            </trans-unit>
 			<trans-unit id="error.message.fetch.unknown_result" xml:space="preserve">
                 <source>Result of loading Bibtex file is currently unknown. Load page in Frontend to see more results here.</source>
 				<target>Es wurde noch keine Überprüfung der Bitex Datei vorgenommen. Laden Sie die Seite im Frontend, um hier mehr Ergebnisse zu sehen.</target>
@@ -86,15 +90,58 @@
             </trans-unit>
 
 			<!-- parse result errors -->
-			<trans-unit id="error.message.parse.1" xml:space="preserve">
-                <source>Invalid format in Bibtex file: Result with several initials. Probably author has wrong format. SSeveral authors should be seperated by "and", not comma (",").</source>
-				<target>Fehlerhaftes Format in Bibtex Datei: Autor hat vermutlich falsches Format. Mehrere Autoren sollten mit "and" getrennt werden, nicht mit Komma (",").</target>
+			<trans-unit id="error.message.parse.title" xml:space="preserve">
+                <source>Invalid format in Bibtex file</source>
+				<target>Fehlerhaftes Format in Bibtex Datei</target>
             </trans-unit>
-			<trans-unit id="error.message.parse.2" xml:space="preserve">
-                <source>Invalid format in Bibtex file:  Missing field (year). Bibtex entry should have a field "year".</source>
-				<target>Fehlerhaftes Format in Bibtex Datei: Es fehlt ein Eintrag für das Jahr ("year").</target>
+			<trans-unit id="error.message.parse.1" xml:space="preserve">
+                <source>A field "author" probably contains several authors, but these are probably not separated correctly.
+					This usually leads to ugly errors in the displayed publication information.
+				</source>
+				<target>In einem Feld "author" sind vermutlich mehrere Autoren aufgeführt, aber es wurde ggf.
+					ein falsches Zeichen zum Trennen der Autoren verwendet.
+					Dies führt in der Regel zu häßlichen Fehlern in der Darstellung.
+				</target>
+            </trans-unit>
+			<trans-unit id="error.message.parse.tip.1" xml:space="preserve">
+                <source>Several authors should be seperated by "and", not comma (","),
+					for example author = {Marie Curie and Albert Einstein}.
+					An organization should usually enclosed inside an additional pair of braces,
+					for example author = {{Carl von Ossietzky Universität Oldenburg}}.</source>
+				<target>Mehrere Autoren sollten mit "and" getrennt werden, nicht mit Komma (","),
+					z.B. author = {Marie Curie and Albert Einstein}.
+					Eine Organization sollte in der Regel in ein weiteres Paar geschweifte Klammern eingeschlossen werden,
+					z.B. author = {{FZI Forschungszentrum Informatik am Karlsruher Institut für Technologie}}.
+				</target>
+            </trans-unit>
+			<!-- optional add a URL for more information -->
+			<trans-unit id="error.message.parse.url.1" xml:space="preserve">
+                <source>https://www.bibtex.com/f/author-field/</source>
+				<target>https://www.bibtex.com/f/author-field/</target>
+            </trans-unit>
+			<trans-unit id="error.message.parse.url.linktext.1" xml:space="preserve">
+                <source>BibTeX field: author</source>
+				<target>BibTeX Feld: author</target>
             </trans-unit>
 
+			<!-- parse result error 2 -->
+			<trans-unit id="error.message.parse.2" xml:space="preserve">
+                <source>Missing field (year) in bibtex entry.</source>
+				<target>Es fehlt ein Eintrag für das Jahr ("year").</target>
+            </trans-unit>
+			<trans-unit id="error.message.parse.tip.2" xml:space="preserve">
+                <source>For most publication types, a field "year" is required. Furthermore, this may be used for sorting.</source>
+				<target>Für die meisten Publikationstypen ist das Feld "year" ein Pflichtfeld. Des weiteren ist es erforderlich, wenn nach Jahr sortiert wird.</target>
+            </trans-unit>
+			<!-- optional add a URL for more information -->
+			<trans-unit id="error.message.parse.url.2" xml:space="preserve">
+                <source>https://www.bibtex.com/f/year-field/</source>
+				<target>https://www.bibtex.com/f/year-field/</target>
+            </trans-unit>
+			<trans-unit id="error.message.parse.url.linktext.2" xml:space="preserve">
+                <source>BibTeX field: year</source>
+				<target>BibTeX Feld: year</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

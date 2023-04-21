@@ -57,17 +57,52 @@
 			<trans-unit id="error.message.fetch.5" xml:space="preserve">
                 <source>Invalid configuration: Invalid URL or undefined URL.</source>
             </trans-unit>
+			<trans-unit id="error.message.fetch.6" xml:space="preserve">
+                <source>Could not fetch Bibtex from URL.</source>
+            </trans-unit>
 			<trans-unit id="error.message.fetch.unknown_result" xml:space="preserve">
                 <source>Result of loading Bibtex file is currently unknown. Load page in Frontend to see more results here.</source>
             </trans-unit>
 			<trans-unit id="last_fetched" xml:space="preserve">
                 <source>Last fetched</source>
             </trans-unit>
-			<trans-unit id="error.message.parse.1" xml:space="preserve">
-                <source>Result with several initials, probably author has wrong format. (Several authors should be seperated by "and", not comma (",").)</source>
+
+			<!-- parse result errors -->
+			<trans-unit id="error.message.parse.title" xml:space="preserve">
+                <source>Invalid format in Bibtex file</source>
             </trans-unit>
+			<trans-unit id="error.message.parse.1" xml:space="preserve">
+                <source>A field "author" probably contains several authors, but these are probably not separated correctly.
+					This usually leads to ugly errors in the displayed publication information.
+				</source>
+            </trans-unit>
+			<trans-unit id="error.message.parse.tip.1" xml:space="preserve">
+                <source>Several authors should be seperated by "and", not comma (","),
+					for example author = {Marie Curie and Albert Einstein}.
+					An organization should usually enclosed inside an additional pair of braces,
+					for example author = {{FZI Forschungszentrum Informatik am Karlsruher Institut für Technologie}}.</source>
+            </trans-unit>
+			<!-- optional add a URL for more information -->
+			<trans-unit id="error.message.parse.url.1" xml:space="preserve">
+                <source>https://www.bibtex.com/f/author-field/</source>
+            </trans-unit>
+			<trans-unit id="error.message.parse.url.linktext.1" xml:space="preserve">
+                <source>BibTeX field: author</source>
+            </trans-unit>
+
+			<!-- parse result error 2 -->
 			<trans-unit id="error.message.parse.2" xml:space="preserve">
-                <source>Invalid format in Bibtex file:  Missing field (year). Bibtex entry should have a field "year".</source>
+                <source>Missing field (year) in bibtex entry.</source>
+            </trans-unit>
+			<trans-unit id="error.message.parse.tip.2" xml:space="preserve">
+                <source>For most publication types, a field "year" is required. Furthermore, this may be used for sorting.</source>
+            </trans-unit>
+			<!-- optional add a URL for more information -->
+			<trans-unit id="error.message.parse.url.2" xml:space="preserve">
+                <source>https://www.bibtex.com/f/year-field/</source>
+            </trans-unit>
+			<trans-unit id="error.message.parse.url.linktext.2" xml:space="preserve">
+                <source>BibTeX field: year</source>
             </trans-unit>
         </body>
     </file>

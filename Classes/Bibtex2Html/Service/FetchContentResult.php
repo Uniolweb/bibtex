@@ -3,6 +3,9 @@
 declare(strict_types=1);
 namespace Uniolit\Bibtex\Bibtex2Html\Service;
 
+/**
+ * @todo possibly split metadata into separate class FetchContentResultMetadata
+ */
 class FetchContentResult
 {
     public const RESULT_CODE_OK = 0;
@@ -11,8 +14,11 @@ class FetchContentResult
     public const RESULT_CODE_ERROR_CONTENT_EMPTY = 2;
     public const RESULT_CODE_ERROR_FILE_MISSING = 3;
     public const RESULT_CODE_ERROR_INVALID_CONFIGURATION_WRONG_FILE_TYPE = 4;
-    // missing URL or invalid URL
+    // missing URL or invalid URL (e.g. GeneralUtility::isValidUrl returns false
+    // todo: use 2 separate error codes for these
     public const RESULT_CODE_ERROR_INVALID_CONFIGURATION_WRONG_URL = 5;
+    // e.g. 404, could not resolve hostname etc.
+    public const RESULT_CODE_ERROR_URL_NOT_AVAILABLE = 6;
 
     // parse errors
     // ------------
@@ -21,20 +27,29 @@ class FetchContentResult
 
     protected int $timestamp;
     protected int $resultCode;
-    protected string $errorMessage;
-    protected string $data;
+
+    /** @var string This can be an additional exception message. It is not always set. */
+    protected string $errorMessage = '';
+
+    /**
+     * @var string raw bibtex string
+     * @todo rename this to rawBibtexString
+     */
+    protected string $rawBibtexString;
     protected int $totalNumberOfEntries = 0;
     /** @var array<int,array> */
     protected array $parseErrors;
 
+    protected array $parsedEntries = [];
+
     public function __construct(
         int $resultCode,
-        // todo: is not used, remove?
         string $errorMessage = '',
         string $data = '',
         array $parseErrors = [],
         int $timestamp = 0,
-        int $totalNumberOfEntries = -1
+        int $totalNumberOfEntries = -1,
+        array $parsedEntries = []
     ) {
         $this->initialize(
             $resultCode,
@@ -42,18 +57,19 @@ class FetchContentResult
             $data,
             $parseErrors,
             $timestamp,
-            $totalNumberOfEntries
+            $totalNumberOfEntries,
+            $parsedEntries,
         );
     }
 
     protected function initialize(
         int $resultCode,
         string $errorMessage = '',
-        string $data = '',
+        string $rawBibtexString = '',
         array $parseErrors = [],
         int $timestamp = 0,
         int $totalNumberOfEntries = -1,
-        int $displayedNumberOfEntries = -1
+        array $parsedEntries = []
     ) {
         if ($timestamp === 0) {
             $timestamp = time();
@@ -61,36 +77,62 @@ class FetchContentResult
         $this->timestamp = $timestamp;
         $this->resultCode = $resultCode;
         $this->errorMessage = $errorMessage;
-        $this->data = $data;
+        $this->rawBibtexString = $rawBibtexString;
         $this->parseErrors = $parseErrors;
         if ($totalNumberOfEntries === -1) {
             $totalNumberOfEntries = 0;
         }
         $this->totalNumberOfEntries = $totalNumberOfEntries;
+        $this->parsedEntries = $parsedEntries;
     }
 
+    /**
+     * @todo Is currently not used, we do not write FetchContentResult to cache, only the metadata
+     */
     public function __unserialize(array $data)
     {
         $this->initialize(
             $data['errorCode'],
             $data['errorMessage'],
-            $data['data'],
+            // todo: change key to 'rawBibtexString'
+            $data['data'] ?? '',
             $data['parseErrors'],
             (int)$data['timestamp'],
-            (int)($data['totalNumberOfEntries'] ?? 0)
+            (int)($data['totalNumberOfEntries'] ?? 0),
+            $data['entries'] ?? []
         );
     }
 
+    /**
+     * @todo Is currently not used, we do not write FetchContentResult to cache, only the metadata
+     */
     public function __serialize(): array
     {
         return [
             'timestamp' => $this->timestamp,
-            'data' => $this->data,
+            'data' => $this->rawBibtexString,
+            'entries' => $this->parsedEntries,
             'parseErrors' => $this->parseErrors,
             'totalNumberOfEntries' => $this->totalNumberOfEntries,
             'errorCode' => $this->resultCode,
             'errorMessage' => $this->errorMessage,
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public function getErrorMessage(): string
+    {
+        return $this->errorMessage;
+    }
+
+    /**
+     * @param string $errorMessage
+     */
+    public function setErrorMessage(string $errorMessage): void
+    {
+        $this->errorMessage = $errorMessage;
     }
 
     public function isOk(): bool
@@ -108,12 +150,13 @@ class FetchContentResult
 
     public function getData(): string
     {
-        return $this->data;
+        return $this->rawBibtexString;
     }
 
     public function emptyData(): void
     {
-        $this->data = '';
+        $this->rawBibtexString = '';
+        $this->parsedEntries = [];
     }
 
     /**
@@ -148,6 +191,22 @@ class FetchContentResult
     public function getTimestamp(): int
     {
         return $this->timestamp;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParsedEntries(): array
+    {
+        return $this->parsedEntries;
+    }
+
+    /**
+     * @param array $parsedEntries
+     */
+    public function setParsedEntries(array $parsedEntries): void
+    {
+        $this->parsedEntries = $parsedEntries;
     }
 
     /**

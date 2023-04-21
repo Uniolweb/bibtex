@@ -18,7 +18,9 @@
             <trans-unit id="sort.none" xml:space="preserve">
                 <source>--- no sorting ---</source>
             </trans-unit>
-
+			<trans-unit id="error.msg.fe.bibtex_file_not_avaiable" xml:space="preserve">
+                <source>Bibtex file not available or has no entries.</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>
