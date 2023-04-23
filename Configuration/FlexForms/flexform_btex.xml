@@ -83,7 +83,8 @@
                     <settings.filterType>
                         <TCEforms>
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType</label>
-                            <onChange>reload</onChange>
+                            <!-- using displayCond / reload is bad for usability -->
+                            <!-- <onChange>reload</onChange> -->
                             <config>
                                 <type>radio</type>
                                 <items type="array">
@@ -112,14 +113,15 @@
 
                     <settings.filterEntries>
                         <TCEforms>
-                            <displayCond>FIELD:settings.filterType:IN:allow,deny</displayCond>
+                            <!-- using displayCond / reload is bad for usability -->
+                            <!-- <displayCond>FIELD:settings.filterType:IN:allow,deny</displayCond> -->
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterByPublication</label>
                             <config>
                                 <type>select</type>
                                 <!-- <renderType>selectSingle</renderType> -->
                                 <renderType>selectMultipleSideBySide</renderType>
                                 <size>15</size>
-                                <minitems>1</minitems>
+                                <minitems>0</minitems>
                                 <maxitems>100</maxitems>
                                 <!-- <eval>required</eval> -->
                                 <items type="array">
