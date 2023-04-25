@@ -322,6 +322,12 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                  'pdf' => $this->toDownload($entry, $lang),
                  'key' => \strtr($bibkey, ':', '-'),
                  'entry' => $mapped_entry,
+
+                 'doi' => $entry['doi'] ?? '',
+                 'doiUrl' => $this->getDoiUrl($entry['doi'] ?? ''),
+                 'journal' => $entry['journal'] ?? '',
+                 'url' => $entry['url'] ?? $entry['file'] ?? '',
+
                  'bibtex' => $this->formatBibtex((string)($entry['bibtexEntry'] ?? '')),
                  // These are rather AG TWiSt specific formats but probably of more general interest
                  'twist_title' => $this->toTwistTitle($mapped_entry, $resourceType, $entry['doi'] ?? ''),
@@ -334,6 +340,14 @@ class Bibtex2HtmlService implements LoggerAwareInterface
              $newEntries[] = $newEntry;
          }
          return $newEntries;
+     }
+
+     protected function getDoiUrl(string $doi): string
+     {
+         if (!$doi) {
+             return '';
+         }
+         return 'https://doi.org/' . $doi;
      }
 
     /**

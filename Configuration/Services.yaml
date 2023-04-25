@@ -10,6 +10,9 @@ services:
   Uniolit\Bibtex\Service\Bibtex2Html\Bibtex2HtmlService:
     public: true
 
+  Uniolit\Bibtex\Cache\BibtexCache:
+    public: true
+
   Uniolit\Bibtex\Command\ConvertFlexformCommand:
     tags:
       - name: 'console.command'

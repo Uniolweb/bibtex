@@ -9,6 +9,10 @@
 					</div>
 					<div>
 						<f:format.raw>{entry.entry}</f:format.raw>
+						<f:if condition="{entry.doiUrl} && {entry.doi}">
+							<br/>
+							<a href="{entry.doiUrl}" target="_blank">doi: {entry.doi}</a>
+						</f:if>
 					</div>
 					<div class="bibtex">
 						<code><f:format.raw>{entry.bibtex}</f:format.raw></code>
