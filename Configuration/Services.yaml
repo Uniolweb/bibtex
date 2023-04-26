@@ -10,6 +10,9 @@ services:
   Uniolit\Bibtex\Service\Bibtex2Html\Bibtex2HtmlService:
     public: true
 
+  Uniolit\Bibtex\Bibtex2Html\Service\FetchContent:
+    public: true
+
   Uniolit\Bibtex\Cache\BibtexCache:
     public: true
 
