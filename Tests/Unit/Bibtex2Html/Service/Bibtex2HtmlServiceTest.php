@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Unit\Tests\Service\Bibtex2Html;
+namespace Uniolit\Bibtex\Unit\Tests\Bibtex2Html\Service;
 
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;

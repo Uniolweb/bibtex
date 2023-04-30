@@ -34,6 +34,7 @@ use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Uniolit\Bibtex\Bibtex2Html\Factory\OsbibFactory;
+use Uniolit\Bibtex\Bibtex2Html\Utility\DoiUtility;
 use Uniolit\Bibtex\Configuration\BibtexSettings;
 
 /**
@@ -316,6 +317,13 @@ class Bibtex2HtmlService implements LoggerAwareInterface
               * should be:  "Climate Policies after Paris: Pledge, Trade and Recyle"
               */
              $mapped_entry = str_replace([',&quot' ], '&quot', $mapped_entry);
+             $doi = DoiUtility::normalizeDoi($entry['doi'] ?? '');
+             $doiUrl = DoiUtility::getDoiUrl($doi);
+             $doiLinkText = DoiUtility::getDoiLinkText($doi);
+             if (!$doiUrl || ! $doiLinkText) {
+                 $doiUrl = '';
+                 $doiLinkText = '';
+             }
              $newEntry = [
                  'year' => $entry['year'] ?? '',
                  'type' =>  $entry['bibtexEntryType'] ?? '',
@@ -323,8 +331,8 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                  'key' => \strtr($bibkey, ':', '-'),
                  'entry' => $mapped_entry,
 
-                 'doi' => $entry['doi'] ?? '',
-                 'doiUrl' => $this->getDoiUrl($entry['doi'] ?? ''),
+                 'doi' => $doiLinkText,
+                 'doiUrl' => $doiUrl,
                  'journal' => $entry['journal'] ?? '',
                  'url' => $entry['url'] ?? $entry['file'] ?? '',
 
@@ -340,14 +348,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
              $newEntries[] = $newEntry;
          }
          return $newEntries;
-     }
-
-     protected function getDoiUrl(string $doi): string
-     {
-         if (!$doi) {
-             return '';
-         }
-         return 'https://doi.org/' . $doi;
      }
 
     /**

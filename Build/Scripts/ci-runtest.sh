@@ -38,7 +38,8 @@ echo "add Platform $PHP_VERSION_PLATFORM"
 composer config platform.php "$PHP_VERSION_PLATFORM"
 
 echo "composer install"
-Build/Scripts/runTests.sh -s composerInstall -p $PHP_VERSION
+#Build/Scripts/runTests.sh -s composerInstall -p $PHP_VERSION
+composer update
 
 # check
 # -----
