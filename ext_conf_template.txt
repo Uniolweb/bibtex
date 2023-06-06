@@ -1,6 +1,6 @@
 # cat=basic; type=string; label=Path for bibliography styles, must have format extkey:Path, default: bibtex:Resources/Private/Osbib/Styles/Bibliography
 bibliographyStylePath = bibtex:Resources/Private/Osbib/Styles/Bibliography
 
-# cat=basic; type=string; label=Path for OSBiB source, must have format extkey:Path, default: bibtex:Resources/Private/Php/bib2html/OSBiB/)
+# cat=basic; type=string; label=Path for OSBiB source, must have format extkey:Path, default: bibtex:PHP/OSBiB-3.0/)
 osbibPath = bibtex:PHP/OSBiB-3.0/
 
