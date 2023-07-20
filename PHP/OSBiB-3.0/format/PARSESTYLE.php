@@ -185,7 +185,7 @@ class PARSESTYLE
                     $final['ultimate'] = array_shift($independent);
                 }
             }
-            if (($ultimate ?? false) && !array_key_exists('ultimate', $final)) {
+            if ($ultimate && !array_key_exists('ultimate', $final)) {
                 $final['ultimate'] = $ultimate;
             }
             // todo $preliminaryText is never initialized!
