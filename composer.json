@@ -19,7 +19,7 @@
 	],
 	"require": {
 		"php": "^8.0 || ^8.1",
-		"sypets/osbibx-parser": "dev-main",
+		"sypets/osbibx-parser": "^4.0.0",
 		"typo3/cms-core": "^11.5.30",
 		"uniolt3/uniollib": "^0.2.6 || dev-main"
 	},
