@@ -17,7 +17,7 @@ $EM_CONF[$_EXTKEY] = array(
     'modify_tables' => '',
     'clearCacheOnLoad' => 0,
     'lockType' => '',
-    'version' => '2.0.7',
+    'version' => '3.0.0-dev',
     'constraints' => [
         'depends' => [
             'extbase' => '',
@@ -28,6 +28,6 @@ $EM_CONF[$_EXTKEY] = array(
         'suggests' => [],
     ],
     '_md5_values_when_last_written' => '',
-    'autoload' => ['classmap' => ['Classes', 'PHP']],
+    'autoload' => ['classmap' => ['Classes']],
 );
 

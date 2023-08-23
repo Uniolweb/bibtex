@@ -11,11 +11,16 @@
 		{
 			"type": "gitlab",
 			"url": "git@gitlab.uni-oldenburg.de:it-dienste/typo3/uniollib.git"
+		},
+		{
+			"type": "gitlab",
+			"url": "git@gitlab.uni-oldenburg.de:it-dienste/typo3/osbibx-parser.git"
 		}
 	],
 	"require": {
-		"php": "^7.4 || ^8.0",
-		"typo3/cms-core": "^11.5.19",
+		"php": "^8.0 || ^8.1",
+		"sypets/osbibx-parser": "dev-main",
+		"typo3/cms-core": "^11.5.30",
 		"uniolt3/uniollib": "^0.2.6 || dev-main"
 	},
 	"autoload": {

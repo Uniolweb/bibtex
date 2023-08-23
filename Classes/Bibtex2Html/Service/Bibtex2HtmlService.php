@@ -29,11 +29,12 @@ namespace Uniolit\Bibtex\Bibtex2Html\Service;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Sypets\OsbibxParser\Format\Bibformat;
+use Sypets\OsbibxParser\Parse\Parseentries;
+use Sypets\OsbibxParser\Style\ParseStyle\ParseResultInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Uniolit\Bibtex\Bibtex2Html\Factory\OsbibFactory;
 use Uniolit\Bibtex\Bibtex2Html\Utility\DoiUtility;
 use Uniolit\Bibtex\Configuration\BibtexSettings;
 
@@ -46,31 +47,15 @@ class Bibtex2HtmlService implements LoggerAwareInterface
 
     public const DEFAULT_STYLES_PATH = 'bibtex:Resources/Private/Osbib/Styles/Bibliography';
 
-    //public const DEFAULT_OSBIBPATH = 'bibtex:PHP/bib2html/OSBiB/';
-    public const DEFAULT_OSBIBPATH = 'bibtex:PHP/OSBiB-3.0/';
-
-    /**
-     * @var OsbibFactory|null
-     */
-    protected ?OsbibFactory $osbibFactory = null;
-
-    protected string $osbibPath = '';
-
-    protected string $absoluteOsBibPath = '';
-
     protected string $bibliographyStylesPath = '';
 
     /**
-     * @param OsbibFactory|null $osbibFactory
      * @param string $stylesPath if empty string is passed, read from extension configuration
-     * @param string $osbibPath if empty string is passed, read from extension configuration
      * @throws \TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException
      * @throws \TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException
      */
     public function __construct(
-        OsbibFactory $osbibFactory = null,
-        string $stylesPath = '',
-        string $osbibPath = ''
+        string $stylesPath = self::DEFAULT_STYLES_PATH
     ) {
         // $stylesPath: can always be overriden via constructor
         // if not passed via constructor, use
@@ -83,21 +68,6 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             ) ?: self::DEFAULT_STYLES_PATH;
         }
         $this->bibliographyStylesPath = ExtensionManagementUtility::extPath(...explode(':', $stylesPath));
-
-        if (!$osbibPath) {
-            $osbibPath = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get(
-                'bibtex',
-                'osbibPath'
-            ) ?: self::DEFAULT_OSBIBPATH;
-        }
-        $this->osbibPath = $osbibPath;
-        $this->absoluteOsBibPath = ExtensionManagementUtility::extPath(...explode(':', $osbibPath));
-        $this->osbibFactory = $osbibFactory ?: GeneralUtility::makeInstance(OsbibFactory::class, $this->osbibPath);
-    }
-
-    public function autoloadClasses(): void
-    {
-        $this->osbibFactory->autoloadClasses();
     }
 
     /**
@@ -109,9 +79,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
      */
     public function bibtex2Html(BibtexSettings $bibtexSettings, string $content, int $languageId = 0): array
     {
-        $this->autoloadClasses();
-
-        // @todo: use configurable language mapping, e.g. via TypoScript
+        // @todo: use configurable language mapping or site configuration
         $languageKey = $languageId === 0 ? '' : '_en';
 
         $result = $this->bib2html($bibtexSettings, $content, $languageKey);
@@ -220,7 +188,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         string $data
     ): array {
         // parse the content of bib string and generate associative array with valid entries
-        $parse = $this->osbibFactory->instantiateParseEntries();
+        $parse = new Parseentries();
         $parse->loadBibtexString($data);
         $parse->extractEntries();
 
@@ -271,15 +239,17 @@ class Bibtex2HtmlService implements LoggerAwareInterface
          $newEntries = [];
 
          // Format the entries array  for html output
-         $bibformat = $this->osbibFactory->instantiateBibFormat();
+         $bibformat = new Bibformat('', true);
          // convert BibTeX (and LaTeX) special characters to UTF-8
          $bibformat->setCleanEntry(true);
-         // list($info, $citation, $styleCommon, $styleTypes)
+         /**
+          * @var ParseResultInterface $loadedStyles
+          */
          $loadedStyles = $bibformat->loadStyleAsNamedArray(
              $this->bibliographyStylesPath . '/',
              $style
          );
-         $bibformat->getStyle($loadedStyles['common'], $loadedStyles['types'], $loadedStyles['footnote'] ?? []);
+         $bibformat->applyStyles($loadedStyles);
 
          /**
           * @var array<string,string> $entry
@@ -304,6 +274,9 @@ class Bibtex2HtmlService implements LoggerAwareInterface
              //  adds all the resource elements automatically to the BIBFORMAT::item array
              $bibformat->preProcess($resourceType, $entry);
              $bibkey = $entry['bibtexCitation'] ?? '';
+
+             // todo: make items in entry available
+             $item = $bibformat->getParsedEntry();
 
              // get the formatted resource string ready for printing to the web browser
              // the str_replace is used to remove the { } parentheses possibly present in title

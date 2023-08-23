@@ -46,21 +46,16 @@ parameters:
   paths:
     - ../../Classes
     - ../../Tests
-    - ../../PHP/OSBiB-3.0
   # use these paths (but do not check)
   scanDirectories:
     - ../../.Build/Web/typo3/sysext
     - ../../.Build/Web/typo3conf/ext/uniollib
-    - ../../PHP/OSBiB-3.0
 
   # do not check if array types specified
   checkMissingIterableValueType: false
 
   excludePaths:
     - ../../ext_emconf.php
-    - ../../PHP/OSBiB-3.0/format/TESTOSBIB.php
-    - ../../PHP/OSBiB-3.0/format/init_TESTOSBIB.php
-    - ../../PHP/OSBiB-3.0/format/HELPSTYLE.php
 
   editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
 

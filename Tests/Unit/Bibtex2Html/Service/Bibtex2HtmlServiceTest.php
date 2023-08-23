@@ -16,19 +16,16 @@ class Bibtex2HtmlServiceTest extends UnitTestCase
 
     protected function instantiateBibtex2HtmlService(): Bibtex2HtmlService
     {
-        return new Bibtex2HtmlService(
-            null,
-            Bibtex2HtmlService::DEFAULT_STYLES_PATH,
-            Bibtex2HtmlService::DEFAULT_OSBIBPATH
-        );
+        return new Bibtex2HtmlService();
     }
 
     /**
      * @return \Generator<string,array<string,string>>
+     * @todo author not used, is correct?
      */
     public function bibtexPreProcessReturnsCorrectEntriesProvider(): \Generator
     {
-        yield 'Simple entry' => [
+        yield 'Simple entry (techreport)' => [
             'bibtexContent' => '@TechReport{V-400-17,
                 author      = {Christoph B{\"o}hringer and Thomas F. Rutherford},
                 institution = {Oldenburger Diskussionspapiere},
@@ -48,6 +45,22 @@ class Bibtex2HtmlServiceTest extends UnitTestCase
 
             ],
         ];
+
+        yield 'Simple entry (article)' => [
+            'bibtexContent' => '@article{herder2023environmental, title={Environmental risk factors of incident distal sensorimotor polyneuropathy: Results from the prospective population-based KORA F4/FF4 study},
+  author={Herder, Christian and Zhang, Siqi and Wolf, Kathrin and Maalmi, Haifa and B{\"o}nhof, Gidon J and Rathmann, Wolfgang and Schwettmann, Lars and Thorand, Barbara and Roden, Michael and Schneider, Alexandra and others},
+  journal={Science of The Total Environment},
+  volume={858},
+  pages={159878},
+  year={2023},
+  publisher={Elsevier} }',
+            'expectedEntry' => [
+                'bibtexEntryType'   => 'article',
+                'title'             => 'Environmental risk factors of incident distal sensorimotor polyneuropathy: Results from the prospective population-based KORA F4/FF4 study',
+                'authors'           => 'Herder, Christian and Zhang, Siqi and Wolf, Kathrin and Maalmi, Haifa and Bönhof, Gidon J and Rathmann, Wolfgang and Schwettmann, Lars and Thorand, Barbara and Roden, Michael and Schneider',
+                'year'              => '202322',
+            ],
+        ];
     }
 
     /**
@@ -59,7 +72,6 @@ class Bibtex2HtmlServiceTest extends UnitTestCase
     public function bibtexPreProcessReturnsCorrectEntries(string $bibtexContent, array $expectedResult): void
     {
         $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
-        $bibtex2HtmlService->autoloadClasses();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
         $entry = reset($actualResults);
 
@@ -100,7 +112,6 @@ Booktitle = {Standardization in Smart Grids: Introduction to IT--Related Methodo
     public function bibtexPreProcessTrimsTitle(string $bibtexContent, string $expectedTitle): void
     {
         $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
-        $bibtex2HtmlService->autoloadClasses();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
         $firstEntry = reset($actualResults);
 
@@ -136,7 +147,6 @@ Organization = {IEEE}
     public function bibtexPreProcessHandlesUnicodeInAuthors(string $bibtexContent, string $expectedAuthors): void
     {
         $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
-        $bibtex2HtmlService->autoloadClasses();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
         $firstEntry = reset($actualResults);
 
@@ -172,7 +182,6 @@ Organization = {IEEE}
     public function bibtexPreProcessHandlesCitationKeyWithParenthesisWithoutEndlessLoop(string $bibtexContent, string $expectedAuthors): void
     {
         $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
-        $bibtex2HtmlService->autoloadClasses();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
         $firstEntry = reset($actualResults);
 
