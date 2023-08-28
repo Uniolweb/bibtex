@@ -64,8 +64,6 @@ class BtexController extends ActionController implements LoggerAwareInterface
      */
     public function showAction(BibtexSettings $bibtexSettings = null): ResponseInterface
     {
-        $errorMessage = '';
-        $entries = [];
         $context = GeneralUtility::makeInstance(Context::class);
         // todo: just use $this->language ?
         $this->languageId = (int)($context->getPropertyFromAspect('language', 'id'));

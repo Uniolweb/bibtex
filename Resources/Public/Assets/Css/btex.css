@@ -44,4 +44,34 @@ form.bibtex-form fieldset.bibtex-fieldset input.bibtex-form-radio {
     margin-right: 0.2em;
 }
 
+/** bibtex copy button */
+/*
+.uniol_bibtex .bibtex {
+    position: relative;
+}
+.uniol_bibtex .bibtex .uniol_bibtex_copy {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: block;
+    width: auto;
+    padding:5px 20px;
+    text-align: center;
+    background: var(--uol-bg-stufe1);
+    cursor: pointer;
+}
+*/
 
+.uniol_bibtex .bibtex {
+    display: flex;
+}
+
+.uniol_bibtex .bibtex .uniol_bibtex_copy {
+    align-self: flex-end;
+    padding:5px 20px;
+    text-align: center;
+    background: var(--uol-bg-stufe1);
+    cursor: pointer;
+}
+
+/**********************/
