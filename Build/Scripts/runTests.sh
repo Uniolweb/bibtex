@@ -9,20 +9,20 @@ DEFAULT_PHP_VERSION="8.1"
 #  https://github.com/lolli42/enetcache/blob/master/Build/Scripts/runTests.sh
 
 #
-# TYPO3 core test runner based on docker and docker-compose.
+# TYPO3 core test runner based on docker and docker compose.
 #
 
 # Function to write a .env file in Build/testing-docker/local
-# This is read by docker-compose and vars defined here are
+# This is read by docker compose and vars defined here are
 # used in Build/testing-docker/local/docker-compose.yml
 setUpDockerComposeDotEnv() {
     # Delete possibly existing local .env file if exists
     [ -e .env ] && rm .env
-    # Set up a new .env file for docker-compose
+    # Set up a new .env file for docker compose
     echo "COMPOSE_PROJECT_NAME=local" >> .env
 
     # To prevent access rights of files created by the testing, the docker image later
-    # runs with the same user that is currently executing the script. docker-compose can't
+    # runs with the same user that is currently executing the script. docker compose can't
     # use $UID directly itself since it is a shell variable and not an env variable, so
     # we have to set it explicitly here.
     echo "HOST_UID=`id -u`" >> .env
@@ -43,6 +43,7 @@ setUpDockerComposeDotEnv() {
     echo "EXTRA_TEST_OPTIONS=${EXTRA_TEST_OPTIONS}" >> .env
     echo "SCRIPT_VERBOSE=${SCRIPT_VERBOSE}" >> .env
     echo "PASSWD_PATH=${PASSWD_PATH}" >> .env
+    echo "DOCKER_COMPOSE_COMMAND=${DOCKER_COMPOSE_COMMAND}" >> .env
 }
 
 # Load help text into $HELP
@@ -125,9 +126,9 @@ Examples:
     ./Build/Scripts/runTests.sh -p ${DEFAULT_PHP_VERSION}
 EOF
 
-# Test if docker-compose exists, else exit out with error
-if ! type "docker-compose" > /dev/null; then
-  echo "This script relies on docker and docker-compose. Please install" >&2
+# Test if docker exists, else exit out with error
+if ! type "docker" > /dev/null; then
+  echo "This script relies on docker and docker compose. Please install" >&2
   exit 1
 fi
 
@@ -158,6 +159,7 @@ POSTGRES_VERSION="10"
 CHUNKS=0
 THISCHUNK=0
 PASSWD_PATH=/etc/passwd
+DOCKER_COMPOSE_COMMAND="docker compose"
 
 # Option parsing
 # Reset in case getopts has been used previously in the shell
@@ -244,27 +246,27 @@ fi
 case ${TEST_SUITE} in
     composerInstall)
         setUpDockerComposeDotEnv
-        docker-compose run composer_install
+        ${DOCKER_COMPOSE_COMMAND} run composer_install
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     composerInstallMax)
         setUpDockerComposeDotEnv
-        docker-compose run composer_install_max
+        ${DOCKER_COMPOSE_COMMAND} run composer_install_max
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     composerInstallMin)
         setUpDockerComposeDotEnv
-        docker-compose run composer_install_min
+        ${DOCKER_COMPOSE_COMMAND} run composer_install_min
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     composerValidate)
         setUpDockerComposeDotEnv
-        docker-compose run composer_validate
+        ${DOCKER_COMPOSE_COMMAND} run composer_validate
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     cgl)
         # Active dry-run for cglAll needs not "-n" but specific options
@@ -272,27 +274,27 @@ case ${TEST_SUITE} in
             CGLCHECK_DRY_RUN="--dry-run --diff"
         fi
         setUpDockerComposeDotEnv
-        docker-compose run cgl_all
+        ${DOCKER_COMPOSE_COMMAND} run cgl_all
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     functional)
         setUpDockerComposeDotEnv
         case ${DBMS} in
             mariadb)
-                docker-compose run functional_mariadb10
+                ${DOCKER_COMPOSE_COMMAND} run functional_mariadb10
                 SUITE_EXIT_CODE=$?
                 ;;
             mssql)
-                docker-compose run functional_mssql2019latest
+                ${DOCKER_COMPOSE_COMMAND} run functional_mssql2019latest
                 SUITE_EXIT_CODE=$?
                 ;;
             postgres)
-                docker-compose run functional_postgres10
+                ${DOCKER_COMPOSE_COMMAND} run functional_postgres10
                 SUITE_EXIT_CODE=$?
                 ;;
             sqlite)
-                docker-compose run functional_sqlite
+                ${DOCKER_COMPOSE_COMMAND} run functional_sqlite
                 SUITE_EXIT_CODE=$?
                 ;;
             *)
@@ -301,31 +303,31 @@ case ${TEST_SUITE} in
                 echo "${HELP}" >&2
                 exit 1
         esac
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     lint)
         setUpDockerComposeDotEnv
-        docker-compose run lint
+        ${DOCKER_COMPOSE_COMMAND} run lint
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     phpstan)
         setUpDockerComposeDotEnv
-        docker-compose run phpstan
+        ${DOCKER_COMPOSE_COMMAND} run phpstan
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     phpstanGenerateBaseline)
         setUpDockerComposeDotEnv
-        docker-compose run phpstan_generate_baseline
+        ${DOCKER_COMPOSE_COMMAND} run phpstan_generate_baseline
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     unit)
         setUpDockerComposeDotEnv
-        docker-compose run unit
+        ${DOCKER_COMPOSE_COMMAND} run unit
         SUITE_EXIT_CODE=$?
-        docker-compose down
+        ${DOCKER_COMPOSE_COMMAND} down
         ;;
     update)
         # pull typo3gmbh/phpXY:latest versions of those ones that exist locally

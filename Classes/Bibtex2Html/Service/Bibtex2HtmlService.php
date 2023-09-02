@@ -226,102 +226,102 @@ class Bibtex2HtmlService implements LoggerAwareInterface
      * @param bool $addOrigEntry Add the original parsed entry elements to the returned entry as array with key 'origEntry'
      * @return array
      */
-     protected function preFormatBibtexEntries(
-         array $entries,
-         string $filterType = '',
-         array $filter = [],
-         string $lang = '',
-         string $style = 'uniol_de',
-         bool $addOrigEntry = false
-     ): array {
-         //// End added by C.v.O Uni Oldenburg
-         /** @var array<int,array<string,string>> $newEntries */
-         $newEntries = [];
+    protected function preFormatBibtexEntries(
+        array $entries,
+        string $filterType = '',
+        array $filter = [],
+        string $lang = '',
+        string $style = 'uniol_de',
+        bool $addOrigEntry = false
+    ): array {
+        //// End added by C.v.O Uni Oldenburg
+        /** @var array<int,array<string,string>> $newEntries */
+        $newEntries = [];
 
-         // Format the entries array  for html output
-         $bibformat = new Bibformat('', true);
-         // convert BibTeX (and LaTeX) special characters to UTF-8
-         $bibformat->setCleanEntry(true);
-         /**
-          * @var ParseResultInterface $loadedStyles
-          */
-         $loadedStyles = $bibformat->loadStyleAsNamedArray(
-             $this->bibliographyStylesPath . '/',
-             $style
-         );
-         $bibformat->applyStyles($loadedStyles);
+        // Format the entries array  for html output
+        $bibformat = new Bibformat('', true);
+        // convert BibTeX (and LaTeX) special characters to UTF-8
+        $bibformat->setCleanEntry(true);
+        /**
+         * @var ParseResultInterface $loadedStyles
+         */
+        $loadedStyles = $bibformat->loadStyleAsNamedArray(
+            $this->bibliographyStylesPath . '/',
+            $style
+        );
+        $bibformat->applyStyles($loadedStyles);
 
-         /**
-          * @var array<string,string> $entry
-          * @todo use class
-          */
-         foreach ($entries as $entry) {
-             // Get the resource type ('book', 'article', 'inbook' etc.)
-             $resourceType = $entry['bibtexEntryType'];
+        /**
+         * @var array<string,string> $entry
+         * @todo use class
+         */
+        foreach ($entries as $entry) {
+            // Get the resource type ('book', 'article', 'inbook' etc.)
+            $resourceType = $entry['bibtexEntryType'];
 
-             // apply filters
+            // apply filters
 
-             $filterMatch = in_array($resourceType, $filter);
+            $filterMatch = in_array($resourceType, $filter);
 
-             if (($filterType === 'allow' && $filterMatch === false)
-                 || ($filterType === 'deny' && $filterMatch === true)
-                 //|| ((strcmp($filterType, 'key') === 0) && (strcmp($filter, $bibkey) != 0))
-             ) {
-                 // filter does not match
-                 continue;
-             }
+            if (($filterType === 'allow' && $filterMatch === false)
+                || ($filterType === 'deny' && $filterMatch === true)
+                //|| ((strcmp($filterType, 'key') === 0) && (strcmp($filter, $bibkey) != 0))
+            ) {
+                // filter does not match
+                continue;
+            }
 
-             //  adds all the resource elements automatically to the BIBFORMAT::item array
-             $bibformat->preProcess($resourceType, $entry);
-             $bibkey = $entry['bibtexCitation'] ?? '';
+            //  adds all the resource elements automatically to the BIBFORMAT::item array
+            $bibformat->preProcess($resourceType, $entry);
+            $bibkey = $entry['bibtexCitation'] ?? '';
 
-             // todo: make items in entry available
-             $item = $bibformat->getParsedEntry();
+            // todo: make items in entry available
+            $item = $bibformat->getParsedEntry();
 
-             // get the formatted resource string ready for printing to the web browser
-             // the str_replace is used to remove the { } parentheses possibly present in title
-             // to enforce uppercase, TODO: check if it can be done only on title
-             $mapped_entry = $bibformat->map();
-             $mapped_entry = str_replace(['{', '}'], '', $mapped_entry);
+            // get the formatted resource string ready for printing to the web browser
+            // the str_replace is used to remove the { } parentheses possibly present in title
+            // to enforce uppercase, TODO: check if it can be done only on title
+            $mapped_entry = $bibformat->map();
+            $mapped_entry = str_replace(['{', '}'], '', $mapped_entry);
 
-             /**
-              * SP 2021-07-08 Fix trailing comma in title
-              * e.g.  "Climate Policies after Paris: Pledge, Trade and Recyle,"
-              * should be:  "Climate Policies after Paris: Pledge, Trade and Recyle"
-              */
-             $mapped_entry = str_replace([',&quot' ], '&quot', $mapped_entry);
-             $doi = DoiUtility::normalizeDoi($entry['doi'] ?? '');
-             $doiUrl = DoiUtility::getDoiUrl($doi);
-             $doiLinkText = DoiUtility::getDoiLinkText($doi);
-             if (!$doiUrl || ! $doiLinkText) {
-                 $doiUrl = '';
-                 $doiLinkText = '';
-             }
-             $newEntry = [
-                 'year' => $entry['year'] ?? '',
-                 'type' =>  $entry['bibtexEntryType'] ?? '',
-                 'pdf' => $this->toDownload($entry, $lang),
-                 'key' => \strtr($bibkey, ':', '-'),
-                 'entry' => $mapped_entry,
+            /**
+             * SP 2021-07-08 Fix trailing comma in title
+             * e.g.  "Climate Policies after Paris: Pledge, Trade and Recyle,"
+             * should be:  "Climate Policies after Paris: Pledge, Trade and Recyle"
+             */
+            $mapped_entry = str_replace([',&quot' ], '&quot', $mapped_entry);
+            $doi = DoiUtility::normalizeDoi($entry['doi'] ?? '');
+            $doiUrl = DoiUtility::getDoiUrl($doi);
+            $doiLinkText = DoiUtility::getDoiLinkText($doi);
+            if (!$doiUrl || ! $doiLinkText) {
+                $doiUrl = '';
+                $doiLinkText = '';
+            }
+            $newEntry = [
+                'year' => $entry['year'] ?? '',
+                'type' =>  $entry['bibtexEntryType'] ?? '',
+                'pdf' => $this->toDownload($entry, $lang),
+                'key' => \strtr($bibkey, ':', '-'),
+                'entry' => $mapped_entry,
 
-                 'doi' => $doiLinkText,
-                 'doiUrl' => $doiUrl,
-                 'journal' => $entry['journal'] ?? '',
-                 'url' => $entry['url'] ?? $entry['file'] ?? '',
+                'doi' => $doiLinkText,
+                'doiUrl' => $doiUrl,
+                'journal' => $entry['journal'] ?? '',
+                'url' => $entry['url'] ?? $entry['file'] ?? '',
 
-                 'bibtex' => $this->formatBibtex((string)($entry['bibtexEntry'] ?? '')),
-                 // These are rather AG TWiSt specific formats but probably of more general interest
-                 'twist_title' => $this->toTwistTitle($mapped_entry, $resourceType, $entry['doi'] ?? ''),
-                 'twist_entry' => $this->toTWiStEntry($mapped_entry, $resourceType),
-                 'twist_pdf' => $this->toTWiStPDF($entry)
-             ];
-             if ($addOrigEntry) {
-                 $newEntry['origEntry'] = $entry;
-             }
-             $newEntries[] = $newEntry;
-         }
-         return $newEntries;
-     }
+                'bibtex' => $this->formatBibtex((string)($entry['bibtexEntry'] ?? '')),
+                // These are rather AG TWiSt specific formats but probably of more general interest
+                'twist_title' => $this->toTwistTitle($mapped_entry, $resourceType, $entry['doi'] ?? ''),
+                'twist_entry' => $this->toTWiStEntry($mapped_entry, $resourceType),
+                'twist_pdf' => $this->toTWiStPDF($entry)
+            ];
+            if ($addOrigEntry) {
+                $newEntry['origEntry'] = $entry;
+            }
+            $newEntries[] = $newEntry;
+        }
+        return $newEntries;
+    }
 
     /**
       * @param $entry Current entry

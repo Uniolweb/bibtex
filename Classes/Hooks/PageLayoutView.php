@@ -65,6 +65,7 @@ class PageLayoutView
      */
     public function getExtensionSummary(array $params): string
     {
+        $this->layoutService->initialize();
         $this->languageService = $this->getLanguageService();
         $listType = $params['row']['list_type'];
         /** @var string $msg */
