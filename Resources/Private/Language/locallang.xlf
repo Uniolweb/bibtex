@@ -21,6 +21,12 @@
 			<trans-unit id="error.msg.fe.bibtex_file_not_avaiable" xml:space="preserve">
                 <source>Bibtex file not available or has no entries.</source>
             </trans-unit>
+			<trans-unit id="copyToClipboard" xml:space="preserve">
+                <source>Copy</source>
+            </trans-unit>
+			<trans-unit id="copiedToClipboard" xml:space="preserve">
+                <source>Copied!</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

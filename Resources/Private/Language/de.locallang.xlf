@@ -27,6 +27,14 @@
                 <source>Bibtex file not available or has no entries.</source>
 				<target>Bibtex Datei konnte nicht geladen werden oder hat keine Einträge.</target>
             </trans-unit>
+			<trans-unit id="copyToClipboard" xml:space="preserve">
+                <source>Copy</source>
+				<target>Kopieren</target>
+            </trans-unit>
+			<trans-unit id="copiedToClipboard" xml:space="preserve">
+                <source>Copied!</source>
+				<target>Kopiert!</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

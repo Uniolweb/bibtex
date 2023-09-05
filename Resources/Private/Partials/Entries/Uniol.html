@@ -14,9 +14,18 @@
 							doi: <a href="{entry.doiUrl}" target="_blank">{entry.doi}</a>
 						</f:if>
 					</div>
-					<div class="bibtex">
-						<code class="bibtex-code"><f:format.raw>{entry.bibtex}</f:format.raw></code>
-                        <button class="uniol_bibtex_copy">Copy</button>
+					<div class="bibtex bibtex-code" style="display: none;">
+						<code><f:format.raw>{entry.bibtex}</f:format.raw></code>
+                        <button class="uniol_bibtex_copy">
+							<span class="uniol_bibtex_copy_text">
+								<f:translate key="copyToClipboard" extensionName="bibtex">Kopieren</f:translate>
+							</span>
+							<f:comment>
+								<span class="uniol_bibtex_copied_text" style="display:none">
+									<f:translate key="copyToClipboard" extensionName="bibtex">Kopieren</f:translate>
+								</span>
+							</f:comment>
+						</button>
 					</div>
 				</li>
 			</f:for>

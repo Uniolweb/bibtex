@@ -28,7 +28,6 @@ div.bibtex {
     padding: .5em
 }
 
-
 .bibtex > code {
     color: black;
     font-family: monospace;
@@ -45,6 +44,7 @@ form.bibtex-form fieldset.bibtex-fieldset input.bibtex-form-radio {
 }
 
 /** bibtex copy button */
+
 /*
 .uniol_bibtex .bibtex {
     position: relative;
@@ -74,4 +74,13 @@ form.bibtex-form fieldset.bibtex-fieldset input.bibtex-form-radio {
     cursor: pointer;
 }
 
+.uniol_bibtex_copy_text_kopiert:after {
+    content: '\2713';
+    display: inline-block;
+    color: green;
+    padding: 0 3px 0 0;
+}
+
 /**********************/
+
+
