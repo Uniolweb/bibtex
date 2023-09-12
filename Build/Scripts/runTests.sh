@@ -159,7 +159,12 @@ POSTGRES_VERSION="10"
 CHUNKS=0
 THISCHUNK=0
 PASSWD_PATH=/etc/passwd
-DOCKER_COMPOSE_COMMAND="docker compose"
+DOCKER_COMPOSE_COMMAND="docker-compose"
+which docker-compose 2>/dev/null >/dev/null
+if [ $? -ne 0 ];then
+     DOCKER_COMPOSE_COMMAND="docker compose"
+fi
+
 
 # Option parsing
 # Reset in case getopts has been used previously in the shell
