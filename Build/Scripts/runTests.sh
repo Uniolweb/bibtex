@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # setup
-DEFAULT_PHP_VERSION="8.1"
-
+DEFAULT_PHP_VERSION="8.2"
+SUPPORTED_PHP_VERSIONS="8.1|8.2|8.3"
 
 
 # copied from EXT:enetcache:
@@ -17,8 +17,8 @@ DEFAULT_PHP_VERSION="8.1"
 # used in Build/testing-docker/local/docker-compose.yml
 setUpDockerComposeDotEnv() {
     # Delete possibly existing local .env file if exists
-    [ -e .env ] && rm .env
-    # Set up a new .env file for docker compose
+    [ -e .env ] && rm -f .env
+    # Set up a new .env file for docker-compose
     echo "COMPOSE_PROJECT_NAME=local" >> .env
 
     # To prevent access rights of files created by the testing, the docker image later
@@ -48,7 +48,7 @@ setUpDockerComposeDotEnv() {
 
 # Load help text into $HELP
 read -r -d '' HELP <<EOF
-test runner. Execute unit test suite and some other details.
+zsb test runner. Execute unit test suite and some other details.
 Also used by github actions for test execution.
 
 Usage: $0 [options] [file]
@@ -78,12 +78,8 @@ Options:
             - postgres: use postgres
             - sqlite: use sqlite
 
-    -p <7.2|7.3|7.4|8.0>
+    -p <${SUPPORTED_PHP_VERSIONS}>
         Specifies the PHP minor version to be used (default: ${DEFAULT_PHP_VERSION})
-            - 7.2: use PHP 7.2
-            - 7.3: use PHP 7.3
-            - 7.4: use PHP 7.4
-            - 8.0: use PHP 8.0
 
     -e "<phpunit options>"
         Only with -s functional|unit|phpstan
@@ -165,7 +161,6 @@ if [ $? -ne 0 ];then
      DOCKER_COMPOSE_COMMAND="docker compose"
 fi
 
-
 # Option parsing
 # Reset in case getopts has been used previously in the shell
 OPTIND=1
@@ -225,19 +220,22 @@ if [ ${#INVALID_OPTIONS[@]} -ne 0 ]; then
     exit 1
 fi
 
-# Move "7.2" to "php72", the latter is the docker container name
+# Move e.g. "7.2" to "php72", the latter is the docker container name
 DOCKER_PHP_IMAGE=`echo "php${PHP_VERSION}" | sed -e 's/\.//'`
 
 # Set $1 to first mass argument, this is the optional test file or test directory to execute
 shift $((OPTIND - 1))
 if [ -n "${1}" ]; then
+    #TEST_FILE="Web/typo3conf/ext/zsb/${1}"
     TEST_FILE="../${1}"
 else
     case ${TEST_SUITE} in
         functional)
+            #TEST_FILE="Web/typo3conf/ext/zsb/Tests/Functional"
             TEST_FILE="../Tests/Functional"
             ;;
         unit)
+            #TEST_FILE="Web/typo3conf/ext/zsb/Tests/Unit"
             TEST_FILE="../Tests/Unit"
             ;;
     esac
