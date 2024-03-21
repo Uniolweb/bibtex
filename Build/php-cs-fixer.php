@@ -20,7 +20,7 @@
  *
  * And then simply run
  *
- *  $ .Build/bin/php-cs-fixer fix -v --config ./Build/.php-cs-fixer.php Classes Tests
+ *  $ .Build/bin/php-cs-fixer fix -v --config ./Build/php-cs-fixer.php Classes Tests
  *
  * For more information read:
  * 	 https://www.php-fig.org/psr/psr-2/
