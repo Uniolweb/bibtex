@@ -21,16 +21,13 @@ class BtexController extends ActionController implements LoggerAwareInterface
     /** @var int */
     private $languageId = 0;
 
-    protected FetchContent $fetchContent;
-
     /** @var AssetCollector */
     protected $assetCollector;
 
     public function __construct(
         AssetCollector $assetCollector,
-        FetchContent $fetchContent
+        protected FetchContent $fetchContent
     ) {
-        $this->fetchContent = $fetchContent;
         $this->assetCollector = $assetCollector;
     }
 

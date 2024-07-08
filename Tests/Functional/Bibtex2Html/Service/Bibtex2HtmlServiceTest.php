@@ -3,11 +3,17 @@
 declare(strict_types=1);
 namespace Uniolit\Bibtex\Unit\Tests\Bibtex2Html\Service;
 
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
 
-class Bibtex2HtmlServiceTest extends UnitTestCase
+class Bibtex2HtmlServiceTest extends FunctionalTestCase
 {
+    public function setUp(): void
+    {
+        $this->testExtensionsToLoad = ['bibtex'];
+        parent::setUp();
+    }
+
     protected function loadBibtexFile(string $relativePathBibtex): string
     {
         $thisDir = realpath(__DIR__);

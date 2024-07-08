@@ -99,7 +99,7 @@ class FileService
                     // Just passing the reference uid, the factory is doing workspace
                     // overlays automatically depending on the current environment
                     $itemList[] = $this->resourceFactory->getFileReferenceObject($referenceUid);
-                } catch (ResourceDoesNotExistException $exception) {
+                } catch (ResourceDoesNotExistException) {
                     // No handling, just omit the invalid reference uid
                 }
             }

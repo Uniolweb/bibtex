@@ -27,8 +27,6 @@ class BibtexSettings
 
     public const DEFAULT_FILTER_TYPE = '';
 
-    private bool $addOrigEntry = false;
-
     private int $uid = 0;
 
     private string $url = '';
@@ -36,17 +34,7 @@ class BibtexSettings
     /** @var string URL regardless of file type */
     private string $unifiedUrl = '';
 
-    /**
-     * @var string
-     */
-    private $sort = self::DEFAULT_SORT;
-
     private string $style = self::DEFAULT_STYLE;
-
-    private string $filterType = '';
-
-    /** @var string[] */
-    private array $filterEntries;
 
     /**
      * Currently not used!
@@ -56,7 +44,7 @@ class BibtexSettings
      */
     private string $template = '';
 
-    private string $fileType = 'url';
+    private string $fileType = 'none';
 
     private ?File $file = null;
 
@@ -83,22 +71,16 @@ class BibtexSettings
      */
     public function __construct(
         string $unifiedUrl,
-        string $sort = self::DEFAULT_SORT,
+        private string $sort = self::DEFAULT_SORT,
         string $style = self::DEFAULT_STYLE,
-        string $filterType = '',
-        array $filterEntries = [],
-        bool $addOrigEntry = false,
+        private readonly string $filterType = '',
+        private readonly array $filterEntries = [],
+        private readonly bool $addOrigEntry = false,
         ?LinkService $linkService = null
     ) {
-        $this->sort = $sort;
-        $this->addOrigEntry = $addOrigEntry;
         $this->setStyle($style);
-        $this->filterType = $filterType;
-        $this->filterEntries = $filterEntries;
-
-        $this->fileType = 'none';
         // check if target is a file
-        if (strpos($unifiedUrl, 't3://file') === 0) {
+        if (str_starts_with($unifiedUrl, 't3://file')) {
             // target is file
             // TYPO3\CMS\Core\LinkHandling\LinkService::resolve()  . This method will return an array with a key  file  containing a  TYPO3\CMS\Core\Resource\FileInterface
             // https://copyprogramming.com/howto/typo3-11-convert-t3-file-uri-into-file-identifier

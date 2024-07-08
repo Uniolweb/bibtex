@@ -67,7 +67,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
                 'bibliographyStylePath'
             ) ?: self::DEFAULT_STYLES_PATH;
         }
-        $this->bibliographyStylesPath = ExtensionManagementUtility::extPath(...explode(':', $stylesPath));
+        $this->bibliographyStylesPath = ExtensionManagementUtility::extPath(...explode(':', (string)$stylesPath));
     }
 
     /**
@@ -143,7 +143,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             // consistency check for author
             // If author starts with more then 4 letters followed by dot (e.g. "S.U.M.L.S.", this is usually a sign of wrong
             //   format where several authors are not seperated by "and", but are separated, for example by ","
-            if (preg_match('/^([A-Z]\. ){4,}/', $parsedEntry)) {
+            if (preg_match('/^([A-Z]\. ){4,}/', (string)$parsedEntry)) {
                 $errors[] = [
                         'message' => 'Result with several initials, probably author has wrong format',
                         'code' => FetchContentResult::RESULT_CODE_PARSE_INVALID_AUTHOR_FORMAT,
@@ -193,7 +193,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
         $parse->extractEntries();
 
         /** @var array<int,array<string,string>> $entries */
-        list($preamble, $strings, $entries) = $parse->returnArrays();
+        [$preamble, $strings, $entries] = $parse->returnArrays();
         return $entries;
     }
 
@@ -374,7 +374,7 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             //check if doi starts with 'http(s):' and don't do anything if so
             if (!preg_match('/^https?:/i', $doi)) {
                 // Remove eventually existing 'doi:'
-                $doi = trim(preg_replace('/^doi:/i', '', $doi));
+                $doi = trim((string)preg_replace('/^doi:/i', '', $doi));
                 // Prefix with resolver address
                 $doi = 'http://dx.doi.org/' . $doi;
             }

@@ -256,7 +256,7 @@ class CheckFlexformCommand extends Command
                 foreach ($entries as $entry) {
                     // consistency check for author
                     $resultField = $entry['entry'] ?? '';
-                    if (preg_match('/^([A-Z]\. ){4,}/', $resultField)) {
+                    if (preg_match('/^([A-Z]\. ){4,}/', (string)$resultField)) {
                         $this->io->warning(sprintf(
                             'Result with several initials, probably author has wrong format: header="%s" [%d] auf Seite [%d], url=%s, fileType=%s, compiled entry="%s"',
                             $row['header'],

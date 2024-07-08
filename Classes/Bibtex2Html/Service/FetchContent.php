@@ -10,17 +10,8 @@ use Uniolit\Bibtex\Configuration\BibtexSettings;
 
 class FetchContent
 {
-    protected RequestFactory $requestFactory;
-
-    protected BibtexCache $bibtexCache;
-
-    protected Bibtex2HtmlService $bibtex2HtmlService;
-
-    public function __construct(RequestFactory $requestFactory, BibtexCache $bibtexCache, Bibtex2HtmlService $bibtex2HtmlService)
+    public function __construct(protected RequestFactory $requestFactory, protected BibtexCache $bibtexCache, protected Bibtex2HtmlService $bibtex2HtmlService)
     {
-        $this->requestFactory = $requestFactory;
-        $this->bibtexCache = $bibtexCache;
-        $this->bibtex2HtmlService = $bibtex2HtmlService;
     }
 
     /**

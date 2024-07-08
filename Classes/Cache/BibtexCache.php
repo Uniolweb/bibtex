@@ -10,8 +10,11 @@ use Uniolit\Bibtex\Bibtex2Html\Service\FetchContentResult;
 
 class BibtexCache
 {
-    private FrontendInterface $cache;
+    private readonly FrontendInterface $cache;
 
+    /**
+     * @todo Configure in Services.yaml
+     */
     public function __construct()
     {
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache('bibtex_bibtexcache');

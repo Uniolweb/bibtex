@@ -1,8 +1,11 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Hooks;
+namespace Uniolit\Bibtex\Backend;
 
+use GeorgRinger\News\Utility\Page;
+use TYPO3\CMS\Backend\Preview\PreviewRendererInterface;
+use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
@@ -11,10 +14,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Uniolit\Bibtex\Cache\BibtexCache;
 use Uniolt3\Uniollib\Service\Backend\PageLayoutService;
 
-/**
- * Show information about plugins in page layout view
- */
-class PageLayoutView
+class PreviewRenderer implements PreviewRendererInterface
 {
     /**
      * @todo make this configurable, support typolink format as well
@@ -28,59 +28,91 @@ class PageLayoutView
      */
     public $flexformData = [];
 
-    /**
-     * @var IconFactory
-     */
-    protected $iconFactory;
-
-    /**
-     * @var PageLayoutService
-     */
-    protected $layoutService;
-
-    /**
-     * @var ExtensionConfiguration
-     */
-    protected $extensionConfiguration;
-
     protected string $pluginType = '';
 
-    protected ?LanguageService $languageService = null;
-
+    protected IconFactory $iconFactory;
+    protected PageLayoutService $layoutService;
+    protected ExtensionConfiguration $extensionConfiguration;
     protected BibtexCache $cache;
 
-    public function __construct()
+    /**
+     * @todo autowire PageLayoutService, did not work: no such service exists
+     */
+    public function __construct(
+        IconFactory $iconFactory,
+        ExtensionConfiguration $extensionConfiguration,
+        BibtexCache $cache,
+        ?PageLayoutService $layoutService = null
+    ) {
+        $this->iconFactory = $iconFactory;
+        if (!$layoutService) {
+            $layoutService = GeneralUtility::makeInstance(PageLayoutService::class);
+        }
+        $this->layoutService = $layoutService;
+        $this->extensionConfiguration = $extensionConfiguration;
+        $this->cache = $cache;
+    }
+
+    public function renderPageModulePreviewHeader(GridColumnItem $item): string
     {
-        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
-        $this->layoutService = GeneralUtility::makeInstance(PageLayoutService::class);
-        $this->extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
-        $this->cache = GeneralUtility::makeInstance(BibtexCache::class);
+        return '<b>' . ($item->getRecord()['header'] ?? '') . '</b>';
+    }
+
+    public function renderPageModulePreviewContent(GridColumnItem $item): string
+    {
+        return $this->getExtensionSummary($item->getRecord());
+    }
+
+    /**
+     * Render a footer for the record to display in page module below
+     * the body of the item's preview.
+     *
+     * @param GridColumnItem $item
+     * @return string
+     */
+    public function renderPageModulePreviewFooter(GridColumnItem $item): string
+    {
+        return '';
+    }
+
+    /**
+     * Dedicated method for wrapping a preview header and body
+     * HTML. Receives $item, an instance of GridColumnItem holding
+     * among other things the record, which can be used to determine
+     * appropriate wrapping.
+     *
+     * @param string $previewHeader
+     * @param string $previewContent
+     * @param GridColumnItem $item
+     * @return string
+     */
+    public function wrapPageModulePreview(string $previewHeader, string $previewContent, GridColumnItem $item): string
+    {
+        return '<div>' . $previewHeader . '</div><div>' . $previewContent . '</div>';
     }
 
     /**
      * Returns information about this extension's pi1 plugin
      *
-     * @param array $params Parameters to the hook
+     * @param array<string,mixed> $record Parameters to the hook
      * @return string Information about pi1 plugin
      */
-    public function getExtensionSummary(array $params): string
+    public function getExtensionSummary(array $record): string
     {
         $this->layoutService->initialize();
-        $this->languageService = $this->getLanguageService();
-        $listType = $params['row']['list_type'];
         /** @var string $msg */
         $msg = '';
         /** @var string $icon */
         $icon = '';
 
         // get configuration
-        $this->flexformData = GeneralUtility::xml2array($params['row']['pi_flexform']);
+        $this->flexformData = GeneralUtility::xml2array($record['pi_flexform']);
         $this->generateTitle();
 
         // url
         $typolink = $this->getFieldFromFlexform('settings.link');
         $this->setMessage($typolink);
-        if (strpos($typolink, 't3://file?') === 0) {
+        if (str_starts_with((string)$typolink, 't3://file?')) {
             // todo: can be handled in BibtexSettings
             $url = $this->getUrlFromFileLink($typolink);
         } else {
@@ -126,7 +158,7 @@ class PageLayoutView
 
     protected function setMessage(string $typolink): void
     {
-        if (strpos($typolink, 't3://file?') === 0) {
+        if (str_starts_with($typolink, 't3://file?')) {
             // todo: can be handled in BibtexSettings
             $url = $this->getUrlFromFileLink($typolink);
         } else {
@@ -237,7 +269,7 @@ class PageLayoutView
      */
     protected function generateTitle(): void
     {
-        $title = $this->languageService->sL('LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:ce-wizard.ce.bibtex.title');
+        $title = $this->getLanguageService()->sL('LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:ce-wizard.ce.bibtex.title');
         if ($title) {
             $this->layoutService->setTitle($title);
         }
@@ -271,6 +303,8 @@ class PageLayoutView
      */
     protected function getLanguageService(): LanguageService
     {
+        // It is discouraged to use $GLOBALS['LANG'] this variable directly. The LanguageServiceFactory should be used instead to retrieve the LanguageService.
+        //  Never depend on $GLOBALS['LANG'] in the frontend unless you know what you are doing.
         return $GLOBALS['LANG'];
     }
 

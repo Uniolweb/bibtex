@@ -13,8 +13,28 @@ services:
   Uniolit\Bibtex\Bibtex2Html\Service\FetchContent:
     public: true
 
+  Uniolit\Bibtex\Backend\PreviewRenderer:
+    public: true
+
+  # cache
+  # -----
+  # Cache
+  # -----
+  #cache.bibtex:
+  #  class: TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+  #  factory: [ '@TYPO3\CMS\Core\Cache\CacheManager', 'getCache' ]
+  #  arguments: [ 'bibtex' ]
+
+  #Uniolit\Bibtex\Cache\BibtexCache:
+  #  arguments:
+  #    $cache: '@cache.bibtex'
+  #  public: true
+
   Uniolit\Bibtex\Cache\BibtexCache:
     public: true
+
+  # commands
+  # --------
 
   Uniolit\Bibtex\Command\ConvertFlexformCommand:
     tags:

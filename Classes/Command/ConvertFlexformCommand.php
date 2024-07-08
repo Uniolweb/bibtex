@@ -7,7 +7,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Configuration\FlexForm\FlexFormTools;
 use TYPO3\CMS\Core\Core\Environment;
@@ -82,8 +81,6 @@ class ConvertFlexformCommand extends Command
 
     protected bool $dryRun;
 
-    protected bool $interactive;
-
     /**
      * @var string
      */
@@ -113,7 +110,6 @@ class ConvertFlexformCommand extends Command
     {
         $this->setDescription('Convert flexforms for bibtex plugins');
         $this->addOption('dry-run', 'd', InputOption::VALUE_NONE, 'Dry run: do not change');
-        $this->addOption('interactive', 'i', InputOption::VALUE_NONE, 'Dry run: do not change');
         $this->addOption(
             'uid',
             'u',
@@ -134,7 +130,6 @@ class ConvertFlexformCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
 
         $this->dryRun = $input->getOption('dry-run');
-        $this->interactive = $input->getOption('interactive');
         $uid = $input->getOption('uid');
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tt_content')->createQueryBuilder();
@@ -218,11 +213,6 @@ class ConvertFlexformCommand extends Command
             $this->io->section('After uid=' . $uid);
             $this->io->writeln($newXml);
 
-            // save to database
-            if (!$this->askProceedIfInteractive($input, $output, 'Convert now?')) {
-                $this->io->writeln("Skipped uid=$uid");
-                continue;
-            }
             if (!$this->dryRun) {
                 $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tt_content')->createQueryBuilder();
                 $queryBuilder->update('tt_content')
@@ -344,24 +334,6 @@ class ConvertFlexformCommand extends Command
         }
 
         return $xmlArray;
-    }
-
-    /** ask question if we should proceed */
-    protected function askProceedIfInteractive(InputInterface $input, OutputInterface $output, string $msg=''): bool
-    {
-        if ($this->interactive) {
-            if ($msg === '') {
-                $msg = 'Aktion durchführen?';
-            }
-            $helper = $this->getHelper('question');
-            $question = new ConfirmationQuestion($msg . ' (y für ja|n für nein)', false);
-
-            if ($helper->ask($input, $output, $question)) {
-                return true;
-            }
-            return false;
-        }
-        return true;
     }
 
     /**

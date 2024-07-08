@@ -10,11 +10,66 @@
 #    (token is shown in Settings CI/CD for group)
 #
 
-variables:
-  PHP_PLATFORM_VERSION: "8.2.15"
-  PHP_VERSION: "8.2"
+# prevent both jobs from running at same time (should run in docker-in-docker)
+# todo: remove this and run all in stage test
+# todo: if possible composer install once, and run the rest at same time
+stages:
+  - test
+  - testv11
+  - cleanup
 
-test-job:
+#test-job-cleanup:
+#  tags:
+#    - typo3
+#    - shell
+#  stage: cleanup
+#  script:
+#    - cd Build/testing-docker
+#    - docker-compose down --remove-orphans
+
+
+test-job-static:
+  tags:
+    - typo3
+    - shell
+  stage: test
+  script:
+    - composer validate
+    - Build/Scripts/check_composer_lock_does_not_exist.sh
+    - Build/Scripts/check_no_platform.php_exists_in_composer.json.sh
+
+test-job-latest:
+  tags:
+    - typo3
+    - shell
+  stage: test
+  script:
+    - if [ ! -f auth.json ] && [ ! -L auth.json ];then ln -s /home/gitlab-runner/private/auth.json auth.json;fi
+    - composer install
+    - Build/Scripts/runTests.sh -s lint -p 8.2
+    - Build/Scripts/runTests.sh -s cgl -n -p 8.2
+    - Build/Scripts/runTests.sh -s phpstan -p 8.2
+    - Build/Scripts/runTests.sh -s unit -p 8.2
+    - composer config --unset platform.php
+    - composer config --unset platform
+    - rm -f composer.lock
+
+test-job-typo3-v11:
+  tags:
+    - typo3
+    - shell
+  stage: testv11
+  script:
+    - if [ ! -f auth.json ] && [ ! -L auth.json ];then ln -s /home/gitlab-runner/private/auth.json auth.json;fi
+    - composer require typo3/cms-backend:^11.5.30 typo3/cms-core:^11.5.30 typo3/cms-extbase:^11.5.30 typo3/cms-fluid:^11.5.30 typo3/cms-frontend:^11.5.30
+    - composer install
+    - Build/Scripts/runTests.sh -s phpstan -p 8.2 -e "-c Build/phpstan/phpstan_v11.neon"
+    - Build/Scripts/runTests.sh -s unit -p 8.2
+    - composer config --unset platform.php
+    - composer config --unset platform
+    - rm -f composer.lock
+
+test-job-info:
   tags:
     - typo3
     - shell
@@ -24,18 +79,3 @@ test-job:
     - who
     - pwd
     - hostname
-    - composer validate
-    - Build/Scripts/check_composer_lock_does_not_exist.sh
-    - Build/Scripts/check_no_platform.php_exists_in_composer.json.sh
-    - composer config platform.php "${PHP_PLATFORM_VERSION}"
-    - if [ ! -f auth.json ] && [ ! -L auth.json ];then ln -s /home/gitlab-runner/private/auth.json auth.json;fi
-    - composer install
-    - echo "Start checking ..."
-    - Build/Scripts/runTests.sh -s lint -p "${PHP_VERSION}"
-    - Build/Scripts/runTests.sh -s composerValidate -p "${PHP_VERSION}"
-    - Build/Scripts/runTests.sh -s cgl -n -p "${PHP_VERSION}"
-    - Build/Scripts/runTests.sh -s phpstan -p "${PHP_VERSION}"
-    - Build/Scripts/runTests.sh -s unit -p "${PHP_VERSION}"
-    - composer config --unset platform.php
-    - composer config --unset platform
-

@@ -45,21 +45,18 @@ parameters:
   # check these paths
   paths:
     - ../../Classes
-    #- ../../Tests
+    - ../../Tests
   # use these paths (but do not check)
   scanDirectories:
-    - ../../.Build/vendor
+    - ../../.Build/Web/typo3/sysext
+    - ../../.Build/Web/typo3conf/ext/uniollib
 
   excludePaths:
-    #- ../../ext_emconf.php
-    - ../../.Build/vendor/uniolit/bibtex
+    - ../../ext_emconf.php
 
   editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
 
   treatPhpDocTypesAsCertain: false
-
-  ignoreErrors:
-    # https://phpstan.org/user-guide/ignoring-errors
 
 services:
     -
