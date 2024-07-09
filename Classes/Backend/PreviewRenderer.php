@@ -3,7 +3,6 @@
 declare(strict_types=1);
 namespace Uniolit\Bibtex\Backend;
 
-use GeorgRinger\News\Utility\Page;
 use TYPO3\CMS\Backend\Preview\PreviewRendererInterface;
 use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
