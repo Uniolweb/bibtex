@@ -3,7 +3,7 @@
 declare(strict_types=1);
 namespace Uniolit\Bibtex\Backend;
 
-use TYPO3\CMS\Backend\Preview\PreviewRendererInterface;
+use TYPO3\CMS\Backend\Preview\StandardContentPreviewRenderer;
 use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Imaging\IconFactory;
@@ -13,7 +13,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Uniolit\Bibtex\Cache\BibtexCache;
 use Uniolt3\Uniollib\Service\Backend\PageLayoutService;
 
-class PreviewRenderer implements PreviewRendererInterface
+class PreviewRenderer extends StandardContentPreviewRenderer
 {
     /**
      * @todo make this configurable, support typolink format as well
@@ -52,27 +52,24 @@ class PreviewRenderer implements PreviewRendererInterface
         $this->cache = $cache;
     }
 
+    /*
     public function renderPageModulePreviewHeader(GridColumnItem $item): string
     {
         return '<b>' . ($item->getRecord()['header'] ?? '') . '</b>';
     }
+    */
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
     {
         return $this->getExtensionSummary($item->getRecord());
     }
 
-    /**
-     * Render a footer for the record to display in page module below
-     * the body of the item's preview.
-     *
-     * @param GridColumnItem $item
-     * @return string
-     */
+    /*
     public function renderPageModulePreviewFooter(GridColumnItem $item): string
     {
         return '';
     }
+    */
 
     /**
      * Dedicated method for wrapping a preview header and body
