@@ -52,39 +52,9 @@ class PreviewRenderer extends StandardContentPreviewRenderer
         $this->cache = $cache;
     }
 
-    /*
-    public function renderPageModulePreviewHeader(GridColumnItem $item): string
-    {
-        return '<b>' . ($item->getRecord()['header'] ?? '') . '</b>';
-    }
-    */
-
     public function renderPageModulePreviewContent(GridColumnItem $item): string
     {
         return $this->getExtensionSummary($item->getRecord());
-    }
-
-    /*
-    public function renderPageModulePreviewFooter(GridColumnItem $item): string
-    {
-        return '';
-    }
-    */
-
-    /**
-     * Dedicated method for wrapping a preview header and body
-     * HTML. Receives $item, an instance of GridColumnItem holding
-     * among other things the record, which can be used to determine
-     * appropriate wrapping.
-     *
-     * @param string $previewHeader
-     * @param string $previewContent
-     * @param GridColumnItem $item
-     * @return string
-     */
-    public function wrapPageModulePreview(string $previewHeader, string $previewContent, GridColumnItem $item): string
-    {
-        return '<div>' . $previewHeader . '</div><div>' . $previewContent . '</div>';
     }
 
     /**
@@ -93,7 +63,7 @@ class PreviewRenderer extends StandardContentPreviewRenderer
      * @param array<string,mixed> $record Parameters to the hook
      * @return string Information about pi1 plugin
      */
-    public function getExtensionSummary(array $record): string
+    protected function getExtensionSummary(array $record): string
     {
         $this->layoutService->initialize();
         /** @var string $msg */
