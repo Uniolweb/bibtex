@@ -11,6 +11,9 @@ use Ssch\TYPO3Rector\CodeQuality\General\ConvertImplicitVariablesToExplicitGloba
 use Ssch\TYPO3Rector\CodeQuality\General\ExtEmConfRector;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\TYPO311\v5\FlexFormToolsArrayValueByPathRector;
+use Ssch\TYPO3Rector\TYPO312\v0\MigrateFetchAllToFetchAllAssociativeRector;
+use Ssch\TYPO3Rector\TYPO312\v0\MigrateFetchColumnToFetchOneRector;
+use Ssch\TYPO3Rector\TYPO312\v0\MigrateFetchToFetchAssociativeRector;
 
 /**
  * composer require --dev ssch/typo3-rector
@@ -24,11 +27,24 @@ use Ssch\TYPO3Rector\TYPO311\v5\FlexFormToolsArrayValueByPathRector;
  */
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
-        __DIR__,
+        __DIR__ . '/Classes',
+        __DIR__ . '/Configuration/TCA',
     ]);
+
+    // todo: can be removed when TYPO3 12 rules are used
+    $rectorConfig->rule(MigrateFetchColumnToFetchOneRector::class);
+    $rectorConfig->rule(MigrateFetchAllToFetchAllAssociativeRector::class);
+    $rectorConfig->rule(MigrateFetchToFetchAssociativeRector::class);
+
 
     // register a single rule
     $rectorConfig->rule(InlineConstructorDefaultToPropertyRector::class);
+
+    // Add some general TYPO3 rules
+    $rectorConfig->rule(ConvertImplicitVariablesToExplicitGlobalsRector::class);
+    $rectorConfig->ruleWithConfiguration(ExtEmConfRector::class, [
+        ExtEmConfRector::ADDITIONAL_VALUES_TO_BE_REMOVED => [],
+    ]);
 
     //define sets of rules
     $rectorConfig->sets([
@@ -64,6 +80,7 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__ . '/public/*',
         __DIR__ . '/.github/*',
         __DIR__ . '/.Build/*',
+        __DIR__ . '/Resources/*',
         NameImportingPostRector::class => [
             //'ext_localconf.php',
             //'ext_tables.php',
@@ -79,38 +96,4 @@ return static function (RectorConfig $rectorConfig): void {
             __DIR__ . '/Classes/**/*.php',
         ]
     ]);
-
-    // If you have trouble that rector cannot run because some TYPO3 constants are not defined add an additional constants file
-    // @see https://github.com/sabbelasichon/typo3-rector/blob/master/typo3.constants.php
-    // @see https://github.com/rectorphp/rector/blob/main/docs/static_reflection_and_autoload.md#include-files
-    // $parameters->set(Option::BOOTSTRAP_FILES, [
-    //    __DIR__ . '/typo3.constants.php'
-    // ]);
-
-    // register a single rule
-    // $rectorConfig->rule(\Ssch\TYPO3Rector\Rector\v9\v0\InjectAnnotationRector::class);
-
-    /**
-     * Useful rule from RectorPHP itself to transform i.e. GeneralUtility::makeInstance('TYPO3\CMS\Core\Log\LogManager')
-     * to GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class) calls.
-     * But be warned, sometimes it produces false positives (edge cases), so watch out
-     */
-    // $rectorConfig->rule(\Rector\Php55\Rector\String_\StringClassNameToClassConstantRector::class);
-
-    // Optional non-php file functionalities:
-    // @see https://github.com/sabbelasichon/typo3-rector/blob/main/docs/beyond_php_file_processors.md
-
-    // Rewrite your extbase persistence class mapping from typoscript into php according to official docs.
-    // This processor will create a summarized file with all the typoscript rewrites combined into a single file.
-    /* $rectorConfig->ruleWithConfiguration(\Ssch\TYPO3Rector\FileProcessor\TypoScript\Rector\v10\v0\ExtbasePersistenceTypoScriptRector::class, [
-        \Ssch\TYPO3Rector\FileProcessor\TypoScript\Rector\v10\v0\ExtbasePersistenceTypoScriptRector::FILENAME => __DIR__ . '/packages/acme_demo/Configuration/Extbase/Persistence/Classes.php',
-    ]); */
-    // Add some general TYPO3 rules
-    $rectorConfig->rule(ConvertImplicitVariablesToExplicitGlobalsRector::class);
-    $rectorConfig->ruleWithConfiguration(ExtEmConfRector::class, [
-        ExtEmConfRector::ADDITIONAL_VALUES_TO_BE_REMOVED => [],
-    ]);
-
-    // Modernize your TypoScript include statements for files and move from <INCLUDE /> to @import use the FileIncludeToImportStatementVisitor (introduced with TYPO3 9.0)
-    // $rectorConfig->rule(\Ssch\TYPO3Rector\FileProcessor\TypoScript\Rector\v9\v0\FileIncludeToImportStatementTypoScriptRector::class);
 };

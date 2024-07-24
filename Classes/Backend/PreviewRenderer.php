@@ -28,28 +28,21 @@ class PreviewRenderer extends StandardContentPreviewRenderer
     public $flexformData = [];
 
     protected string $pluginType = '';
-
-    protected IconFactory $iconFactory;
     protected PageLayoutService $layoutService;
-    protected ExtensionConfiguration $extensionConfiguration;
-    protected BibtexCache $cache;
 
     /**
      * @todo autowire PageLayoutService, did not work: no such service exists
      */
     public function __construct(
-        IconFactory $iconFactory,
-        ExtensionConfiguration $extensionConfiguration,
-        BibtexCache $cache,
+        protected IconFactory $iconFactory,
+        protected ExtensionConfiguration $extensionConfiguration,
+        protected BibtexCache $cache,
         ?PageLayoutService $layoutService = null
     ) {
-        $this->iconFactory = $iconFactory;
         if (!$layoutService) {
             $layoutService = GeneralUtility::makeInstance(PageLayoutService::class);
         }
         $this->layoutService = $layoutService;
-        $this->extensionConfiguration = $extensionConfiguration;
-        $this->cache = $cache;
     }
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
