@@ -60,13 +60,13 @@
 	},
 	"scripts": {
 		"cgl:check": [
-			"cd .Build;rm -f .php-cs-fixer.cache;bin/php-cs-fixer fix -v --config ../Build/php-cs-fixer.php --path-mode intersection --dry-run ."
+			"rm -f .php-cs-fixer.cache;php .Build/bin/php-cs-fixer fix -v --config Build/php-cs-fixer.php --path-mode intersection --dry-run ."
 		],
 		"cgl:fix": [
-			"cd .Build;rm -rf .php-cs-fixer.cache;bin/php-cs-fixer fix -v --config ../Build/php-cs-fixer.php --path-mode intersection ."
+			"rm -rf .php-cs-fixer.cache;php .Build/bin/php-cs-fixer fix -v --config Build/php-cs-fixer.php --path-mode intersection ."
 		],
 		"phpstan": [
-			"cd .Build;bin/phpstan analyse --no-progress --no-interaction --memory-limit 4G -c ../Build/phpstan.neon"
+			"@php .Build/bin/phpstan analyse --no-progress --no-interaction --memory-limit 4G -c Build/phpstan/phpstan.neon"
 		],
 		"lint": [
 			"find Classes -name \"*.php\"  | while read i;do php -dxdebug.mode=off -l $i;done > /dev/null"

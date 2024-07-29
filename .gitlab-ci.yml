@@ -1,31 +1,8 @@
-# gitlab ci
-#
-# prerequisites:
-# 1. Install runner, see https://docs.gitlab.com/runner/install/linux-repository.html
-#   https://docs.gitlab.com/ee/ci/yaml/
-#   runner is installed on wwwt304:
-#   Show runners:
-#    $ gitlab-runner list
-# 2. register runner for group: gitlab-runner register --url ... --token
-#    (token is shown in Settings CI/CD for group)
-#
-
-# prevent both jobs from running at same time (should run in docker-in-docker)
-# todo: remove this and run all in stage test
-# todo: if possible composer install once, and run the rest at same time
 stages:
   - test
   - testv11
   - cleanup
 
-#test-job-cleanup:
-#  tags:
-#    - typo3
-#    - shell
-#  stage: cleanup
-#  script:
-#    - cd Build/testing-docker
-#    - docker-compose down --remove-orphans
 
 
 test-job-static:
@@ -35,6 +12,7 @@ test-job-static:
   stage: test
   script:
     - composer validate
+    - composer lint
     - Build/Scripts/check_composer_lock_does_not_exist.sh
     - Build/Scripts/check_no_platform.php_exists_in_composer.json.sh
 
@@ -46,13 +24,9 @@ test-job-latest:
   script:
     - if [ ! -f auth.json ] && [ ! -L auth.json ];then ln -s /home/gitlab-runner/private/auth.json auth.json;fi
     - composer install
-    - Build/Scripts/runTests.sh -s lint -p 8.2
-    - Build/Scripts/runTests.sh -s cgl -n -p 8.2
-    - Build/Scripts/runTests.sh -s phpstan -p 8.2
+    - composer cgl:check
+    - composer phpstan
     - Build/Scripts/runTests.sh -s unit -p 8.2
-    - composer config --unset platform.php
-    - composer config --unset platform
-    - rm -f composer.lock
 
 test-job-typo3-v11:
   tags:
@@ -65,9 +39,6 @@ test-job-typo3-v11:
     - composer install
     - Build/Scripts/runTests.sh -s phpstan -p 8.2 -e "-c Build/phpstan/phpstan_v11.neon"
     - Build/Scripts/runTests.sh -s unit -p 8.2
-    - composer config --unset platform.php
-    - composer config --unset platform
-    - rm -f composer.lock
 
 test-job-info:
   tags:
@@ -79,3 +50,13 @@ test-job-info:
     - who
     - pwd
     - hostname
+
+
+#test-job-cleanup:
+#  tags:
+#    - typo3
+#    - shell
+#  stage: cleanup
+#  script:
+#    - cd Build/testing-docker
+#    - docker compose down --remove-orphans

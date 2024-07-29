@@ -338,15 +338,21 @@ class Bibtex2HtmlService implements LoggerAwareInterface
             } else {
                 $text = 'Go to document';
             }
-            /**
-             * @var string $string
-             * @todo make image path configurable
-             */
-            $string = " | <a href='" . str_replace(
+
+            $url = str_replace(
                 '\\',
                 '',
                 $entry['url']
-            ) . "' title='" . $text . "'><img src='/typo3conf/ext/bibtex/Resources/Public/Assets/Icons/bibtex_external.png' width='10' height='10' alt='" . $text . "' /> " . $text . '</a>';
+            );
+            /**
+             * @var string $string
+             */
+            $string = sprintf(
+                ' | <a href="%s" ><span class="extlink mit-icon" style="margin-left: 5px;">%s</span></a>',
+                $url,
+                $text
+            );
+
             return $string;
         }
         return '';
