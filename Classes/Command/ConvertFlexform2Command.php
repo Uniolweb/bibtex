@@ -102,7 +102,7 @@ class ConvertFlexform2Command extends Command
                 $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT))
             );
         }
-        $statement = $queryBuilder->execute();
+        $statement = $queryBuilder->executeQuery();
 
         $count = 0;
         while ($row = $statement->fetchAssociative()) {
@@ -173,7 +173,7 @@ class ConvertFlexform2Command extends Command
                         $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT))
                     )
                     ->set('pi_flexform', $newXml)
-                    ->execute();
+                    ->executeStatement();
                 $this->io->writeln("Done: Updated uid=$uid");
 
                 $this->writeCleanFlexform($uid);
@@ -205,7 +205,7 @@ class ConvertFlexform2Command extends Command
                     $queryBuilder->createNamedParameter(self::PLUGIN_SIGNATURE)
                 )
             )
-            ->execute()
+            ->executeQuery()
             ->fetchAssociative();
 
         $xml = $row['pi_flexform'];
@@ -217,7 +217,7 @@ class ConvertFlexform2Command extends Command
                     $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT))
                 )
                 ->set('pi_flexform', $newXml)
-                ->execute();
+                ->executeStatement();
             $this->saveXmlToFile($newXml, $uid . '-after+cleaned.xml');
         }
         return $newXml;

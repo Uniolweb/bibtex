@@ -99,7 +99,7 @@ class DumpFlexformInfoCommand extends Command
                 $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT))
             );
         }
-        $statement = $queryBuilder->execute();
+        $statement = $queryBuilder->executeQuery();
 
         $count = 0;
         while ($row = $statement->fetchAssociative()) {
