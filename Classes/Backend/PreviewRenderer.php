@@ -212,7 +212,7 @@ class PreviewRenderer extends StandardContentPreviewRenderer
         }
         $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
 
-        $uid = (int)($matches[1] ?? 0);
+        $uid = (int)($matches[1]);
         if (!$uid) {
             return $url;
         }
