@@ -1,7 +1,7 @@
 /.editorconfig export-ignore
 /.gitattributes export-ignore
 /.github export-ignore
-/.gitlab-ci.yml
+/.gitlab-ci.yml export-ignore
 /.gitignore export-ignore
 /.stylelintrc export-ignore
 /Build export-ignore
