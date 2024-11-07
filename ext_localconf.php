@@ -44,3 +44,4 @@ if ($versionInformation->getMajorVersion() < 12) {
 // -----------------
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bibtex_bibtexcache'] ??= [];
 
+require 'phar://' . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('bibtex') . 'Resources/Private/libraries.phar/vendor/autoload.php';
