@@ -1,11 +1,13 @@
 /.editorconfig export-ignore
 /.gitattributes export-ignore
 /.github export-ignore
+/.gitlab-ci.yml
 /.gitignore export-ignore
 /.stylelintrc export-ignore
 /Build export-ignore
 /Gruntfile.js export-ignore
 /package.json export-ignore
 /phpstan.neon export-ignore
+/rector.php export-ignore
 /Resources/Private/TypeScript/ export-ignore
 /Tests/ export-ignore
