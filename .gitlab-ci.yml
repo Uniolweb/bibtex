@@ -1,9 +1,6 @@
 stages:
   - test
-  - testv11
   - cleanup
-
-
 
 test-job-static:
   tags:
