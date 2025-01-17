@@ -28,18 +28,6 @@ test-job-latest:
     - composer phpstan
     - Build/Scripts/runTests.sh -s unit -p 8.2
 
-test-job-typo3-v11:
-  tags:
-    - typo3
-    - shell
-  stage: testv11
-  script:
-    - if [ ! -f auth.json ] && [ ! -L auth.json ];then ln -s /home/gitlab-runner/private/auth.json auth.json;fi
-    - composer require typo3/cms-backend:^11.5.30 typo3/cms-core:^11.5.30 typo3/cms-extbase:^11.5.30 typo3/cms-fluid:^11.5.30 typo3/cms-frontend:^11.5.30
-    - composer install
-    - Build/Scripts/runTests.sh -s phpstan -p 8.2 -e "-c Build/phpstan/phpstan_v11.neon"
-    - Build/Scripts/runTests.sh -s unit -p 8.2
-
 test-job-info:
   tags:
     - typo3
