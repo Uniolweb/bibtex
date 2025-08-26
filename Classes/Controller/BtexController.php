@@ -59,7 +59,7 @@ class BtexController extends ActionController implements LoggerAwareInterface
      * @param BibtexSettings $bibtexSettings
      * @throws \TYPO3\CMS\Core\Context\Exception\AspectNotFoundException
      */
-    public function showAction(BibtexSettings $bibtexSettings = null): ResponseInterface
+    public function showAction(?BibtexSettings $bibtexSettings = null): ResponseInterface
     {
         $context = GeneralUtility::makeInstance(Context::class);
         // todo: just use $this->language ?

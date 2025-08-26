@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # setup
-DEFAULT_PHP_VERSION="8.2"
-SUPPORTED_PHP_VERSIONS="8.1|8.2|8.3"
+DEFAULT_PHP_VERSION="8.4"
+SUPPORTED_PHP_VERSIONS="8.1|8.2|8.3|8.4"
 
 
 # copied from EXT:enetcache:

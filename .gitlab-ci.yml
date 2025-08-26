@@ -1,3 +1,7 @@
+# @todo Add check with runTests.sh with PHP 8.4 (requires switching to docker images from ghcr.io and (ideally)
+#   using dedicated extension for this, see https://gitlab.uni-oldenburg.de/it-dienste/typo3/typo3-uol.de/-/issues/1423
+# @todo Remove checks for PHP 8.2
+
 stages:
   - test
   - cleanup
@@ -24,6 +28,7 @@ test-job-latest:
     - composer cgl:check
     - composer phpstan
     - Build/Scripts/runTests.sh -s unit -p 8.2
+    #- Build/Scripts/runTests.sh -s unit -p 8.4
 
 test-job-info:
   tags:

@@ -125,7 +125,7 @@ class DoiUtility
         // examples:
         // {10.1007/978--3--642--29208--8{\_}2} => 10.1007/978-3-642-29208-8_2
 
-        if (in_array($doi, self::doiMappings)) {
+        if (isset(self::doiMappings[$doi])) {
             $doi = self::doiMappings[$doi];
         } else {
             $doi = str_replace('$\\backslash$textunderscore', '', $doi);

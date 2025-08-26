@@ -20,7 +20,7 @@ class FileService
      */
     protected $resourceFactory;
 
-    public function __construct(FileRepository $fileRepository = null, ResourceFactory $resourceFactory = null)
+    public function __construct(?FileRepository $fileRepository = null, ?ResourceFactory $resourceFactory = null)
     {
         if (!$fileRepository) {
             $fileRepository = GeneralUtility::makeInstance(FileRepository::class);
