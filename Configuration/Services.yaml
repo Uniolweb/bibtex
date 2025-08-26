@@ -4,16 +4,16 @@ services:
     autoconfigure: true
     public: false
 
-  Uniolit\Bibtex\:
+  Uniolweb\Bibtex\:
     resource: '../Classes/*'
 
-  Uniolit\Bibtex\Service\Bibtex2Html\Bibtex2HtmlService:
+  Uniolweb\Bibtex\Service\Bibtex2Html\Bibtex2HtmlService:
     public: true
 
-  Uniolit\Bibtex\Bibtex2Html\Service\FetchContent:
+  Uniolweb\Bibtex\Bibtex2Html\Service\FetchContent:
     public: true
 
-  Uniolit\Bibtex\Backend\PreviewRenderer:
+  Uniolweb\Bibtex\Backend\PreviewRenderer:
     public: true
 
   # cache
@@ -25,18 +25,18 @@ services:
   #  factory: [ '@TYPO3\CMS\Core\Cache\CacheManager', 'getCache' ]
   #  arguments: [ 'bibtex' ]
 
-  #Uniolit\Bibtex\Cache\BibtexCache:
+  #Uniolweb\Bibtex\Cache\BibtexCache:
   #  arguments:
   #    $cache: '@cache.bibtex'
   #  public: true
 
-  Uniolit\Bibtex\Cache\BibtexCache:
+  Uniolweb\Bibtex\Cache\BibtexCache:
     public: true
 
   # commands
   # --------
 
-  Uniolit\Bibtex\Command\ConvertFlexformCommand:
+  Uniolweb\Bibtex\Command\ConvertFlexformCommand:
     tags:
       - name: 'console.command'
         command: 'bibtex:convertFlexform'
@@ -44,7 +44,7 @@ services:
         schedulable: false
         hidden: false
 
-  Uniolit\Bibtex\Command\ConvertFlexform2Command:
+  Uniolweb\Bibtex\Command\ConvertFlexform2Command:
     tags:
       - name: 'console.command'
         command: 'bibtex:convertFlexform2'
@@ -52,7 +52,7 @@ services:
         schedulable: false
         hidden: false
 
-  Uniolit\Bibtex\Command\DumpFlexformInfoCommand:
+  Uniolweb\Bibtex\Command\DumpFlexformInfoCommand:
     tags:
       - name: 'console.command'
         command: 'bibtex:dumpFlexform'
@@ -60,7 +60,7 @@ services:
         schedulable: false
         hidden: false
 
-  Uniolit\Bibtex\Command\CheckFlexformCommand:
+  Uniolweb\Bibtex\Command\CheckFlexformCommand:
     tags:
       - name: 'console.command'
         command: 'bibtex:checkFlexform'

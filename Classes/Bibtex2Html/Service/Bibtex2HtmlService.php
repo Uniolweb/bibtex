@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Bibtex2Html\Service;
+namespace Uniolweb\Bibtex\Bibtex2Html\Service;
 
 /**
  * Credit:
@@ -35,8 +35,8 @@ use Sypets\OsbibxParser\Style\ParseStyle\ParseResultInterface;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Uniolit\Bibtex\Bibtex2Html\Utility\DoiUtility;
-use Uniolit\Bibtex\Configuration\BibtexSettings;
+use Uniolweb\Bibtex\Bibtex2Html\Utility\DoiUtility;
+use Uniolweb\Bibtex\Configuration\BibtexSettings;
 
 /**
  * Convert bibtext to HTML

@@ -1,12 +1,12 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Bibtex2Html\Service;
+namespace Uniolweb\Bibtex\Bibtex2Html\Service;
 
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Resource\File;
-use Uniolit\Bibtex\Cache\BibtexCache;
-use Uniolit\Bibtex\Configuration\BibtexSettings;
+use Uniolweb\Bibtex\Cache\BibtexCache;
+use Uniolweb\Bibtex\Configuration\BibtexSettings;
 
 class FetchContent
 {

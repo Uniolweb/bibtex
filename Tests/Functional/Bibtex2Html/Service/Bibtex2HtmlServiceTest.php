@@ -1,10 +1,10 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Unit\Tests\Bibtex2Html\Service;
+namespace Uniolweb\Bibtex\Unit\Tests\Bibtex2Html\Service;
 
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
-use Uniolit\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
+use Uniolweb\Bibtex\Bibtex2Html\Service\Bibtex2HtmlService;
 
 class Bibtex2HtmlServiceTest extends FunctionalTestCase
 {

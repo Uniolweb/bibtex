@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Controller;
+namespace Uniolweb\Bibtex\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -11,8 +11,8 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use Uniolit\Bibtex\Bibtex2Html\Service\FetchContent;
-use Uniolit\Bibtex\Configuration\BibtexSettings;
+use Uniolweb\Bibtex\Bibtex2Html\Service\FetchContent;
+use Uniolweb\Bibtex\Configuration\BibtexSettings;
 
 class BtexController extends ActionController implements LoggerAwareInterface
 {

@@ -1,5 +1,5 @@
 {
-	"name": "uniolit/bibtex",
+	"name": "uniolweb/bibtex",
 	"description": "bibtex extension",
 	"license": "GPL-2.0-or-later",
 	"type": "typo3-cms-extension",
@@ -29,7 +29,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"Uniolit\\Bibtex\\": "Classes/"
+			"Uniolweb\\Bibtex\\": "Classes/"
 		}
 	},
 	"config": {

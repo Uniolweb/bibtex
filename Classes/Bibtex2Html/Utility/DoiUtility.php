@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Bibtex2Html\Utility;
+namespace Uniolweb\Bibtex\Bibtex2Html\Utility;
 
 /**
  * Format of a doi:

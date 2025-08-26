@@ -11,7 +11,7 @@ $plugins = [
         'label' => 'Bibtex',
         'icon'  => 'bibtex-plugin',
         'flexform' => 'flexform_btex.xml',
-        'preview' => \Uniolit\Bibtex\Backend\PreviewRenderer::class,
+        'preview' => Uniolweb\Bibtex\Backend\PreviewRenderer::class,
         'excludelist' => 'recursive,select_key,pages'
     ],
 ];

@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Backend;
+namespace Uniolweb\Bibtex\Backend;
 
 use TYPO3\CMS\Backend\Preview\StandardContentPreviewRenderer;
 use TYPO3\CMS\Backend\View\BackendLayout\Grid\GridColumnItem;
@@ -10,8 +10,8 @@ use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Uniolit\Bibtex\Cache\BibtexCache;
 use Uniolt3\Uniollib\Service\Backend\PageLayoutService;
+use Uniolweb\Bibtex\Cache\BibtexCache;
 
 class PreviewRenderer extends StandardContentPreviewRenderer
 {

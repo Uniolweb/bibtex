@@ -1,10 +1,10 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Unit\Tests\Bibtex2Html\Utility;
+namespace Uniolweb\Bibtex\Unit\Tests\Bibtex2Html\Utility;
 
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
-use Uniolit\Bibtex\Bibtex2Html\Utility\DoiUtility;
+use Uniolweb\Bibtex\Bibtex2Html\Utility\DoiUtility;
 
 class DoiUtilityTest extends UnitTestCase
 {

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
-use Uniolit\Bibtex\Controller\BtexController;
+use Uniolweb\Bibtex\Controller\BtexController;
 
 defined('TYPO3') or die();
 

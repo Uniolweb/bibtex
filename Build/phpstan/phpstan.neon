@@ -52,7 +52,7 @@ parameters:
 
   excludePaths:
     #- ../../ext_emconf.php
-    - ../../.Build/vendor/uniolit/bibtex
+    - ../../.Build/vendor/uniolweb/bibtex
 
   editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
 

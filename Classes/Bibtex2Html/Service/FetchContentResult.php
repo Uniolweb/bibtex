@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Bibtex2Html\Service;
+namespace Uniolweb\Bibtex\Bibtex2Html\Service;
 
 /**
  * @todo possibly split metadata into separate class FetchContentResultMetadata

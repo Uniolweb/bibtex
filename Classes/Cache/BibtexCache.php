@@ -1,12 +1,12 @@
 <?php
 
 declare(strict_types=1);
-namespace Uniolit\Bibtex\Cache;
+namespace Uniolweb\Bibtex\Cache;
 
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Uniolit\Bibtex\Bibtex2Html\Service\FetchContentResult;
+use Uniolweb\Bibtex\Bibtex2Html\Service\FetchContentResult;
 
 class BibtexCache
 {
