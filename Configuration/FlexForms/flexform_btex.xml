@@ -205,6 +205,16 @@
                         </TCEforms>
                     </settings.showPubtype>
 
+                    <settings.showYear>
+                        <TCEforms>
+                            <label>Jahreszahl anzeigen</label>
+                            <config>
+                                <type>check</type>
+                                <default>1</default>
+                            </config>
+                        </TCEforms>
+                    </settings.showYear>
+
 
                 </el>
             </ROOT>

@@ -1,4 +1,9 @@
 <f:spaceless>
+	<f:comment>
+		*********************************
+		mit workaround f. type='arcicle' ohne Jahreszahl, wird hier hintergeschrieben, wie bei proceedings
+		*********************************
+	</f:comment>
 	<div class="uniol_bibtex">
 		<ul class="geweitet">
 			<!-- START BLOCK : bibtex_entry -->
@@ -9,6 +14,7 @@
 					</div>
 					<div>
 						<f:format.raw>{entry.entry}</f:format.raw>
+						<f:if condition="({entry.type} == 'article' || {entry.type} == 'incollection') && {entry.year} && {bibtexSettings.showYear}"> {entry.year}.</f:if>
 						<f:if condition="{entry.doiUrl} && {entry.doi}">
 							<br/>
 							doi: <a href="{entry.doiUrl}" target="_blank">{entry.doi}</a>

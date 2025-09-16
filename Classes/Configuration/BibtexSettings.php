@@ -27,8 +27,9 @@ class BibtexSettings
 
     public const DEFAULT_FILTER_TYPE = '';
 
-    public const DEFAULT_SHOW_PUBTYPE = true;
+    protected const DEFAULT_SHOW_PUBTYPE = true;
 
+    protected const DEFAULT_SHOW_YEAR = true;
 
     private int $uid = 0;
 
@@ -62,6 +63,8 @@ class BibtexSettings
     protected bool $addOrigEntry = false;
 
     protected bool $showPubtype = self::DEFAULT_SHOW_PUBTYPE;
+
+    protected bool $showYear = self::DEFAULT_SHOW_YEAR;
 
     public static function initializeWithSettings(array $settings, string $style, bool $addOrigEntry = false): BibtexSettings
     {
@@ -97,6 +100,7 @@ class BibtexSettings
         $this->addOrigEntry = $addOrigEntry;
         $this->showNumbers = (bool)($settings['showNumbers'] ?? false);
         $this->showPubtype = (bool)($settings['showPubtype'] ?? self::DEFAULT_SHOW_PUBTYPE);
+        $this->showYear = (bool)($settings['showYear'] ?? self::DEFAULT_SHOW_YEAR);
 
         $this->setStyle($style);
         // check if target is a file
@@ -288,5 +292,10 @@ class BibtexSettings
     public function isShowPubtype(): bool
     {
         return $this->showPubtype;
+    }
+
+    public function isShowYear(): bool
+    {
+        return $this->showYear;
     }
 }
