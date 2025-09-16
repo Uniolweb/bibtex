@@ -195,6 +195,16 @@
                         </TCEforms>
                     </settings.showNumbers>
 
+                    <settings.showPubtype>
+                        <TCEforms>
+                            <label>Publikationstyp anzeigen ([article etc.)</label>
+                            <config>
+                                <type>check</type>
+                                <default>1</default>
+                            </config>
+                        </TCEforms>
+                    </settings.showPubtype>
+
 
                 </el>
             </ROOT>
