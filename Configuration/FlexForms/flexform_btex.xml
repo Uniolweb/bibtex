@@ -185,6 +185,17 @@
                             </config>
                         </TCEforms>
                     </settings.filterEntries>
+
+                    <settings.showNumbers>
+                        <TCEforms>
+                            <label>Numerierung anzeigen</label>
+                            <config>
+                                <type>check</type>
+                            </config>
+                        </TCEforms>
+                    </settings.showNumbers>
+
+
                 </el>
             </ROOT>
         </sDEF>

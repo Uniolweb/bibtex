@@ -48,8 +48,19 @@ class BibtexSettings
 
     private ?File $file = null;
 
+    private string $sort = self::DEFAULT_SORT;
+
+    private string $filterType = '';
+
+    private array $filterEntries = [];
+
+    protected bool $showNumbers = false;
+
+    protected bool $addOrigEntry = false;
+
     public static function initializeWithSettings(array $settings, string $style, bool $addOrigEntry = false): BibtexSettings
     {
+        /*
         return new BibtexSettings(
             $settings['link'] ?? '',
             $settings['sort'] ?? self::DEFAULT_SORT,
@@ -58,42 +69,47 @@ class BibtexSettings
             array_filter(explode(',', $settings['filterEntries'] ?? '')),
             $addOrigEntry
         );
+        */
+        return new BibtexSettings($settings, $style, $addOrigEntry);
     }
 
-    /**
-     * @param string $unifiedUrl
-     * @param string $sort
-     * @param string $style
-     * @param string $filterType
-     * @param string[] $filterEntries
-     * @param bool $addOrigEntry
-     * @param LinkService $linkService
-     */
-    public function __construct(
-        string $unifiedUrl,
-        private string $sort = self::DEFAULT_SORT,
-        string $style = self::DEFAULT_STYLE,
-        private readonly string $filterType = '',
-        private readonly array $filterEntries = [],
-        private readonly bool $addOrigEntry = false,
-        ?LinkService $linkService = null
-    ) {
+    /*    public function __construct(
+            string $unifiedUrl,
+            private string $sort = self::DEFAULT_SORT,
+            string $style = self::DEFAULT_STYLE,
+            private readonly string $filterType = '',
+            private readonly array $filterEntries = [],
+            private readonly bool $addOrigEntry = false,
+            ?LinkService $linkService = null
+        ) {
+    */
+    public function __construct(array $settings, string $style, bool $addOrigEntry = false)
+    {
+        $unifiedUrl = (string)($settings['link'] ?? '');
+        $sort = (string)($settings['sort'] ?? self::DEFAULT_SORT);
+        $this->filterType = (string)($settings['filterType'] ?? '');
+        $this->filterEntries = array_filter(explode(',', $settings['filterEntries'] ?? ''));
+        $this->addOrigEntry = $addOrigEntry;
+        $this->showNumbers = (bool)($settings['showNumbers'] ?? false);
+
         $this->setStyle($style);
         // check if target is a file
         if (str_starts_with($unifiedUrl, 't3://file')) {
             // target is file
             // TYPO3\CMS\Core\LinkHandling\LinkService::resolve()  . This method will return an array with a key  file  containing a  TYPO3\CMS\Core\Resource\FileInterface
             // https://copyprogramming.com/howto/typo3-11-convert-t3-file-uri-into-file-identifier
-            if (!$linkService) {
-                $linkService = GeneralUtility::makeInstance(LinkService::class);
-                $result = $linkService->resolve($unifiedUrl);
-                if (
-                    ($result['file'] ?? false)
-                    && ($result['type'] ?? false)
-                    && ($result['type'] === 'file')) {
-                    $this->file = $result['file'];
-                    $this->fileType = 'file';
-                }
+
+            /**
+             * @todo Move this to different class and use DI for LinkService?
+             */
+            $linkService = GeneralUtility::makeInstance(LinkService::class);
+            $result = $linkService->resolve($unifiedUrl);
+            if (
+                ($result['file'] ?? false)
+                && ($result['type'] ?? false)
+                && ($result['type'] === 'file')) {
+                $this->file = $result['file'];
+                $this->fileType = 'file';
             }
         } else {
             // target is url
@@ -256,5 +272,10 @@ class BibtexSettings
     public function getTemplate(): string
     {
         return $this->template;
+    }
+
+    public function isShowNumbers(): bool
+    {
+        return $this->showNumbers;
     }
 }

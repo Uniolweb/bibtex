@@ -2,10 +2,10 @@
 	<div class="uniol_bibtex">
 		<ul class="geweitet">
 			<!-- START BLOCK : bibtex_entry -->
-			<f:for each="{entries}" as="entry">
+			<f:for each="{entries}" as="entry" iteration="iterator">
 				<li>
-					<div class="klein u-dotted">[{entry.type}]
-						<f:format.raw><a href="javascript:return false;" class="bibtextoggle">bibtex</a>{entry.pdf}</f:format.raw>
+					<div class="klein u-dotted">
+						<f:if condition="{bibtexSettings.showNumbers}">({iterator.index + 1})</f:if> [{entry.type}] <f:format.raw><a href="javascript:return false;" class="bibtextoggle">bibtex</a>{entry.pdf}</f:format.raw>
 					</div>
 					<div>
 						<f:format.raw>{entry.entry}</f:format.raw>

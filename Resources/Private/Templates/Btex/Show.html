@@ -32,7 +32,6 @@
 	</f:comment>
 </f:section>
 
-
 <f:section name="debug">
     <f:if condition="{debug}">
         <f:debug title="bibtexSettings">{bibtexSettings}</f:debug>
@@ -48,5 +47,5 @@
 	<f:if condition="{errorMessage}">
 		{errorMessage}
 	</f:if>
-    <f:render partial="Entries/Uniol" arguments="{entries: entries}"/>
+    <f:render partial="Entries/Uniol" arguments="{entries: entries, bibtexSettings: bibtexSettings}"/>
 </f:section>
