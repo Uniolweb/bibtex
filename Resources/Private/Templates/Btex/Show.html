@@ -1,35 +1,7 @@
 <f:layout name="Default"/>
 
 <f:section name="form">
-	<f:comment>
-		<f:if condition="{bibtexSettings.sortFixed}">
-			<f:then>
-				<f:comment>
-					<b>Sortierung: </b>  <f:translate key="sort.{bibtexSettings.sort}" />
-					<hr/>
-				</f:comment>
-			</f:then>
-			<f:else>
-				<f:form class="bibtex-form" action="show" name="bibtexSettings" object="{bibtexSettings}">
-					<fieldset class="bibtex-fieldset">
-						<b><f:translate key="sort" />:</b>
-
-						<f:form.radio class="bibtex-form-radio" property="sort" name="sort" value="bibtexEntryType" />
-						<f:translate key="sort.bibtexEntryType" />
-
-						<f:form.radio class="bibtex-form-radio" property="sort" name="sort" value="author" />
-						<f:translate key="sort.author" />
-
-						<f:form.radio class="bibtex-form-radio" property="sort" name="sort" value="year" />
-						<f:translate key="sort.year" />
-
-						<f:form.radio class="bibtex-form-radio" property="sort" name="sort" value="none" />
-						<f:translate key="sort.none" />
-					</fieldset>
-				</f:form>
-			</f:else>
-		</f:if>
-	</f:comment>
+	<f:render partial="Form" arguments="{bibtexSettings: bibtexSettings}"/>
 </f:section>
 
 <f:section name="debug">

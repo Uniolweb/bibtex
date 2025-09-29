@@ -5,12 +5,21 @@
 		*********************************
 	</f:comment>
 	<div class="uniol_bibtex">
-		<ul class="geweitet">
+		<f:if condition="{bibtexSettings.showNumbers}">
+			<f:then>
+				<ol class="geweitet">
+			</f:then>
+
+			<f:else>
+				<ul class="geweitet">
+			</f:else>
+		</f:if>
+
 			<!-- START BLOCK : bibtex_entry -->
 			<f:for each="{entries}" as="entry" iteration="iterator">
 				<li>
 					<div class="klein u-dotted">
-						<f:if condition="{bibtexSettings.showNumbers}">({iterator.index + 1})</f:if> <f:if condition="{bibtexSettings.showPubtype}">[{entry.type}]</f:if> <f:format.raw><a href="javascript:return false;" class="bibtextoggle">bibtex</a>{entry.pdf}</f:format.raw>
+						<f:if condition="{bibtexSettings.showPubtype}">[{entry.type}]</f:if> <f:format.raw><a href="javascript:return false;" class="bibtextoggle">bibtex</a>{entry.pdf}</f:format.raw>
 					</div>
 					<div>
 						<f:format.raw>{entry.entry}</f:format.raw>
@@ -36,6 +45,15 @@
 				</li>
 			</f:for>
 			<!-- END BLOCK : bibtex_entry -->
-		</ul>
+		<f:if condition="{bibtexSettings.showNumbers}">
+			<f:then>
+				</ol>
+			</f:then>
+
+			<f:else>
+				</ul>
+			</f:else>
+		</f:if>
+
 	</div>
 </f:spaceless>
