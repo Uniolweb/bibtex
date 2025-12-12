@@ -217,7 +217,7 @@ class ConvertFlexformCommand extends Command
                 $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tt_content')->createQueryBuilder();
                 $queryBuilder->update('tt_content')
                     ->where(
-                        $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT))
+                        $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \TYPO3\CMS\Core\Database\Connection::PARAM_INT))
                     )
                     ->set('pi_flexform', $newXml)
                     ->executeStatement();
@@ -261,7 +261,7 @@ class ConvertFlexformCommand extends Command
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tt_content')->createQueryBuilder();
             $queryBuilder->update('tt_content')
                 ->where(
-                    $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT))
+                    $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \TYPO3\CMS\Core\Database\Connection::PARAM_INT))
                 )
                 ->set('pi_flexform', $newXml)
                 ->executeStatement();

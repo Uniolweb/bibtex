@@ -402,9 +402,9 @@ class Bibtex2HtmlService implements LoggerAwareInterface
     protected function toTWiStEntry($entry, string $type)
     {
         if ($type == 'book') {
-            $rest = preg_replace("/, <em>.*<\/em>,/", '<br>', $entry);
+            $rest = preg_replace("/, <em>.*<\/em>,/", '<br>', (string)$entry);
         } else {
-            $rest = preg_replace('/, &quot;.*&quot;/', '<br>', $entry);
+            $rest = preg_replace('/, &quot;.*&quot;/', '<br>', (string)$entry);
         }
         return $rest;
     }

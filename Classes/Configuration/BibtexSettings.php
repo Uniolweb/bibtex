@@ -60,8 +60,6 @@ class BibtexSettings
 
     protected bool $showNumbers = false;
 
-    protected bool $addOrigEntry = false;
-
     protected bool $showPubtype = self::DEFAULT_SHOW_PUBTYPE;
 
     protected bool $showYear = self::DEFAULT_SHOW_YEAR;
@@ -91,13 +89,12 @@ class BibtexSettings
             ?LinkService $linkService = null
         ) {
     */
-    public function __construct(array $settings, string $style, bool $addOrigEntry = false)
+    public function __construct(array $settings, string $style, protected bool $addOrigEntry = false)
     {
         $unifiedUrl = (string)($settings['link'] ?? '');
         $sort = (string)($settings['sort'] ?? self::DEFAULT_SORT);
         $this->filterType = (string)($settings['filterType'] ?? '');
         $this->filterEntries = array_filter(explode(',', $settings['filterEntries'] ?? ''));
-        $this->addOrigEntry = $addOrigEntry;
         $this->showNumbers = (bool)($settings['showNumbers'] ?? false);
         $this->showPubtype = (bool)($settings['showPubtype'] ?? self::DEFAULT_SHOW_PUBTYPE);
         $this->showYear = (bool)($settings['showYear'] ?? self::DEFAULT_SHOW_YEAR);

@@ -19,11 +19,9 @@ use Ssch\TYPO3Rector\TYPO312\v0\MigrateFetchToFetchAssociativeRector;
  * composer require --dev ssch/typo3-rector
  *
  * Updated for:
- * - TYPO3 v11
+ * - TYPO3 v12
  * - latest ssch/typo3-rector (2.6.0)
- * - PHP 8.1
- *
- * @todo add rules for PHP 8.2
+ * - PHP 8.4
  */
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
@@ -48,12 +46,12 @@ return static function (RectorConfig $rectorConfig): void {
 
     //define sets of rules
     $rectorConfig->sets([
-        LevelSetList::UP_TO_PHP_81,
-        Typo3LevelSetList::UP_TO_TYPO3_11,
+        LevelSetList::UP_TO_PHP_84,
+        Typo3LevelSetList::UP_TO_TYPO3_12,
     ]);
 
     // Define your target version which you want to support
-    $rectorConfig->phpVersion(PhpVersion::PHP_81);
+    $rectorConfig->phpVersion(PhpVersion::PHP_82);
 
     // If you only want to process one/some TYPO3 extension(s), you can specify its path(s) here.
     // If you use the option --config change __DIR__ to getcwd()
