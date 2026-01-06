@@ -106,6 +106,7 @@ class ConvertFlexformCommand extends Command
         $this->flexformService = GeneralUtility::makeInstance(FlexFormService::class);
     }
 
+    #[\Override]
     protected function configure()
     {
         $this->setDescription('Convert flexforms for bibtex plugins');
@@ -123,6 +124,7 @@ class ConvertFlexformCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->input = $input;

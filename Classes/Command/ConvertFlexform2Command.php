@@ -57,6 +57,7 @@ class ConvertFlexform2Command extends Command
         $this->flexformService = GeneralUtility::makeInstance(FlexFormService::class);
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setDescription('Set filterType to <allow> if filterEntries is not empty. ');
@@ -74,6 +75,7 @@ class ConvertFlexform2Command extends Command
      * @param OutputInterface $output
      * @return int
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->input = $input;

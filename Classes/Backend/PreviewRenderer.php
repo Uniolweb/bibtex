@@ -45,6 +45,7 @@ class PreviewRenderer extends StandardContentPreviewRenderer
         $this->layoutService = $layoutService;
     }
 
+    #[\Override]
     public function renderPageModulePreviewContent(GridColumnItem $item): string
     {
         return $this->getExtensionSummary($item->getRecord());
@@ -260,6 +261,7 @@ class PreviewRenderer extends StandardContentPreviewRenderer
      *
      * @todo do not use $GLOBALS['LANG'] anymore
      */
+    #[\Override]
     protected function getLanguageService(): LanguageService
     {
         // It is discouraged to use $GLOBALS['LANG'] this variable directly. The LanguageServiceFactory should be used instead to retrieve the LanguageService.

@@ -31,6 +31,7 @@ class BtexController extends ActionController implements LoggerAwareInterface
         $this->assetCollector = $assetCollector;
     }
 
+    #[\Override]
     public function initializeAction()
     {
         // inlude JavaScript in footer

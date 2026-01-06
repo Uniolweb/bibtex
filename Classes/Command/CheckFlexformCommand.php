@@ -57,6 +57,7 @@ class CheckFlexformCommand extends Command
         $this->bibtex2HtmlService = GeneralUtility::makeInstance(Bibtex2HtmlService::class);
     }
 
+    #[\Override]
     protected function configure()
     {
         $this->setDescription('Dump information from flexforms for all plugins');
@@ -85,6 +86,7 @@ class CheckFlexformCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->input = $input;

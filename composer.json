@@ -24,11 +24,11 @@
 	"require": {
 		"php": "^8.2",
 		"sypets/osbibx-parser": "dev-main || ^4.0.0",
-		"typo3/cms-backend": "^12.4.16",
-		"typo3/cms-core": "^12.4.16",
-		"typo3/cms-extbase": "^12.4.16",
-		"typo3/cms-fluid": "^12.4.16",
-		"typo3/cms-frontend": "^12.4.16",
+		"typo3/cms-backend": "^12.4 || ^13.4",
+		"typo3/cms-core": "^12.4 || ^13.4",
+		"typo3/cms-extbase": "^12.4 || ^13.4",
+		"typo3/cms-fluid": "^12.4 || ^13.4",
+		"typo3/cms-frontend": "^12.4 || ^13.4",
 		"uniolweb/uniollib": "dev-main"
 	},
 	"autoload": {

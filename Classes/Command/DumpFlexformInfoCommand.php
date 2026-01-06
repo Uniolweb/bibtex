@@ -46,6 +46,7 @@ class DumpFlexformInfoCommand extends Command
         $this->siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
     }
 
+    #[\Override]
     protected function configure()
     {
         $this->setDescription('Dump information from flexforms for all plugins');
@@ -69,6 +70,7 @@ class DumpFlexformInfoCommand extends Command
      * @param OutputInterface $output
      * @return int
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->input = $input;
