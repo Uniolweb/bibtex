@@ -10,8 +10,8 @@ use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Uniolweb\Uniollib\Service\Backend\PageLayoutService;
 use Uniolweb\Bibtex\Cache\BibtexCache;
+use Uniolweb\Uniollib\Service\Backend\PageLayoutService;
 
 class PreviewRenderer extends StandardContentPreviewRenderer
 {
