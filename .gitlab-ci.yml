@@ -23,12 +23,23 @@ test-job-latest:
     - shell
   stage: test
   script:
-    - if [ ! -f auth.json ] && [ ! -L auth.json ];then ln -s /home/gitlab-runner/private/auth.json auth.json;fi
-    - composer install
+    - composer require typo3/cms-core:^13.4
     - composer cgl:check
+    #- composer rector:check
+    - .Build/vendor/uniolweb/unioltest/Build/Scripts/runTests.sh -p 8.4 -s phpstan
+    - .Build/vendor/uniolweb/unioltest/Build/Scripts/runTests.sh -s unit -p 8.4
+
+test-job-v12:
+  tags:
+    - typo3
+    - shell
+  stage: test
+  script:
+    - composer require typo3/cms-core:^12.4
     - composer rector:check
     - .Build/vendor/uniolweb/unioltest/Build/Scripts/runTests.sh -p 8.4 -s phpstan
     - .Build/vendor/uniolweb/unioltest/Build/Scripts/runTests.sh -s unit -p 8.4
+
 
 test-job-info:
   tags:

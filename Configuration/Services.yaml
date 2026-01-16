@@ -36,22 +36,6 @@ services:
   # commands
   # --------
 
-  Uniolweb\Bibtex\Command\ConvertFlexformCommand:
-    tags:
-      - name: 'console.command'
-        command: 'bibtex:convertFlexform'
-        description: 'Convert Flexform'
-        schedulable: false
-        hidden: false
-
-  Uniolweb\Bibtex\Command\ConvertFlexform2Command:
-    tags:
-      - name: 'console.command'
-        command: 'bibtex:convertFlexform2'
-        description: 'Convert Flexform'
-        schedulable: false
-        hidden: false
-
   Uniolweb\Bibtex\Command\DumpFlexformInfoCommand:
     tags:
       - name: 'console.command'

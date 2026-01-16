@@ -1,33 +1,7 @@
-# default phpstan configuration
+# phpstan Konfiguration
 #
-# Run phpstan
-# -----------
-#
-# Build/Scripts/runTests.sh -s phpstan
-#
-# Adding a baseline
-# -----------------
-#
-#  Build/Scripts/runTests.sh -s phpstanGenerateBaseline
-#
-# Dealing with mixed arrays
-# -------------------------
-#  Be as specific as possible, e.g. use
-#
-# * `array<string>` etc.
-# * or `array{'foo': int, "bar": string}`
-#
-# If the array is dynamic or cannot be specified, use `mixed[]`
-# see
-#
-# * https://phpstan.org/writing-php-code/phpdoc-types#array-shapes
-# * https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type
-# * https://github.com/phpstan/phpstan/discussions/4375
-
-
-# ----------------------
-
-# basic configuration
+# Baseline erzeugen:
+#   composer phpstan:baseline
 
 includes:
   #- phpstan-baseline.neon
@@ -50,24 +24,7 @@ parameters:
   scanDirectories:
     - ../../.Build/vendor
 
-  excludePaths:
-    #- ../../ext_emconf.php
-    - ../../.Build/vendor/uniolweb/bibtex
-
   editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
 
   treatPhpDocTypesAsCertain: false
 
-  ignoreErrors:
-    # https://phpstan.org/user-guide/ignoring-errors
-
-services:
-    -
-        class: Symplify\PHPStanRules\Rules\ForbiddenNodeRule
-        tags: [phpstan.rules.rule]
-        arguments:
-            forbiddenNodes:
-                - PhpParser\Node\Expr\ErrorSuppress
-    -
-        class: Symplify\PHPStanRules\Rules\SuffixInterfaceRule
-        tags: [phpstan.rules.rule]
