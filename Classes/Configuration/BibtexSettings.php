@@ -274,8 +274,8 @@ class BibtexSettings
 
     /**
      * @return string
-     * @deprecated
      */
+    #[\Deprecated]
     public function getTemplate(): string
     {
         return $this->template;

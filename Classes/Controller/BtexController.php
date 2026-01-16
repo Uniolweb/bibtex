@@ -90,9 +90,8 @@ class BtexController extends ActionController implements LoggerAwareInterface
      * Currently, only cache entries with default settings
      *
      * @return bool
-     *
-     * @deprecated Not used, plugin is cached plugin
      */
+    #[\Deprecated(message: 'Not used, plugin is cached plugin')]
     protected function isCachable(): bool
     {
         // @extensionScannerIgnoreLine
