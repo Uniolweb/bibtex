@@ -2,9 +2,9 @@
     <sheets>
         <sDEF>
             <ROOT>
-                <TCEforms>
+                
                     <sheetTitle>Optionen</sheetTitle>
-                </TCEforms>
+                
                 <type>array</type>
                 <el>
 
@@ -22,7 +22,7 @@
                          https://forge.typo3.org/issues/99767
                     -->
                     <settings.link>
-                        <TCEforms>
+                        
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.bibtexUrl</label>
                             <config>
                                 <type>input</type>
@@ -45,12 +45,12 @@
                                     </linkPopup>
                                 </fieldControl>
                             </config>
-                        </TCEforms>
+                        
                     </settings.link>
 
                     <!-- todo: use multiple, e.g. sort by year, author -->
                     <settings.sort>
-                        <TCEforms>
+                        
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort</label>
                             <config>
                                 <type>select</type>
@@ -77,11 +77,11 @@
                                     </numIndex>
                                 </items>
                             </config>
-                        </TCEforms>
+                        
                     </settings.sort>
 
                     <settings.filterType>
-                        <TCEforms>
+                        
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType</label>
                             <!-- using displayCond / reload is bad for usability -->
                             <!-- <onChange>reload</onChange> -->
@@ -108,11 +108,11 @@
                                 <default>none</default>
                             </config>
 
-                        </TCEforms>
+                        
                     </settings.filterType>
 
                     <settings.filterEntries>
-                        <TCEforms>
+                        
                             <!-- using displayCond / reload is bad for usability -->
                             <!-- <displayCond>FIELD:settings.filterType:IN:allow,deny</displayCond> -->
                             <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterByPublication</label>
@@ -183,36 +183,36 @@
                                     </numIndex>
                                 </items>
                             </config>
-                        </TCEforms>
+                        
                     </settings.filterEntries>
 
                     <settings.showNumbers>
-                        <TCEforms>
+                        
                             <label>Numerierung anzeigen</label>
                             <config>
                                 <type>check</type>
                             </config>
-                        </TCEforms>
+                        
                     </settings.showNumbers>
 
                     <settings.showPubtype>
-                        <TCEforms>
+                        
                             <label>Publikationstyp anzeigen ([article etc.)</label>
                             <config>
                                 <type>check</type>
                                 <default>1</default>
                             </config>
-                        </TCEforms>
+                        
                     </settings.showPubtype>
 
                     <settings.showYear>
-                        <TCEforms>
+                        
                             <label>Jahreszahl anzeigen</label>
                             <config>
                                 <type>check</type>
                                 <default>1</default>
                             </config>
-                        </TCEforms>
+                        
                     </settings.showYear>
 
 
