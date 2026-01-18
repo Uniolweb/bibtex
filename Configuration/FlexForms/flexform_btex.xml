@@ -2,13 +2,10 @@
     <sheets>
         <sDEF>
             <ROOT>
-                
-                    <sheetTitle>Optionen</sheetTitle>
-                
+                <sheetTitle>Optionen</sheetTitle>
                 <type>array</type>
                 <el>
-
-                    <!-- todo ab TYPO3 v12: type='link' nutzen
+                <!-- todo ab TYPO3 v12: type='link' nutzen
                          dann müssen aber auch die anderen properties in diesem Feld geändert werden (im linkPopup)
                     https://docs.typo3.org/m/typo3/reference-tca/main/en-us/ColumnsConfig/Type/Link/Index.html#columns-link
                     -->
@@ -22,200 +19,183 @@
                          https://forge.typo3.org/issues/99767
                     -->
                     <settings.link>
-                        
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.bibtexUrl</label>
-                            <config>
-                                <type>input</type>
-                                <renderType>inputLink</renderType>
-                                <eval>trim,required</eval>
-                                <fieldControl>
-                                    <linkPopup>
-                                        <options>
-                                            <allowedExtensions>bib</allowedExtensions>
-                                            <!-- Comma separated list of link fields that should not be displayed.
-                                            Possible values are class, params, target and title.
-                                            By default, all link fields are displayed.-->
-                                            <blindLinkFields>class,params,target,title</blindLinkFields>
-                                            <!-- what link types NOT to show -->
-                                            <blindLinkOptions>page,mail,telephone,folder,tx_calendarize_domain_model_event,news</blindLinkOptions>
-                                            <!-- title von Button, nicht Link Browser !!! -->
-                                            <title>Bibtex Datei auswählen</title>
+                        <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.bibtexUrl</label>
+                        <config>
+                            <type>input</type>
+                            <renderType>inputLink</renderType>
+                            <eval>trim</eval>
+                            <required>1</required>
+                            <fieldControl>
+                                <linkPopup>
+                                    <options>
+                                        <allowedExtensions>bib</allowedExtensions>
+                                        <!-- Comma separated list of link fields that should not be displayed.
+                                        Possible values are class, params, target and title.
+                                        By default, all link fields are displayed.-->
+                                        <blindLinkFields>class,params,target,title</blindLinkFields>
+                                        <!-- what link types NOT to show -->
+                                        <blindLinkOptions>page,mail,telephone,folder,tx_calendarize_domain_model_event,news</blindLinkOptions>
+                                        <!-- title von Button, nicht Link Browser !!! -->
+                                        <title>Bibtex Datei auswählen</title>
 
-                                        </options>
-                                    </linkPopup>
-                                </fieldControl>
-                            </config>
-                        
+                                    </options>
+                                </linkPopup>
+                            </fieldControl>
+                        </config>
                     </settings.link>
 
                     <!-- todo: use multiple, e.g. sort by year, author -->
                     <settings.sort>
-                        
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort</label>
-                            <config>
-                                <type>select</type>
-                                <renderType>selectSingle</renderType>
-                                <default>year</default>
-                                <items>
-                                    <numIndex index="0" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.none
-                                        </numIndex>
-                                        <numIndex index="1">none</numIndex>
+                        <label>LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort</label>
+                        <config>
+                            <type>select</type>
+                            <renderType>selectSingle</renderType>
+                            <default>year</default>
+                            <items>
+                                <numIndex index="0" type="array">
+                                    <numIndex index="0">
+                                        LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.none
                                     </numIndex>
-                                    <numIndex index="1" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.bibtexEntryType
-                                        </numIndex>
-                                        <numIndex index="1">bibtexEntryType</numIndex>
+                                    <numIndex index="1">none</numIndex>
+                                </numIndex>
+                                <numIndex index="1" type="array">
+                                    <numIndex index="0">
+                                        LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.bibtexEntryType
                                     </numIndex>
-                                    <numIndex index="3" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.year
-                                        </numIndex>
-                                        <numIndex index="1">year</numIndex>
+                                    <numIndex index="1">bibtexEntryType</numIndex>
+                                </numIndex>
+                                <numIndex index="3" type="array">
+                                    <numIndex index="0">
+                                        LLL:EXT:bibtex/Resources/Private/Language/locallang.xlf:sort.year
                                     </numIndex>
-                                </items>
-                            </config>
-                        
+                                    <numIndex index="1">year</numIndex>
+                                </numIndex>
+                            </items>
+                        </config>
                     </settings.sort>
 
                     <settings.filterType>
-                        
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType</label>
-                            <!-- using displayCond / reload is bad for usability -->
-                            <!-- <onChange>reload</onChange> -->
-                            <config>
-                                <type>radio</type>
-                                <items type="array">
-                                    <numIndex index="0" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.doNotFilter
-                                        </numIndex>
-                                        <numIndex index="1">none</numIndex>
+                        <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType</label>
+                        <!-- using displayCond / reload is bad for usability -->
+                        <!-- <onChange>reload</onChange> -->
+                        <config>
+                            <type>radio</type>
+                            <items type="array">
+                                <numIndex index="0" type="array">
+                                    <numIndex index="0">
+                                        LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.doNotFilter
                                     </numIndex>
-                                    <numIndex index="1" type="array">
-                                        <numIndex index="0">
-                                            LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.allow
-                                        </numIndex>
-                                        <numIndex index="1">allow</numIndex>
+                                    <numIndex index="1">none</numIndex>
+                                </numIndex>
+                                <numIndex index="1" type="array">
+                                    <numIndex index="0">
+                                        LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.allow
                                     </numIndex>
-                                    <numIndex index="2" type="array">
-                                        <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.deny</numIndex>
-                                        <numIndex index="1">deny</numIndex>
-                                    </numIndex>
-                                </items>
-                                <default>none</default>
-                            </config>
-
-                        
+                                    <numIndex index="1">allow</numIndex>
+                                </numIndex>
+                                <numIndex index="2" type="array">
+                                    <numIndex index="0">LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterType.deny</numIndex>
+                                    <numIndex index="1">deny</numIndex>
+                                </numIndex>
+                            </items>
+                            <default>none</default>
+                        </config>
                     </settings.filterType>
 
                     <settings.filterEntries>
-                        
-                            <!-- using displayCond / reload is bad for usability -->
-                            <!-- <displayCond>FIELD:settings.filterType:IN:allow,deny</displayCond> -->
-                            <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterByPublication</label>
-                            <config>
-                                <type>select</type>
-                                <!-- <renderType>selectSingle</renderType> -->
-                                <renderType>selectMultipleSideBySide</renderType>
-                                <size>15</size>
-                                <minitems>0</minitems>
-                                <maxitems>100</maxitems>
-                                <!-- <eval>required</eval> -->
-                                <items type="array">
-                                    <numIndex index="1" type="array">
-                                        <numIndex index="0">article</numIndex>
-                                        <numIndex index="1">article</numIndex>
-                                    </numIndex>
-                                    <numIndex index="2" type="array">
-                                        <numIndex index="0">book</numIndex>
-                                        <numIndex index="1">book</numIndex>
-                                    </numIndex>
-                                    <numIndex index="3" type="array">
-                                        <numIndex index="0">booklet</numIndex>
-                                        <numIndex index="1">booklet</numIndex>
-                                    </numIndex>
-                                    <numIndex index="4" type="array">
-                                        <numIndex index="0">conference</numIndex>
-                                        <numIndex index="1">conference</numIndex>
-                                    </numIndex>
-                                    <numIndex index="5" type="array">
-                                        <numIndex index="0">inbook</numIndex>
-                                        <numIndex index="1">inbook</numIndex>
-                                    </numIndex>
-                                    <numIndex index="6" type="array">
-                                        <numIndex index="0">incollection</numIndex>
-                                        <numIndex index="1">incollection</numIndex>
-                                    </numIndex>
-                                    <numIndex index="7" type="array">
-                                        <numIndex index="0">inproceedings</numIndex>
-                                        <numIndex index="1">inproceedings</numIndex>
-                                    </numIndex>
-                                    <numIndex index="8" type="array">
-                                        <numIndex index="0">manual</numIndex>
-                                        <numIndex index="1">manual</numIndex>
-                                    </numIndex>
-                                    <numIndex index="9" type="array">
-                                        <numIndex index="0">mastersthesis</numIndex>
-                                        <numIndex index="1">mastersthesis</numIndex>
-                                    </numIndex>
-                                    <numIndex index="10" type="array">
-                                        <numIndex index="0">misc</numIndex>
-                                        <numIndex index="1">misc</numIndex>
-                                    </numIndex>
-                                    <numIndex index="11" type="array">
-                                        <numIndex index="0">phdthesis</numIndex>
-                                        <numIndex index="1">phdthesis</numIndex>
-                                    </numIndex>
-                                    <numIndex index="12" type="array">
-                                        <numIndex index="0">proceedings</numIndex>
-                                        <numIndex index="1">proceedings</numIndex>
-                                    </numIndex>
-                                    <numIndex index="13" type="array">
-                                        <numIndex index="0">techreport</numIndex>
-                                        <numIndex index="1">techreport</numIndex>
-                                    </numIndex>
-                                    <numIndex index="14" type="array">
-                                        <numIndex index="0">unpublished</numIndex>
-                                        <numIndex index="1">unpublished</numIndex>
-                                    </numIndex>
-                                </items>
-                            </config>
-                        
+                        <!-- using displayCond / reload is bad for usability -->
+                        <!-- <displayCond>FIELD:settings.filterType:IN:allow,deny</displayCond> -->
+                        <label>LLL:EXT:bibtex/Resources/Private/Language/locallang_backend.xlf:settings.filterByPublication</label>
+                        <config>
+                            <type>select</type>
+                            <!-- <renderType>selectSingle</renderType> -->
+                            <renderType>selectMultipleSideBySide</renderType>
+                            <size>15</size>
+                            <minitems>0</minitems>
+                            <maxitems>100</maxitems>
+                            <items type="array">
+                                <numIndex index="1" type="array">
+                                    <numIndex index="0">article</numIndex>
+                                    <numIndex index="1">article</numIndex>
+                                </numIndex>
+                                <numIndex index="2" type="array">
+                                    <numIndex index="0">book</numIndex>
+                                    <numIndex index="1">book</numIndex>
+                                </numIndex>
+                                <numIndex index="3" type="array">
+                                    <numIndex index="0">booklet</numIndex>
+                                    <numIndex index="1">booklet</numIndex>
+                                </numIndex>
+                                <numIndex index="4" type="array">
+                                    <numIndex index="0">conference</numIndex>
+                                    <numIndex index="1">conference</numIndex>
+                                </numIndex>
+                                <numIndex index="5" type="array">
+                                    <numIndex index="0">inbook</numIndex>
+                                    <numIndex index="1">inbook</numIndex>
+                                </numIndex>
+                                <numIndex index="6" type="array">
+                                    <numIndex index="0">incollection</numIndex>
+                                    <numIndex index="1">incollection</numIndex>
+                                </numIndex>
+                                <numIndex index="7" type="array">
+                                    <numIndex index="0">inproceedings</numIndex>
+                                    <numIndex index="1">inproceedings</numIndex>
+                                </numIndex>
+                                <numIndex index="8" type="array">
+                                    <numIndex index="0">manual</numIndex>
+                                    <numIndex index="1">manual</numIndex>
+                                </numIndex>
+                                <numIndex index="9" type="array">
+                                    <numIndex index="0">mastersthesis</numIndex>
+                                    <numIndex index="1">mastersthesis</numIndex>
+                                </numIndex>
+                                <numIndex index="10" type="array">
+                                    <numIndex index="0">misc</numIndex>
+                                    <numIndex index="1">misc</numIndex>
+                                </numIndex>
+                                <numIndex index="11" type="array">
+                                    <numIndex index="0">phdthesis</numIndex>
+                                    <numIndex index="1">phdthesis</numIndex>
+                                </numIndex>
+                                <numIndex index="12" type="array">
+                                    <numIndex index="0">proceedings</numIndex>
+                                    <numIndex index="1">proceedings</numIndex>
+                                </numIndex>
+                                <numIndex index="13" type="array">
+                                    <numIndex index="0">techreport</numIndex>
+                                    <numIndex index="1">techreport</numIndex>
+                                </numIndex>
+                                <numIndex index="14" type="array">
+                                    <numIndex index="0">unpublished</numIndex>
+                                    <numIndex index="1">unpublished</numIndex>
+                                </numIndex>
+                            </items>
+                        </config>
                     </settings.filterEntries>
 
                     <settings.showNumbers>
-                        
-                            <label>Numerierung anzeigen</label>
-                            <config>
-                                <type>check</type>
-                            </config>
-                        
+                        <label>Numerierung anzeigen</label>
+                        <config>
+                            <type>check</type>
+                        </config>
                     </settings.showNumbers>
 
                     <settings.showPubtype>
-                        
-                            <label>Publikationstyp anzeigen ([article etc.)</label>
-                            <config>
-                                <type>check</type>
-                                <default>1</default>
-                            </config>
-                        
+                        <label>Publikationstyp anzeigen ([article etc.)</label>
+                        <config>
+                            <type>check</type>
+                            <default>1</default>
+                        </config>
                     </settings.showPubtype>
 
                     <settings.showYear>
-                        
-                            <label>Jahreszahl anzeigen</label>
-                            <config>
-                                <type>check</type>
-                                <default>1</default>
-                            </config>
-                        
+                        <label>Jahreszahl anzeigen</label>
+                        <config>
+                            <type>check</type>
+                            <default>1</default>
+                        </config>
                     </settings.showYear>
-
-
                 </el>
             </ROOT>
         </sDEF>
