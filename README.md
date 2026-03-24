@@ -16,8 +16,8 @@ Replace the version number with appropriate version number.
 Run:
 
     composer build:non-composer-local
-    git checkout -b release-non-composer-1.0.0
-    git add .;git commit -m "Non-Composer release 1.0.0"
-    git tag non-composer-release-1.0.0
-    git push origin non-composer-release-1.0.0
-    git archive --format=tar.gz -o /tmp/bibtex-1.0.0.tar.gz --prefix=bibtex/ non-composer-release-1.0.0
+    git checkout -b release-non-composer-4.0.0
+    git add .;git commit -m "Non-Composer release 4.0.0"
+    git tag non-composer-release-4.0.0
+    git push origin non-composer-release-4.0.0
+    git archive --format=tar.gz -o /tmp/bibtex-4.0.0.tar.gz --prefix=bibtex/ non-composer-release-4.0.0
