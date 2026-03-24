@@ -10,7 +10,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class BibtexSettings
 {
     /** @var string */
-    public const DEFAULT_SORT = 'none';
+    public const DEFAULT_SORT = 'year';
 
     public const ALLOWED_SORT = [
         'year',
@@ -66,33 +66,13 @@ class BibtexSettings
 
     public static function initializeWithSettings(array $settings, string $style, bool $addOrigEntry = false): BibtexSettings
     {
-        /*
-        return new BibtexSettings(
-            $settings['link'] ?? '',
-            $settings['sort'] ?? self::DEFAULT_SORT,
-            $style,
-            $settings['filterType'] ?? '',
-            array_filter(explode(',', $settings['filterEntries'] ?? '')),
-            $addOrigEntry
-        );
-        */
         return new BibtexSettings($settings, $style, $addOrigEntry);
     }
 
-    /*    public function __construct(
-            string $unifiedUrl,
-            private string $sort = self::DEFAULT_SORT,
-            string $style = self::DEFAULT_STYLE,
-            private readonly string $filterType = '',
-            private readonly array $filterEntries = [],
-            private readonly bool $addOrigEntry = false,
-            ?LinkService $linkService = null
-        ) {
-    */
     public function __construct(array $settings, string $style, protected bool $addOrigEntry = false)
     {
         $unifiedUrl = (string)($settings['link'] ?? '');
-        $sort = (string)($settings['sort'] ?? self::DEFAULT_SORT);
+        $this->sort = (string)($settings['sort'] ?? self::DEFAULT_SORT);
         $this->filterType = (string)($settings['filterType'] ?? '');
         $this->filterEntries = array_filter(explode(',', $settings['filterEntries'] ?? ''));
         $this->showNumbers = (bool)($settings['showNumbers'] ?? false);
