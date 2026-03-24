@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
@@ -19,9 +20,7 @@ ExtensionUtility::configurePlugin(
     ]
 );
 
-
 // -----------------
 // caching framework
 // -----------------
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['bibtex_bibtexcache'] ??= [];
-

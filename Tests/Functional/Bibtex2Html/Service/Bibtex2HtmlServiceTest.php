@@ -29,7 +29,7 @@ class Bibtex2HtmlServiceTest extends FunctionalTestCase
      * @return \Generator<string,array<string,string>>
      * @todo author not used, is correct?
      */
-    public function bibtexPreProcessReturnsCorrectEntriesProvider(): \Generator
+    public static function bibtexPreProcessReturnsCorrectEntriesProvider(): \Generator
     {
         yield 'Simple entry (techreport)' => [
             'bibtexContent' => '@TechReport{V-400-17,
@@ -75,7 +75,7 @@ class Bibtex2HtmlServiceTest extends FunctionalTestCase
      * @param string $bibtexContent
      * @param array<int,array<string,string>> $expectedResult
      */
-    public function bibtexPreProcessReturnsCorrectEntries(string $bibtexContent, array $expectedResult): void
+    public function bibtexPreProcessReturnsCorrectEntries(string $bibtexContent, array $expectedEntry): void
     {
         $bibtex2HtmlService = $this->instantiateBibtex2HtmlService();
         $actualResults = $bibtex2HtmlService->bibtexPreProcess($bibtexContent);
@@ -84,16 +84,16 @@ class Bibtex2HtmlServiceTest extends FunctionalTestCase
         self::assertTrue(isset($entry['bibtexEntry']));
         unset($entry['bibtexEntry']);
 
-        self::assertEquals(ksort($expectedResult), ksort($entry));
+        self::assertEquals(ksort($expectedEntry), ksort($entry));
     }
 
     /**
      * @return \Generator<mixed>
      */
-    public function bibtexPreProcessTrimsTitleDataProvider(): \Generator
+    public static function bibtexPreProcessTrimsTitleDataProvider(): \Generator
     {
         yield 'Trim title' => [
-            '@BOOK{,
+            'bibtexContent' => '@BOOK{,
 Author = {Uslar, Mathias; Specht, Michael; D{\"a}nekas, Christian; Trefke, J{\"o}rn; Rohjans, Sebastian; Gonzalez, Jose; Rosinger, Christine; Bleiker, Robert},
 Title = { Standardization in Smart Grids},
 Year = {2013},
@@ -130,7 +130,7 @@ Booktitle = {Standardization in Smart Grids: Introduction to IT--Related Methodo
     /**
      * @return \Generator<mixed>
      */
-    public function bibtexPreProcessHandlesUnicodeInAuthorsDataProvider(): \Generator
+    public static function bibtexPreProcessHandlesUnicodeInAuthorsDataProvider(): \Generator
     {
         yield 'Handle unicode in autors' => [
             '@INPROCEEDINGS{,
@@ -165,7 +165,7 @@ Organization = {IEEE}
     /**
      * @return \Generator<mixed>
      */
-    public function bibtexPreProcessHandlesCitationKeyWithParenthesisWithoutEndlessLoopDataProvider(): \Generator
+    public static function bibtexPreProcessHandlesCitationKeyWithParenthesisWithoutEndlessLoopDataProvider(): \Generator
     {
         yield 'Handle entry with citation key with ()' => [
             '@misc{RohlJHHellmersSDiekmannRHeinA(2022):.2022,

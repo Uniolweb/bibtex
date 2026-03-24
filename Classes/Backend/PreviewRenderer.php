@@ -218,9 +218,12 @@ class PreviewRenderer extends StandardContentPreviewRenderer
             return $url;
         }
         $file = $resourceFactory->getFileObject($uid);
+        // always returns File object
+        /*
         if (!$file) {
             return $url;
         }
+        */
         return $file->getPublicUrl();
     }
 

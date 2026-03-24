@@ -2,14 +2,17 @@
 # important
 #  - uses generic runTests.sh from uniolweb/unioltest (different paths !!!)
 
+default:
+  tags:
+    - typo3
+    - shell
+    #- nolimit
+
 stages:
   - test
   - cleanup
 
 test-job-static:
-  tags:
-    - typo3
-    - shell
   stage: test
   script:
     - composer validate
@@ -17,34 +20,35 @@ test-job-static:
     - Build/Scripts/check_composer_lock_does_not_exist.sh
     - Build/Scripts/check_no_platform.php_exists_in_composer.json.sh
 
+# TYPO3 v13: PHP 8.2 - 8.5
 test-job-latest:
-  tags:
-    - typo3
-    - shell
   stage: test
+  parallel:
+    matrix:
+      #- PHPVERSION: [ "8.2", "8.4", "8.5" ]
+      - PHPVERSION: [ "8.4" ]
   script:
+    # todo: currently not possible, requires a docker container with ssh
+    #- Build/Script/runTests.sh -t 13 -p $PHPVERSION -s composerRequire
     - composer require typo3/cms-core:^13.4
     - composer cgl:check
-    #- composer rector:check
-    - .Build/vendor/uniolweb/unioltest/Build/Scripts/runTests.sh -p 8.4 -s phpstan
-    - .Build/vendor/uniolweb/unioltest/Build/Scripts/runTests.sh -s unit -p 8.4
+    - composer rector:check
+    - Build/Scripts/runTests.sh -p $PHPVERSION -s phpstan
+    - Build/Scripts/runTests.sh -s unit -p $PHPVERSION
+    - Build/Scripts/runTests.sh -s functional -p $PHPVERSION
 
+# v12: PHP 8.1 - 8.4
 test-job-v12:
-  tags:
-    - typo3
-    - shell
   stage: test
   script:
     - composer require typo3/cms-core:^12.4
     - composer rector:check
-    - .Build/vendor/uniolweb/unioltest/Build/Scripts/runTests.sh -p 8.4 -s phpstan
-    - .Build/vendor/uniolweb/unioltest/Build/Scripts/runTests.sh -s unit -p 8.4
+    - Build/Scripts/runTests.sh -p 8.4 -s phpstan
+    - Build/Scripts/runTests.sh -s unit -p 8.4
+    - Build/Scripts/runTests.sh -s functional -p 8.4
 
 
 test-job-info:
-  tags:
-    - typo3
-    - shell
   stage: test
   script:
     - echo "Hello again you, $GITLAB_USER_LOGIN!"

@@ -34,7 +34,6 @@ return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->rule(MigrateFetchAllToFetchAllAssociativeRector::class);
     $rectorConfig->rule(MigrateFetchToFetchAssociativeRector::class);
 
-
     // register a single rule
     $rectorConfig->rule(InlineConstructorDefaultToPropertyRector::class);
 

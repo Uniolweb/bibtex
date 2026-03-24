@@ -1,30 +1,33 @@
-# phpstan Konfiguration
+# generic phpstan configuration for TYPO3 extensions!
 #
-# Baseline erzeugen:
-#   composer phpstan:baseline
+# howtos
+# ------
+# create baseline:
+#   (check script in .gitlab-ci-yml for exact parameters)!!!
+#   Build/Scripts/runTests.sh -s phpstan -e "-c Build/phpstan/phpstan_v12.neon --generate-baseline"
 
 includes:
   #- phpstan-baseline.neon
-  # If phpstan/extension-installer is used, this is not necessary.
-  #- .Build/vendor/jangregor/phpstan-prophecy/extension.neon
+  #- ../../.Build/vendor/jangregor/phpstan-prophecy/extension.neon
 
 parameters:
-  bootstrapFiles:
-    - phpstan.bootstrap.php
+  #bootstrapFiles:
+  #  - phpstan.bootstrap.php
+
+  # Use local cache dir instead of /tmp
   tmpDir: ../../.Build/.cache/phpstan
+
   parallel:
     # Don't be overly greedy on machines with more CPU's to be a good neighbor especially on CI
     maximumNumberOfProcesses: 5
-  level: 4
-  # check these paths
+
+  level: 5
+
   paths:
     - ../../Classes
-    #- ../../Tests
-  # use these paths (but do not check)
+
+  #excludePaths:
+  #  - ../../.Build/vendor/uniolweb/auth
+
   scanDirectories:
     - ../../.Build/vendor
-
-  editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
-
-  treatPhpDocTypesAsCertain: false
-

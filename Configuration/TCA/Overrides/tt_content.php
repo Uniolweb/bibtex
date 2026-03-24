@@ -1,4 +1,5 @@
 <?php
+
 defined('TYPO3') or die();
 
 $extkey = 'bibtex';
@@ -18,7 +19,7 @@ $plugins = [
 
 foreach ($plugins as $name => $plugin) {
     \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin(
-    // extension_key or ExtensionName
+        // extension_key or ExtensionName
         $extkey,
         // plugin name
         $name,
@@ -34,8 +35,10 @@ foreach ($plugins as $name => $plugin) {
     $flexform = $plugin['flexform'] ?? '';
     if ($flexform) {
         $GLOBALS['TCA']['tt_content']['types']['list']['subtypes_addlist'][$pluginSignature] = 'pi_flexform';
-        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPiFlexFormValue($pluginSignature,
-            'FILE:EXT:' . $extkey . '/Configuration/FlexForms/' . $flexform);
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPiFlexFormValue(
+            $pluginSignature,
+            'FILE:EXT:' . $extkey . '/Configuration/FlexForms/' . $flexform
+        );
     }
     // do not show "Record storage page" configuration for plugin in form
     // https://stackoverflow.com/questions/39386018/typo3-hide-plugin-mode-and-record-storage-page-in-a-plugin/39387488
