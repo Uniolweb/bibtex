@@ -1,0 +1,109 @@
+# todo: enable rector
+
+
+# Configuration for running GitHub actions
+#  based on EXT:enetcache: .github/workflows/tests.yml.not-used-yet
+#    https://github.com/lolli42/enetcache/blob/master/.github/workflows/tests.yml
+#  see https://docs.github.com/en/actions/guides/setting-up-continuous-integration-using-workflow-templates
+
+# current support is:
+# - TYPO3 v13
+# - PHP 8.2-8.5 (for TYPO3 v13)
+
+# always force TYPO3 version, also for latest to make sure it runs with latest version
+
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron:  '42 5 * * 1'
+
+jobs:
+  # static checks without installing composer
+  static:
+    # only run jobs via scheduled workflow in main repo, not in forks
+    if: (github.event_name == 'schedule' && github.repository == 'uniolweb/bibtex') || (github.event_name != 'schedule')
+    name: "static"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "show php version"
+        run: php --version
+
+      - name: "composer validate"
+        run: composer validate
+
+      - name: "Lint"
+        run: composer lint
+
+      - name: "Check composer.lock should not exist"
+        run: Build/Scripts/check_composer_lock_does_not_exist.sh
+
+      - name: "Platform should not exist in composer.json"
+        run: Build/Scripts/check_no_platform.php_exists_in_composer.json.sh
+
+  # v13 / run only with latest PHP version
+  all_core_v13-lastest-php:
+    # only run jobs via scheduled workflow in main repo, not in forks
+    if: (github.event_name == 'schedule' && github.repository == 'uniolweb/bibtex') || (github.event_name != 'schedule')
+    name: "TYPO3 v13 / only latest PHP: rector"
+    runs-on: ubuntu-latest
+    strategy:
+      # This prevents cancellation of matrix job runs, if one/two already failed and let the
+      # rest matrix jobs be be executed anyway.
+      fail-fast: true
+      matrix:
+        # only testing with highest
+        php: [ '8.5' ]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "show php version"
+        run: php --version
+
+      - name: "Set Typo3 core version"
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -t 13 -s composerRequire
+
+      - name: "CGL check"
+        #run: composer cgl:check
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s cglAll
+
+      #- name: "rector (apply rules)"
+      #  run: composer rector:check
+
+  # v13
+  all_core_v13:
+    # only run jobs via scheduled workflow in main repo, not in forks
+    if: (github.event_name == 'schedule' && github.repository == 'uniolweb/bibtex') || (github.event_name != 'schedule')
+    name: "all core v13"
+    runs-on: ubuntu-latest
+    strategy:
+      # This prevents cancellation of matrix job runs, if one/two already failed and let the
+      # rest matrix jobs be be executed anyway.
+      fail-fast: true
+      matrix:
+        # only testing with highest and lowest
+        php: [ '8.2', '8.3', '8.4', '8.5' ]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "show php version"
+        run: php --version
+
+      - name: "Set Typo3 core version"
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -t 13 -s composerRequire
+
+      - name: "phpstan"
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s phpstan
+
+      - name: "unit"
+        run: Build/Scripts/runTests.sh -s unit -p ${{ matrix.php }}
+
+      - name: "functional"
+        run: Build/Scripts/runTests.sh -s functional -p ${{ matrix.php }}
