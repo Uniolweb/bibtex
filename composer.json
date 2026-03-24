@@ -1,6 +1,6 @@
 {
 	"name": "uniolweb/bibtex",
-	"description": "bibtex extension",
+	"description": "TYPO3 extension for displaying publications from a source in bibtex format",
 	"license": "GPL-2.0-or-later",
 	"type": "typo3-cms-extension",
 	"keywords": [

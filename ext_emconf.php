@@ -1,14 +1,14 @@
 <?php
 
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'Bibtex Extension (Mit Uniol Anpassungen)',
-    'description' => '',
+    'title' => 'bibtex',
+    'description' => 'TYPO3 extension for displaying publications from a source in bibtex format',
     'category' => 'plugin',
     'author' => '',
     'author_email' => '',
     'author_company' => '',
     'state' => 'excludeFromUpdates',
-    'version' => '4.0.1-dev',
+    'version' => '4.0.1',
     'constraints' => [
         'depends' => [
             'extbase' => '',
