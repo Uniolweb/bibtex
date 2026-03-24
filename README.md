@@ -21,3 +21,5 @@ Run:
     git tag non-composer-release-1.0.0
     git push origin non-composer-release-1.0.0
     git archive --format=tar.gz -o /tmp/bibtex-1.0.0.tar.gz --prefix=bibtex/ non-composer-release-1.0.0
+    git checkout main
+    echo "Release is in /tmp/"
