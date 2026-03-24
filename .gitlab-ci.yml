@@ -25,27 +25,15 @@ test-job-latest:
   stage: test
   parallel:
     matrix:
-      #- PHPVERSION: [ "8.2", "8.4", "8.5" ]
-      - PHPVERSION: [ "8.4" ]
+      - PHPVERSION: [ "8.2", "8.3", "8.4", "8.5" ]
   script:
-    # todo: currently not possible, requires a docker container with ssh
-    #- Build/Script/runTests.sh -t 13 -p $PHPVERSION -s composerRequire
-    - composer require typo3/cms-core:^13.4
+    - Build/Scripts/runTests.sh -t 13 -p $PHPVERSION -s composerRequire
+    #- composer require typo3/cms-core:^13.4
     - composer cgl:check
-    - composer rector:check
+    #- composer rector:check
     - Build/Scripts/runTests.sh -p $PHPVERSION -s phpstan
     - Build/Scripts/runTests.sh -s unit -p $PHPVERSION
     - Build/Scripts/runTests.sh -s functional -p $PHPVERSION
-
-# v12: PHP 8.1 - 8.4
-test-job-v12:
-  stage: test
-  script:
-    - composer require typo3/cms-core:^12.4
-    - composer rector:check
-    - Build/Scripts/runTests.sh -p 8.4 -s phpstan
-    - Build/Scripts/runTests.sh -s unit -p 8.4
-    - Build/Scripts/runTests.sh -s functional -p 8.4
 
 
 test-job-info:

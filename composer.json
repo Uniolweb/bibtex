@@ -7,28 +7,14 @@
 		"TYPO3",
 		"bibtex"
 	],
-	"repositories": [
-		{
-			"type": "gitlab",
-			"url": "git@gitlab.uni-oldenburg.de:it-dienste/typo3/uniollib.git"
-		},
-		{
-			"type": "gitlab",
-			"url": "git@gitlab.uni-oldenburg.de:it-dienste/typo3/osbibx-parser.git"
-		},
-		{
-			"type": "gitlab",
-			"url": "git@gitlab.uni-oldenburg.de:it-dienste/typo3/unioltest.git"
-		}
-	],
 	"require": {
 		"php": "^8.2",
 		"sypets/osbibx-parser": "dev-main || ^4.0.0",
-		"typo3/cms-backend": "^12.4 || ^13.4",
-		"typo3/cms-core": "^12.4 || ^13.4",
-		"typo3/cms-extbase": "^12.4 || ^13.4",
-		"typo3/cms-fluid": "^12.4 || ^13.4",
-		"typo3/cms-frontend": "^12.4 || ^13.4",
+		"typo3/cms-backend": "^13.4",
+		"typo3/cms-core": "^13.4",
+		"typo3/cms-extbase": "^13.4",
+		"typo3/cms-fluid": "^13.4",
+		"typo3/cms-frontend": "^13.4",
 		"uniolweb/uniollib": "dev-main"
 	},
 	"autoload": {

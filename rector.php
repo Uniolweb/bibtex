@@ -45,12 +45,12 @@ return static function (RectorConfig $rectorConfig): void {
 
     //define sets of rules
     $rectorConfig->sets([
-        LevelSetList::UP_TO_PHP_84,
-        Typo3LevelSetList::UP_TO_TYPO3_12,
+        LevelSetList::UP_TO_PHP_82,
+        Typo3LevelSetList::UP_TO_TYPO3_13,
     ]);
 
     // Define your target version which you want to support
-    $rectorConfig->phpVersion(PhpVersion::PHP_84);
+    $rectorConfig->phpVersion(PhpVersion::PHP_82);
 
     // If you only want to process one/some TYPO3 extension(s), you can specify its path(s) here.
     // If you use the option --config change __DIR__ to getcwd()

@@ -13,7 +13,7 @@ $EM_CONF[$_EXTKEY] = [
         'depends' => [
             'extbase' => '',
             'fluid' => '',
-            'typo3' => '11.5.19-12.99.99'
+            'typo3' => '13.4.19-13.99.99'
         ],
         'conflicts' => [],
         'suggests' => [],

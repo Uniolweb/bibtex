@@ -18,7 +18,7 @@
 # ------
 # config
 # ------
-SUPPORTED_PHP_VERSIONS="8.2|8.3|8.4"
+SUPPORTED_PHP_VERSIONS="8.2|8.3|8.4|8.5"
 DEFAULT_PHP_VERSION="8.4"
 PHP_VERSION="${DEFAULT_PHP_VERSION}"
 DEFAULT_PHP_PLATFORM_VERSION="8.4.12"
@@ -28,16 +28,19 @@ DEFAULT_PHP_PLATFORM_VERSION="8.4.12"
 ###
 case "$PHP_VERSION" in
     "8.1")
-        PHP_PLATFORM_VERSION="8.1.20"
+        PHP_PLATFORM_VERSION="8.1.34"
         ;;
     "8.2")
-        PHP_PLATFORM_VERSION="8.2.29"
+        PHP_PLATFORM_VERSION="8.2.30"
         ;;
     "8.3")
-        PHP_PLATFORM_VERSION="8.3.23"
+        PHP_PLATFORM_VERSION="8.3.30"
         ;;
     "8.4")
-        PHP_PLATFORM_VERSION="8.4.10"
+        PHP_PLATFORM_VERSION="8.4.19"
+        ;;
+    "8.5")
+        PHP_PLATFORM_VERSION="8.5.4"
         ;;
     *)
         echo "Invalid PHP version"
