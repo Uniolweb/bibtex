@@ -163,7 +163,7 @@ class CheckFlexformCommand extends Command
                 }
             }
 
-            $style = 'uniol_' . ($this->language ?? 'de');
+            $style = 'uniol_' . $this->language;
 
             //var_dump($settings);
 
