@@ -144,7 +144,7 @@ class DumpFlexformInfoCommand extends Command
                 continue;
             }
 
-            $style = 'uniol_' . ($this->language ?? 'de');
+            $style = 'uniol_' . $this->language;
 
             //var_dump($settings);
 
