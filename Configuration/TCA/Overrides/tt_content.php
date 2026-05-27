@@ -10,7 +10,9 @@ $plugins = [
     // name
     'Bibtex' => [
         'label' => 'Bibtex',
-        'icon'  => 'bibtex-plugin',
+        'description' => '',
+        'icon' => 'actions-book',
+        'group' => 'plugins',
         'flexform' => 'flexform_btex.xml',
         'preview' => Uniolweb\Bibtex\Backend\PreviewRenderer::class,
         'excludelist' => 'recursive,select_key,pages'
@@ -26,7 +28,9 @@ foreach ($plugins as $name => $plugin) {
         // label
         $plugin['label'],
         // icon
-        $plugin['icon']
+        $plugin['icon'] ?? null,
+        $plugin['group'],
+        $plugin['description'],
     );
 
     $pluginSignature = $extkey . '_' . mb_strtolower($name);
